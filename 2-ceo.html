@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Manifeste, espace CEO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Jost:wght@400;500;600&family=Gelasio:ital,wght@0,400;0,500;0,700;1,400&family=Carlito:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  /* Écran du CEO : papier clair, encre, eau profonde. Le texte reprend la charte du document (vert, or, Georgia, Calibri). */
+  --paper:#F7F3EA; --surface:#FFFFFF; --ink:#14212B; --muted:#5B6670; --line:#E3DCCD; --line-strong:#CFC6B3;
+  --water:#1D4E5C; --water-soft:#E4EEF0; --clay:#B5653A; --clay-soft:#F6E7DB; --ok:#2F6B4F; --ok-soft:#E2EFE6; --danger:#A23B2A; --danger-soft:#F7E2DD;
+  --doc-green:#0E4B3A; --doc-gold:#C2A14D; --doc-grey:#6A736E; --doc-line:#D9D3C2;
+  --font-display:'Fraunces', Georgia, serif;
+  --font-body:'Jost', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --doc-serif: Georgia, 'Gelasio', 'Times New Roman', serif;
+  --doc-sans: Calibri, 'Carlito', 'Segoe UI', Arial, sans-serif;
+  --r:10px;
+  color-scheme: light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:#ECE6DA;color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--font-display);font-weight:500;margin:0;text-wrap:balance;letter-spacing:-.01em}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--water);outline-offset:2px}
+svg.lucide{width:18px;height:18px;stroke-width:1.75;flex:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line-strong);border-radius:var(--r);padding:11px 16px;font-weight:500;background:var(--surface);color:var(--ink);text-decoration:none;transition:background .15s,border-color .15s,transform .1s}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--water);border-color:var(--water);color:#fff}
+.btn-ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn-danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn-ghost{background:transparent;border-color:transparent}
+.btn-wa{background:var(--surface);border-color:var(--line-strong);color:var(--ink)}
+.btn-sm{padding:7px 11px;font-size:14px}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+.icon-btn{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:var(--r);border:0;background:transparent;color:var(--muted)}
+.linkish{border:0;background:transparent;color:var(--water);font-weight:500;padding:2px 0;font-size:14px;display:inline-flex;gap:6px;align-items:center;text-decoration:none}
+.field{display:grid;gap:6px}
+.field label{font-size:13.5px;font-weight:500;color:var(--muted)}
+.field .hint{font-size:12.5px;color:var(--muted)}
+.input,.textarea,.select{width:100%;border:1px solid var(--line-strong);border-radius:var(--r);background:var(--surface);padding:11px 12px;font-size:16px}
+.textarea{min-height:100px;resize:vertical}
+.input:focus,.textarea:focus,.select:focus{outline:none;border-color:var(--water);box-shadow:0 0 0 3px var(--water-soft)}
+.input.changed{border-color:var(--clay);background:#FFFBF7}
+.err{color:var(--danger);font-size:13.5px}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14.5px}
+.check input{margin-top:2px;width:20px;height:20px;accent-color:var(--water);flex:none}
+.check.disabled{opacity:.5}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;padding:3px 10px;border-radius:999px;background:#EFEAE0;color:var(--ink)}
+.chip svg.lucide{width:14px;height:14px}
+.chip-ok{background:var(--ok-soft);color:var(--ok)}
+.chip-clay{background:var(--clay-soft);color:#8a4724}
+.chip-water{background:var(--water-soft);color:var(--water)}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.notice{display:flex;gap:10px;align-items:flex-start;padding:12px 13px;border-radius:var(--r);background:var(--water-soft);color:#173e49;font-size:14px}
+.notice.ok{background:var(--ok-soft);color:#214d39}
+.notice.clay{background:var(--clay-soft);color:#6d3818}
+.notice.grey{background:#EDE8DE;color:var(--ink)}
+.notice svg{margin-top:2px}
+
+/* Bande de démonstration */
+.demo{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:9px 18px;background:var(--ink);color:#E9ECEE;font-size:14px}
+.demo strong{font-family:var(--font-display);font-weight:500;font-size:16px;color:#fff}
+.demo .sp{flex:1}
+.demo label{display:inline-flex;gap:8px;align-items:center;color:#C9CFD3}
+.demo select{border:1px solid #3a4853;border-radius:8px;background:#1d2d39;color:#fff;padding:6px 8px;font-size:14px;max-width:72vw}
+.demo .btn{background:transparent;border-color:#3a4853;color:#E9ECEE;padding:6px 10px;font-size:14px}
+.demo .tag{font-size:12px;padding:2px 8px;border-radius:999px;background:#F7F3EA;color:var(--ink);font-weight:600}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 410px;gap:40px;max-width:1080px;margin:0 auto;padding:28px 20px 48px;align-items:start}
+.explain{display:grid;gap:14px;align-content:start}
+.explain h1{font-size:28px}
+.explain .panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.explain ul{margin:8px 0 0;padding-left:18px;display:grid;gap:6px;color:var(--ink)}
+
+/* Téléphone */
+.phone{width:100%;max-width:410px;height:820px;max-height:calc(100vh - 110px);min-height:640px;border:10px solid var(--ink);border-radius:40px;overflow:hidden;background:var(--paper);position:relative;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(20,33,43,.2);margin:0 auto}
+/* Mode plein écran (ordinateur, ou vrai téléphone) */
+#app.mode-ordi,#app.mode-full{display:flex;flex-direction:column;height:100vh;height:100dvh}
+#app.mode-ordi .demo,#app.mode-full .demo{position:static}
+.device{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper)}
+.strip{display:flex;gap:10px 14px;align-items:baseline;flex-wrap:wrap;padding:9px 18px;background:#FBF7EE;border-bottom:1px solid var(--line);font-size:13.5px;color:var(--muted)}
+.strip strong{color:var(--ink);font-weight:600}
+/* Conteneur de l'application : sa largeur décide de la mise en page (téléphone ou ordinateur) */
+.appc{flex:1;min-height:0;display:flex;flex-direction:column;position:relative;container-type:inline-size;container-name:app;background:var(--paper)}
+.top{display:flex;align-items:center;gap:12px;padding:14px 36px;border-bottom:1px solid var(--line);background:var(--surface)}
+.top .mark{width:34px;height:34px;border-radius:9px;background:var(--water);color:#fff;display:grid;place-items:center}
+.top .name{font-family:var(--font-display);font-size:17px;line-height:1.2;flex:1;min-width:0}
+.top .name span{display:block;font-family:var(--font-body);font-size:12.5px;color:var(--muted)}
+.scr{flex:1;overflow-y:auto}
+.lay,.wrap{display:grid;gap:16px;padding:22px 18px 26px;align-content:start}
+.side,.main{display:grid;gap:16px;align-content:start;min-width:0}
+.dact{display:grid;gap:8px}
+.btn-lg{padding:14px 18px;font-size:16px}
+.themes,.dlist{display:grid;gap:10px}
+.dform{display:grid;gap:14px;grid-template-areas:"theme" "sim" "body"}
+.df-theme{grid-area:theme;display:grid;gap:14px}
+.df-sim{grid-area:sim;display:grid;gap:10px;align-content:start}
+.df-body{grid-area:body;display:grid;gap:14px}
+.fgrid{display:grid;gap:14px}
+.qrbox{display:grid;place-items:center;padding:14px;background:#fff;border:1px solid var(--line);border-radius:12px;min-height:212px}
+.linkline{font-size:13px;color:var(--muted);word-break:break-all;text-align:center}
+.bar{border-top:1px solid var(--line);background:var(--surface);padding:12px 14px;display:grid;grid-template-columns:auto 1fr;gap:10px}
+.bar.one{grid-template-columns:1fr}
+.eyebrow{font-size:11.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.hello{font-family:var(--font-display);font-size:25px;line-height:1.15}
+.lead{color:var(--muted);font-size:15px}
+.meta{display:flex;gap:8px;flex-wrap:wrap}
+.seg{display:inline-grid;grid-template-columns:1fr 1fr;border:1px solid var(--line-strong);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:8px 12px;font-size:14px;font-weight:500;color:var(--muted);display:inline-flex;gap:6px;align-items:center;justify-content:center}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+/* Lecture mobile, à la charte du document */
+.read{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 18px;font-family:var(--doc-sans);color:#1E2622}
+.read .t{font-family:var(--doc-serif);color:var(--doc-green);font-size:23px;line-height:1.2;text-align:center}
+.read .st{text-align:center;color:var(--doc-grey);font-size:13px;margin-top:8px}
+.read .rule{border-top:2px solid var(--doc-gold);margin:16px 0 14px}
+.read .kick{text-align:center;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--doc-gold);font-weight:700;margin-bottom:10px}
+.rb{padding:6px 8px;margin:0 -8px 4px;border-radius:8px;font-size:16px;line-height:1.55;cursor:pointer}
+.rb.sel{background:#F5F0E3}
+.rb.h{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--doc-gold);font-weight:700;margin-top:14px}
+.rb.li{display:grid;grid-template-columns:22px 1fr}
+.rb.li .num{font-weight:700;color:var(--doc-green)}
+.rb.accroche{font-family:var(--doc-serif);font-style:italic;color:var(--doc-green);font-size:19px;text-align:center;margin-top:14px}
+.rb.mention{font-size:12.5px;color:var(--doc-grey);text-align:center}
+.rb strong{font-weight:700;color:#14201B}
+.rb .act{grid-column:1/-1;margin-top:6px}
+.sheet-back{position:absolute;inset:0;background:rgba(20,33,43,.4);display:flex;align-items:flex-end;z-index:6}
+.sheet{background:var(--surface);width:100%;border-radius:20px 20px 0 0;padding:18px 18px 22px;display:grid;gap:12px;max-height:92%;overflow-y:auto}
+.sheet h3{font-size:20px}
+.quote{font-size:14px;color:var(--muted);background:#F6F2E8;border-radius:8px;padding:9px 11px;font-style:italic}
+.flow{position:absolute;inset:0;background:var(--paper);z-index:4;display:flex;flex-direction:column}
+.flow-card{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper)}
+.flow-head{display:flex;align-items:center;gap:8px;padding:12px;border-bottom:1px solid var(--line);background:var(--surface)}
+.flow-head .grow{flex:1;font-weight:600}
+.dots{display:flex;gap:5px}
+.dots span{width:22px;height:4px;border-radius:2px;background:var(--line-strong)}
+.dots span.on{background:var(--water)}
+.flow-body{flex:1;overflow-y:auto;padding:20px 18px;display:grid;gap:14px;align-content:start}
+.flow-foot{padding:12px 14px;border-top:1px solid var(--line);background:var(--surface);display:grid}
+.pad{border:1.5px dashed var(--line-strong);border-radius:14px;background:#fff;position:relative}
+.pad canvas{display:block;width:100%;height:220px;touch-action:none;cursor:crosshair}
+.pad .hintp{position:absolute;left:0;right:0;bottom:46px;text-align:center;color:#B9B2A3;pointer-events:none}
+.pad .line{position:absolute;left:18px;right:18px;bottom:38px;border-top:1px solid var(--line)}
+.sigsvg{display:block;width:100%}
+/* Ligne d'annexe : aperçu de l'impression */
+.annex-row{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-family:var(--doc-sans)}
+.annex-row .hd,.annex-row .rw{display:grid;grid-template-columns:28px 1.1fr .9fr 1.2fr 1.3fr}
+.annex-row .hd div{font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--doc-grey);font-weight:700;padding:7px 5px;border-bottom:1px solid var(--doc-line)}
+.annex-row .rw div{font-size:11px;padding:8px 5px;border-right:1px solid var(--doc-line);display:flex;align-items:center;min-width:0;overflow-wrap:anywhere}
+.annex-row .rw div:last-child{border-right:0}
+.annex-row .rw .nf{display:block}
+.annex-row .rw .nf b{display:block}
+.annex-row .rw .nf span{color:var(--doc-grey);font-size:10px}
+.annex-row .rw .sg{height:54px;padding:2px}
+.annex-row .rw .sg .sigsvg{height:100%}
+.annex-cap{font-size:12px;color:var(--muted);padding:8px 10px;border-top:1px solid var(--line);background:#FBF9F4}
+.done{display:grid;justify-items:center;text-align:center;gap:10px;padding-top:10px}
+.done .big{width:64px;height:64px;border-radius:50%;background:var(--ok-soft);color:var(--ok);display:grid;place-items:center}
+.done .big svg{width:30px;height:30px}
+.done .big.wait{background:var(--clay-soft);color:var(--clay)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:10px}
+.card h3{font-size:18px;display:flex;gap:8px;align-items:center}
+.card h3 svg{color:var(--water)}
+.avatar{width:84px;height:84px;border-radius:50%;background:#E6E0D3;display:grid;place-items:center;overflow:hidden;color:var(--muted);justify-self:start}
+.avatar img,.avatar svg{width:100%;height:100%;object-fit:cover}
+.upl{position:relative;overflow:hidden}
+.upl input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.ptoast{position:absolute;left:14px;right:14px;bottom:84px;background:var(--ink);color:#fff;border-radius:12px;padding:11px 14px;font-size:14px;z-index:9;display:flex;gap:8px;align-items:center;animation:up .2s ease}
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.netbar{position:absolute;left:0;right:0;top:0;z-index:8;background:var(--clay);color:#fff;font-size:13.5px;padding:8px 12px;display:flex;gap:8px;align-items:center}
+.netbar.ok{background:var(--ok)}
+/* A4 dans le téléphone */
+.a4-scroll{overflow-x:auto;border-radius:10px}
+.a4-stack{display:grid;gap:14px}
+.a4-wrap{container-type:inline-size;width:100%;margin:0 auto}
+.a4-scroll.zoom .a4-wrap{width:760px}
+.a4-page{position:relative;background:#fff;aspect-ratio:210/297;width:100%;padding:6.7cqw 10.5cqw 5.2cqw;display:flex;flex-direction:column;box-shadow:0 1px 2px rgba(20,33,43,.1),0 6px 18px rgba(20,33,43,.08);color:#1E2622;font-family:var(--doc-sans);font-size:1.6cqw;line-height:1.38}
+.a4-body{flex:1;min-height:0;position:relative;display:flex;flex-direction:column}
+.a4-flow{display:block}
+.a4-foot{display:flex;justify-content:space-between;gap:2cqw;font-size:1.15cqw;color:var(--doc-grey);padding-top:1.6cqw}
+.d-kicker{text-align:center;font-size:1.25cqw;letter-spacing:.14em;text-transform:uppercase;color:var(--doc-gold);font-weight:700;margin-bottom:1.6cqw}
+.d-title{font-family:var(--doc-serif);color:var(--doc-green);font-size:3.55cqw;line-height:1.18;text-align:center;font-weight:400;margin:0}
+.d-sub{text-align:center;color:var(--doc-grey);font-size:1.4cqw;margin-top:1.4cqw}
+.d-rule{height:0;border-top:.22cqw solid var(--doc-gold);margin:2.2cqw 0 2.6cqw}
+.a4-blk{position:relative;margin:0 0 1.15cqw}
+.a4-blk.h{font-size:1.3cqw;letter-spacing:.16em;text-transform:uppercase;color:var(--doc-gold);font-weight:700;margin:2.4cqw 0 1cqw}
+.a4-blk.li{display:grid;grid-template-columns:2.6cqw 1fr;margin-bottom:.8cqw}
+.a4-blk .num{font-weight:700;color:var(--doc-green)}
+.a4-blk.accroche{font-family:var(--doc-serif);font-style:italic;color:var(--doc-green);font-size:2.25cqw;text-align:center;margin:2.6cqw 0 1.2cqw}
+.a4-blk.mention{font-size:1.2cqw;color:var(--doc-grey);text-align:center}
+.a4-blk .txt{margin:0}
+.a4-blk .txt strong{font-weight:700;color:#14201B}
+.ann-title{font-family:var(--doc-serif);color:var(--doc-green);font-size:2.9cqw;margin-bottom:2.4cqw}
+.ann-table{flex:1;display:grid;grid-template-columns:5% 24% 17% 26% 28%;border-top:.15cqw solid var(--doc-green)}
+.ann-table > div{border-bottom:1px solid var(--doc-line);border-right:1px solid var(--doc-line);padding:.8cqw 1cqw;display:flex;align-items:center;min-width:0;font-size:1.35cqw;line-height:1.25}
+.ann-table > div:nth-child(5n+1){border-left:1px solid var(--doc-line)}
+.ann-table .th{font-size:1.05cqw;letter-spacing:.1em;text-transform:uppercase;color:var(--doc-grey);font-weight:700;align-items:flex-end}
+.ann-table .no{color:var(--doc-grey);align-items:flex-start}
+.ann-table .nf{display:block;padding-top:1.4cqw}
+.ann-table .nf strong{display:block}
+.ann-table .nf span{color:var(--doc-grey);font-size:1.2cqw}
+.ann-table .sg{padding:.4cqw .8cqw}
+.ann-table .sg .sigsvg{height:100%}
+.ann-table .ghost{border-color:transparent !important}
+/* Doléances */
+.theme{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;width:100%;text-align:left}
+.theme strong{font-weight:500}
+.dl{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:8px}
+.dl .sol{font-size:14px;color:var(--muted)}
+.sup{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:500;justify-self:start}
+.sup[aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.sup.mine{border-style:dashed;cursor:default}
+.counter{font-size:12.5px;color:var(--muted);text-align:right}
+/* Bande de démo : choix de l'aperçu, masqué sur un vrai téléphone */
+.demo .seg{background:#1d2d39;border-color:#3a4853}
+.demo .seg button{color:#C9CFD3;padding:6px 10px}
+.demo .seg button[aria-pressed="true"]{background:#F7F3EA;color:var(--ink)}
+@media (max-width: 900px){ .demo .dseg, .strip{display:none} }
+
+/* Mise en page téléphone : ce qui est réservé à l'ordinateur est masqué */
+@container app (max-width: 759.98px){
+  .desk{display:none !important}
+}
+/* Mise en page ordinateur */
+@container app (min-width: 760px){
+  .mob{display:none !important}
+  .lay{grid-template-columns:minmax(0,1fr) 340px;gap:44px;max-width:1160px;width:100%;margin:0 auto;padding:34px 36px 60px;align-items:start}
+  .wrap{max-width:1000px;width:100%;margin:0 auto;padding:34px 36px 60px}
+  .wrap.narrow{max-width:800px}
+  .side{order:2;position:sticky;top:24px}
+  .main{order:1}
+  .hello{font-size:30px}
+  .read{padding:46px 58px;max-width:780px;width:100%;margin:0 auto}
+  .read .t{font-size:30px}
+  .read .st{font-size:14px}
+  .rb{font-size:16.5px}
+  .rb:hover{background:#FAF6EC}
+  .rb.sel{background:#F5F0E3}
+  .rb.accroche{font-size:22px}
+  .a4-wrap{max-width:780px}
+  .a4-scroll.zoom .a4-wrap{width:1080px;max-width:none}
+  .flow{background:rgba(20,33,43,.45);align-items:center;justify-content:center;padding:28px}
+  .flow-card{flex:0 1 auto;width:100%;max-width:660px;max-height:100%;border-radius:18px;overflow:hidden;box-shadow:0 24px 70px rgba(20,33,43,.3)}
+  .flow-head{padding:14px 18px}
+  .flow-body{padding:26px 32px}
+  .flow-foot{padding:16px 32px;justify-items:end}
+  .flow-foot .btn{min-width:240px}
+  .fgrid{grid-template-columns:1fr 1fr}
+  .fgrid .full{grid-column:1/-1}
+  .pad canvas{height:250px}
+  .done{padding-top:4px}
+  .sheet-back{align-items:center;justify-content:center;padding:24px}
+  .sheet{max-width:520px;border-radius:18px;max-height:90%;padding:22px 24px 24px}
+  .ptoast{left:0;right:0;margin:0 auto;width:max-content;max-width:460px;bottom:auto;top:84px}
+  .themes{grid-template-columns:1fr 1fr}
+  .dlist{grid-template-columns:1fr 1fr;align-items:start}
+  .dform{grid-template-columns:minmax(0,1fr) 340px;grid-template-areas:"theme sim" "body sim";column-gap:36px;align-items:start}
+  .df-sim{position:sticky;top:0}
+}
+@media (prefers-reduced-motion: reduce){ *{animation:none !important;transition:none !important} }
+/* ===== Direction design : solennel, posé, chaleureux. Un accent (eau profonde), argile réservée à « à vérifier ». Grille de 4 px. ===== */
+:root{ --hair:rgba(20,33,43,.10); --ease:cubic-bezier(.22,1,.36,1); }
+.btn{padding:12px 16px;border-radius:10px;transition:background-color .15s var(--ease),border-color .15s var(--ease),transform .12s var(--ease)}
+.btn:hover{border-color:var(--ink)}
+.btn-primary:hover{background:#173f4b;border-color:#173f4b}
+.btn:active{transform:scale(.98)}
+.btn-sm{padding:8px 12px}
+.input,.textarea,.select{padding:12px}
+.field{gap:8px}
+.eyebrow{font-size:13px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.hello{font-size:28px;font-weight:400;line-height:1.15}
+.lead{font-size:16px;line-height:1.55}
+.from{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+.from svg.lucide{width:16px;height:16px}
+.meta{gap:16px}
+.meta .chip{background:none;padding:0;color:var(--muted);font-weight:400;font-size:13px;border-radius:0}
+.meta .chip svg.lucide{width:16px;height:16px}
+.chip{border-radius:6px;padding:4px 8px}
+.notice{padding:12px 16px;border-radius:10px}
+.card{padding:20px;border-radius:16px;gap:12px;border-color:var(--hair)}
+.card h3{font-size:19px;font-weight:400}
+.card h3 svg{color:var(--muted)}
+.lay,.wrap{gap:16px;padding:24px 20px 104px}
+.side,.main{gap:16px}
+.seg{border-radius:10px}
+.seg button{padding:8px 12px}
+.seg button[aria-pressed="true"]{background:var(--water)}
+/* Le texte se lit comme une feuille imprimée */
+.read{border:0;border-radius:6px;padding:28px 20px;box-shadow:0 1px 2px rgba(20,33,43,.06),0 8px 24px rgba(20,33,43,.07)}
+.a4-page{border-radius:2px}
+/* Barres fixes : léger dépoli, seulement ici */
+.bar{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:12px 16px;border-top:1px solid var(--hair);background:rgba(255,255,255,.9)}
+.top{position:absolute;left:0;right:0;top:0;z-index:3;height:64px;padding:0 40px;border-bottom:1px solid var(--hair);background:rgba(255,255,255,.9)}
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .bar,.top{background:rgba(255,255,255,.66);-webkit-backdrop-filter:saturate(1.6) blur(16px);backdrop-filter:saturate(1.6) blur(16px)}
+}
+.top .mark{width:32px;height:32px;border-radius:8px}
+.top .chip{background:none;padding:0;color:var(--muted);font-weight:400;font-size:13px}
+.top .name{font-size:16px}
+.flow-head{padding:12px 16px}
+.flow-head .grow{font-weight:500}
+.dots span{height:4px;width:20px}
+.flow-body{padding:24px 20px;gap:16px}
+.flow-foot{padding:12px 16px}
+.sheet{padding:20px 20px 24px;gap:12px}
+.sheet p{font-size:15px}
+.theme{padding:12px 16px;border-color:var(--hair)}
+.dl{padding:16px;border-color:var(--hair)}
+.annex-row{border:0;border-radius:6px;box-shadow:0 1px 2px rgba(20,33,43,.06),0 8px 24px rgba(20,33,43,.07)}
+.foot-links{display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:13px;padding-top:8px}
+.foot-links .linkish{font-size:13px;color:var(--muted)}
+.foot-links .linkish:hover{color:var(--ink)}
+/* Le moment : la ligne du CEO s'inscrit dans l'annexe */
+.moment{width:100%;background:#fff;border-radius:6px;box-shadow:0 1px 2px rgba(20,33,43,.06),0 12px 32px rgba(20,33,43,.10);padding:16px 16px 8px;text-align:left;font-family:var(--doc-sans);color:#1E2622}
+.m-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-family:var(--doc-serif);color:var(--doc-green);font-size:15px;padding-bottom:12px;border-bottom:2px solid var(--doc-gold)}
+.m-wait{font-family:var(--doc-sans);font-size:11px;color:#8a4724}
+.m-row{display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--doc-line);opacity:.4}
+.m-row:last-child{border-bottom:0}
+.m-row.me{opacity:1}
+.m-row b{display:block;font-size:12px;font-weight:700;color:#14201B;overflow-wrap:anywhere}
+.m-row span{display:block;font-size:11px;color:var(--doc-grey)}
+.m-sg{height:44px}
+.m-sg .sigsvg{height:100%}
+.m-sg.draw path{stroke-dasharray:var(--len,2000);stroke-dashoffset:var(--len,2000);animation:ink 1.1s var(--ease) forwards}
+@keyframes ink{to{stroke-dashoffset:0}}
+.done{gap:12px;padding-top:4px}
+@container app (min-width: 760px){
+  .scr{padding-top:64px}
+  .lay{gap:48px;padding:32px 40px 64px}
+  .wrap{padding:32px 40px 64px}
+  .side{top:32px}
+  .hello{font-size:32px}
+  .read{padding:48px 56px}
+  .flow-body{padding:28px 32px}
+  .flow-foot{padding:16px 32px}
+  .sheet{padding:24px}
+  .moment{padding:20px 24px 12px}
+  .m-row b{font-size:13px}
+  .m-sg{height:52px}
+}
+@media (prefers-reduced-motion: reduce){ .m-sg.draw path{stroke-dashoffset:0;animation:none} }
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ===================== Outils ===================== */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ic = n => `<i data-lucide="${n}"></i>`;
+const M3 = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+const ML = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const pad = n => String(n).padStart(2, '0');
+const fmt = d => { d = new Date(d); return `${d.getDate()} ${M3[d.getMonth()]} à ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const fmtLong = d => { d = new Date(d); return `${d.getDate()} ${ML[d.getMonth()]}`; };
+const D = (day, h, m, mo = 10) => new Date(2026, mo, day, h, m).getTime();
+const plain = h => { const d = document.createElement('div'); d.innerHTML = h; return d.textContent.replace(/\s+/g, ' ').trim(); };
+const excerpt = (t, n = 80) => t.length > n ? t.slice(0, n).trim() + '…' : t;
+const val = id => (document.getElementById(id) || {}).value || '';
+const norm = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+const uid = (p='id') => p + Math.random().toString(36).slice(2, 8);
+
+/* ===================== Le texte (version de signature) ===================== */
+const V = {num:1, titre:"Manifeste du secteur privé sénégalais\nde l'eau et de l'assainissement", sousTitre:"Conférence des Nations Unies sur l'eau · Abu Dhabi, décembre 2026", blocks:[
+  {id:'p1',type:'p',html:"Nous, entreprises privées sénégalaises de l'eau et de l'assainissement, concevons, construisons, exploitons et entretenons chaque jour les ouvrages qui apportent l'eau et l'assainissement aux populations. Des études au traitement et à la valorisation, nous sommes présents sur toute la chaîne de valeur."},
+  {id:'p2',type:'p',html:"Réunis à Dakar en octobre 2026, nous avons décidé de nous organiser et de parler d'une seule voix. À Abu Dhabi, dans une Conférence coorganisée par le Sénégal, nous prenons ensemble les engagements suivants."},
+  {id:'h1',type:'h',html:'Notre constat'},
+  {id:'p3',type:'p',html:"Nous sommes <strong>présents comme opérateurs, mais absents comme investisseurs</strong>. Seuls 9 % des engagements de l'Agenda d'action pour l'eau viennent du secteur privé, et les entreprises africaines y sont presque invisibles. Pourtant, au moins 90 % des financements nécessaires peuvent venir de ressources nationales. Ces capitaux ont besoin d'entreprises africaines assez solides pour les mettre au travail. À quatre ans de l'échéance de l'ODD 6, le continent ne peut plus se passer de celles et ceux qui font l'eau au quotidien."},
+  {id:'h2',type:'h',html:'Nos engagements'},
+  {id:'e1',type:'li',html:"<strong>Nous organiser,</strong> à tous les niveaux : localement, nationalement, au sein de la CEDEAO, en Afrique et dans les enceintes internationales."},
+  {id:'e2',type:'li',html:"<strong>Respecter un standard commun d'entreprise sérieuse,</strong> pour que les États, les bailleurs, les banques et les populations sachent à qui faire confiance."},
+  {id:'e3',type:'li',html:"<strong>Investir dans les compétences</strong> de nos équipes, et dans la qualité, la sécurité et la durabilité de nos ouvrages."},
+  {id:'e4',type:'li',html:"<strong>Exploiter et entretenir ce que nous construisons,</strong> car un ouvrage qui ne fonctionne plus ne sert personne."},
+  {id:'e5',type:'li',html:"<strong>Travailler en transparence</strong> avec les pouvoirs publics, qui fixent les priorités. Nous construisons et exploitons ce qu'ils décident."},
+  {id:'e6',type:'li',html:"<strong>Agir ensemble pour les populations,</strong> par des actions collectives d'accès à l'eau et à l'assainissement."},
+  {id:'h3',type:'h',html:'Nos demandes'},
+  {id:'d1',type:'li',html:"<strong>Une part de chaque grand programme d'eau et d'assainissement pour les entreprises locales,</strong> aux côtés des opérateurs internationaux. Le contenu local n'est pas une utopie, c'est un précédent."},
+  {id:'d2',type:'li',html:"<strong>Des appels d'offres conçus pour que les entreprises africaines sérieuses puissent y répondre en titulaires,</strong> et non plus seulement en sous-traitantes."},
+  {id:'d3',type:'li',html:"<strong>Un accès au financement adapté aux PME de l'eau,</strong> avec les banques, les institutions financières nationales et les partenaires au développement."},
+  {id:'d4',type:'li',html:"<strong>Une place dans les instances où se décident les priorités et les règles,</strong> au niveau national, régional et international."},
+  {id:'h4',type:'h',html:'Notre conviction'},
+  {id:'p4',type:'p',html:"Les meilleurs investisseurs de l'eau sont ceux qui y travaillent chaque jour. Si les entreprises africaines restent absentes des lieux où se décident les priorités, l'Afrique risque de financer son développement hydraulique sans bâtir sa propre économie de l'eau. <strong>Organisés, plus forts et bien accompagnés, nous pouvons porter ces 9 % beaucoup plus loin.</strong>"},
+  {id:'a1',type:'accroche',html:"Un secteur privé uni est un secteur privé plus fort."},
+  {id:'m1',type:'mention',html:"Signé à Abu Dhabi, le 10 décembre 2026, et à distance depuis le Sénégal. Liste des signataires en annexe."}
+]};
+const MAILLONS = [
+  ['Études', "Bureaux d'études, ingénierie, conception, maîtrise d'œuvre"],
+  ['Production', 'Forage, captage, mobilisation de la ressource'],
+  ['Transport et distribution', 'Réseaux, canalisations, matériels hydrauliques, génie civil'],
+  ['Traitement et valorisation', 'Assainissement, traitement des effluents, réutilisation'],
+  ['Axes transversaux', 'Activités au service de toute la chaîne']
+];
+const EXPEDITEUR = "La Task Force du secteur privé sénégalais de l'eau et de l'assainissement";
+const CONSENT = "J'accepte que mon nom, ma fonction, le nom de mon entreprise et ma signature figurent dans le Manifeste et dans sa diffusion publique.";
+const DEADLINE = D(2, 23, 59, 11);
+const THEMES = ['Accès aux marchés publics', 'Délais de paiement', 'Financement et garanties', 'Normes et réglementation', 'Formation et compétences', 'Contenu local'];
+/* Fiche telle qu'elle figure dans la liste du déjeuner (une coquille volontaire sur l'entreprise) */
+const LISTE = {prenom:'Moussa', nom:'Ndiaye', fonction:'Directeur général', entreprise:'Forage du Ndiambour', maillon:'Production', tel:'+221 77 000 01 02'};
+const OTHERS = [
+  ['Diallo','Aminata','Directrice générale','Niayes Hydro','Études',3], ['Sarr','Fatou','Gérante','Sine Assainissement','Traitement et valorisation',5], ['Ba','Ibrahima','Président','Kayor Ingénierie Eau','Études',6],
+  ['Faye','Awa','Directrice générale','Ferlo Traitement','Traitement et valorisation',7], ['Mbaye','Cheikh','Directeur général','Delta Pompes Services','Transport et distribution',8], ['Sow','Ndèye','Directrice','Casamance Réseaux','Transport et distribution',9]
+];
+
+function mulberry(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function scribble(seed){
+  const r = mulberry(seed * 9973); const f = v => v.toFixed(1);
+  let x = 30, y = 110 + (r() - .5) * 30; let d = `M${f(x)} ${f(y)}`; const n = 9 + Math.floor(r() * 6);
+  for (let i = 0; i < n; i++){ const nx = x + 14 + r() * 16, ny = 55 + r() * 90; d += ` C${f(x + r() * 30)} ${f(y - 55 * r())} ${f(nx - r() * 30)} ${f(ny + 55 * r())} ${f(nx)} ${f(ny)}`; x = nx; y = ny; }
+  return {vb:'0 0 520 190', d:[d, `M40 ${f(160 + r() * 10)} Q260 ${f(135 + r() * 30)} ${f(Math.min(500, x + 40))} ${f(150 + r() * 12)}`]};
+}
+const sigSvg = (s, fit) => `<svg class="sigsvg" viewBox="${s.vb}" preserveAspectRatio="${fit || 'xMinYMax meet'}" role="img" aria-label="Signature">${s.d.map(p => `<path d="${p}" fill="none" stroke="#14212B" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}</svg>`;
+const DEMO_PHOTO = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" fill="#DCE6E3"/><circle cx="60" cy="48" r="22" fill="#8E6E53"/><path d="M18 120c4-27 21-40 42-40s38 13 42 40z" fill="#1D4E5C"/></svg>');
+
+/* ===================== État ===================== */
+const SITS = {
+  perso:'Lien personnel : CEO de la liste du déjeuner',
+  ouvert:'Lien ouvert : CEO qui ne figure pas dans la liste',
+  reseau:'Lien personnel avec une connexion qui coupe',
+  signe:'Retour sur le lien après avoir signé',
+  clos:'Signatures closes, sans avoir signé',
+  publie:'Après Abu Dhabi : document final et doléances'
+};
+let S;
+function load(sit){
+  S = {sit, screen:'lire', view:'lecture', zoom:false, sheet:null, focus:null, commentBlock:null, form:null, err:null, sig:null, consent:false, toast:null, net:null, signed:null, fiche:{photo:null, consSuite:false, consAnnuaire:false, consCom:false, saved:false}, dolTheme:null, dolForm:null, comments:0};
+  S._fresh = true;
+  S.known = sit !== 'ouvert';
+  S.statut = sit === 'clos' ? 'clos' : sit === 'publie' ? 'publie' : 'gele';
+  S.clock = sit === 'publie' ? D(12, 10, 0, 11) : sit === 'clos' ? D(3, 9, 0, 11) : D(26, 9, 0);
+  if (sit === 'signe' || sit === 'publie'){
+    S.signed = {prenom:'Moussa', nom:'Ndiaye', fonction:'Directeur général', entreprise:'Forages du Ndiambour', maillon:'Production', img:scribble(4), le:D(23, 11, 6), version:1, aVerifier:true, ref:'MSP-2026-0002'};
+    S.fiche = {photo:DEMO_PHOTO, consSuite:true, consAnnuaire:true, consCom:false, saved:true};
+  }
+  const sup = n => Array.from({length:n}, (_, i) => 'x' + i);
+  S.dol = [
+    {id:'o1', theme:1, texte:'Les paiements des décomptes dépassent souvent six mois, ce qui fragilise la trésorerie des entreprises.', solution:'Un délai de paiement maximal inscrit au contrat, avec des intérêts de retard réellement appliqués.', sup:6, me:true, mine:false, statut:'publiee'},
+    {id:'o2', theme:0, texte:'Les grands marchés sont trop gros pour que les PME y répondent en titulaires.', solution:'Découper les marchés en lots de taille adaptée et accepter les références cumulées en groupement.', sup:5, me:true, mine:false, statut:'publiee'},
+    {id:'o3', theme:5, texte:'Fixer une part minimale de sous-traitance locale dans les contrats des opérateurs internationaux.', solution:'', sup:4, me:false, mine:false, statut:'publiee'},
+    {id:'o4', theme:2, texte:'Les banques exigent des cautions que la plupart des PME ne peuvent pas fournir.', solution:"Un fonds de garantie dédié aux entreprises de l'eau et de l'assainissement.", sup:3, me:false, mine:false, statut:'publiee'},
+    {id:'o5', theme:3, texte:'Publier un référentiel clair des normes applicables aux ouvrages, accessible à toutes les entreprises.', solution:'', sup:1, me:false, mine:true, statut:'publiee'}
+  ];
+}
+const me = () => S.known ? LISTE : null;
+const firstName = () => S.signed ? S.signed.prenom : S.known ? LISTE.prenom : '';
+
+/* ===================== Mise en page A4 (identique à l'admin) ===================== */
+let host = null;
+function ensureHost(){ if (host) return host; host = document.createElement('div'); host.className = 'a4-wrap'; host.style.cssText = 'position:absolute;left:-10000px;top:0;width:800px;visibility:hidden'; document.body.appendChild(host); return host; }
+const numsOf = bl => { let n = 0; return bl.map(b => { if (b.type === 'h') n = 0; return b.type === 'li' ? ++n : null; }); };
+const head = () => `<h2 class="d-title">${esc(V.titre).replace(/\n/g, '<br>')}</h2><div class="d-sub">${esc(V.sousTitre)}</div><div class="d-rule"></div>`;
+const blk = (b, n) => `<div class="a4-blk ${b.type}">${b.type === 'li' ? `<span class="num">${n}.</span>` : ''}<p class="txt">${b.html}</p></div>`;
+const FOOT = "Manifeste du secteur privé sénégalais de l'eau et de l'assainissement";
+function paginate(){
+  const h0 = ensureHost(); const nums = numsOf(V.blocks);
+  h0.innerHTML = `<div class="a4-page" style="height:${(800 * 297 / 210).toFixed(2)}px;aspect-ratio:auto;overflow:hidden"><div class="a4-body" style="overflow:hidden"><div class="a4-flow"><div class="mh">${head()}</div><div class="mc">${V.blocks.map((b, i) => blk(b, nums[i])).join('')}<div></div></div></div></div><div class="a4-foot"><span>${FOOT}</span><span>1</span></div></div>`;
+  const body = h0.querySelector('.a4-body'); const cap = body.clientHeight; const top = body.getBoundingClientRect().top; const col = h0.querySelector('.mc');
+  const hh = col.getBoundingClientRect().top - top; const tops = [...col.children].map(e => e.getBoundingClientRect().top); const hs = V.blocks.map((b, i) => tops[i + 1] - tops[i]);
+  const pages = [[]]; let used = hh;
+  V.blocks.forEach((b, i) => { if (used + hs[i] > cap + .5 && pages[pages.length - 1].length){ pages.push([]); used = 0; } pages[pages.length - 1].push(i); used += hs[i]; });
+  return pages;
+}
+function documentHtml(withAnnex){
+  const pages = paginate(); const nums = numsOf(V.blocks);
+  const sigs = withAnnex ? annexEntries() : []; const R = 10; const nA = withAnnex ? Math.max(1, Math.ceil(sigs.length / R)) : 0; const total = pages.length + nA;
+  let html = pages.map((idx, p) => `<div class="a4-wrap"><div class="a4-page"><div class="a4-body"><div class="a4-flow">${p === 0 ? head() : ''}${idx.map(i => blk(V.blocks[i], nums[i])).join('')}</div></div><div class="a4-foot"><span>${FOOT}</span><span>${p + 1} / ${total}</span></div></div></div>`).join('');
+  for (let p = 0; p < nA; p++){
+    const slice = sigs.slice(p * R, p * R + R);
+    let cells = ['N°','Entreprise','Maillon','Nom et fonction du signataire','Signature'].map(t => `<div class="th">${t}</div>`).join('');
+    slice.forEach((s, k) => cells += `<div class="no">${p * R + k + 1}</div><div>${esc(s.entreprise)}</div><div>${esc(s.maillon)}</div><div class="nf"><strong>${esc(s.prenom)} ${esc(s.nom)}</strong><span>${esc(s.fonction)}</span></div><div class="sg">${sigSvg(s.img, 'xMidYMid meet')}</div>`);
+    for (let k = slice.length; k < R; k++) cells += '<div class="ghost"></div>'.repeat(5);
+    html += `<div class="a4-wrap"><div class="a4-page"><div class="a4-body"><div class="ann-title">Annexe · Les signataires</div><div class="ann-table" style="grid-template-rows:auto repeat(${R}, 1fr)">${cells}</div></div><div class="a4-foot"><span>${FOOT}</span><span>${pages.length + p + 1} / ${total}</span></div></div></div>`;
+  }
+  return {html, nText:pages.length};
+}
+function annexEntries(){
+  const list = OTHERS.map(o => ({nom:o[0], prenom:o[1], fonction:o[2], entreprise:o[3], maillon:o[4], img:scribble(o[5])}));
+  if (S.signed) list.push(S.signed);
+  return list.sort((a, b) => a.entreprise.localeCompare(b.entreprise, 'fr'));
+}
+
+/* ===================== Rendu ===================== */
+const app = document.getElementById('app');
+/* Aperçu sur ordinateur : « phone » (cadre de téléphone) ou « ordi » (écran d'ordinateur). Sur un vrai téléphone, toujours plein écran. */
+let DEVICE = 'ordi';
+const NARROW = window.matchMedia('(max-width: 900px)');
+function render(){
+  const keep = {}; document.querySelectorAll('[data-scroll]').forEach(el => keep[el.dataset.scroll] = el.scrollTop);
+  const mode = NARROW.matches ? 'full' : DEVICE;
+  app.className = 'mode-' + mode;
+  const inner = `<div class="appc">${phone()}</div>`;
+  app.innerHTML = demoBand() + (mode === 'phone'
+    ? `<div class="stage">${explain()}<div class="phone" aria-label="Écran du téléphone">${inner}</div></div>`
+    : `${mode === 'ordi' ? explainStrip() : ''}<div class="device">${inner}</div>`);
+  if (!S._fresh) document.querySelectorAll('[data-scroll]').forEach(el => { if (keep[el.dataset.scroll] != null) el.scrollTop = keep[el.dataset.scroll]; });
+  S._fresh = false;
+  try { lucide.createIcons(); } catch(e) {}
+  const cv = document.getElementById('pad'); if (cv) initPad(cv);
+  document.querySelectorAll('.m-sg.draw path').forEach((p, k) => { const L = Math.ceil(p.getTotalLength()); p.style.setProperty('--len', L); p.style.animationDelay = (0.35 + k * 0.5) + 's'; });
+  const q = document.getElementById('qr');
+  if (q){ if (typeof QRCode === 'undefined') q.innerHTML = '<span class="small muted">QR code affiché ici</span>'; else { q.innerHTML = ''; new QRCode(q, {text:q.dataset.text, width:184, height:184, colorDark:'#14212B', colorLight:'#ffffff'}); } }
+  if (S._focus){ const el = document.querySelector(S._focus); if (el) el.focus(); S._focus = null; }
+}
+function ptoast(msg){ S.toast = msg; render(); clearTimeout(ptoast.t); ptoast.t = setTimeout(() => { S.toast = null; render(); }, 2600); }
+function demoBand(){
+  return `<div class="demo"><span class="tag">Fichier 2 sur 2</span><strong>Espace CEO</strong><span class="sp"></span>
+    <label for="sit">Situation <select id="sit" data-change="sit">${Object.entries(SITS).map(([k, l]) => `<option value="${k}" ${S.sit === k ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+    <div class="seg dseg" role="group" aria-label="Aperçu"><button aria-pressed="${DEVICE === 'phone'}" data-a="device" data-v="phone">${ic('smartphone')}Téléphone</button><button aria-pressed="${DEVICE === 'ordi'}" data-a="device" data-v="ordi">${ic('monitor')}Ordinateur</button></div>
+    <button class="btn" data-a="reset">${ic('rotate-ccw')}Réinitialiser</button></div>`;
+}
+function explainData(){
+  return {
+    perso:['Lien personnel', ['Ses informations sont préremplies depuis la liste du déjeuner, mais tout est modifiable : sa version prime.', "La liste contient une coquille (« Forage du Ndiambour »). Corrigez-la à l'étape 1 : elle passera « à vérifier » chez l'admin.", 'Choisissez un paragraphe pour le commenter. Basculez entre « Lecture » et « Page A4 ».']],
+    ouvert:['Lien ouvert', ['Le CEO ne figure pas dans la liste : formulaire vide, avec « Qui vous a invité ? ».', "Il signe tout de suite. Sa signature entre dans l'annexe après vérification par l'admin."]],
+    reseau:['Connexion faible', ['Allez jusqu\'à « Je signe ». La connexion coupe : la signature est gardée sur l\'appareil, puis envoyée dès que le réseau revient.']],
+    signe:['Retour sur le lien', ['Le CEO a déjà signé. Il peut télécharger son accusé, refaire sa signature ou la retirer, jusqu\'à la clôture du ' + fmtLong(DEADLINE) + '.']],
+    clos:['Signatures closes', ['Le CEO n\'a pas signé à temps. Il peut encore lire le texte.']],
+    publie:['Après Abu Dhabi', ['Le document final complet, avec l\'annexe, à télécharger et partager.', 'Le cahier de doléances : thèmes, doléances des autres sans nom, « Je soutiens », et ajout d\'une doléance.']]
+  }[S.sit];
+}
+function explainStrip(){
+  const T = explainData();
+  return `<div class="strip"><span class="eyebrow">Ce que vous testez</span><strong>${esc(T[0])}</strong><span>${esc(T[1].join(' '))}</span></div>`;
+}
+function explain(){
+  const T = explainData();
+  return `<div class="explain"><div class="eyebrow">Ce que vous testez</div><h1>${T[0]}</h1>
+    <div class="panel"><ul>${T[1].map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>
+    <div class="panel small muted">Le même lien s'adapte à l'écran : choisissez « Ordinateur » en haut pour voir la version grand écran. Sur un vrai téléphone, ce prototype s'affiche en plein écran. Les autres signataires et les doléances sont fictifs.</div></div>`;
+}
+function topBar(){
+  return `<div class="top desk"><span class="mark">${ic('droplets')}</span><div class="name">Manifeste du secteur privé sénégalais de l'eau et de l'assainissement<span>Conférence des Nations Unies sur l'eau · Abu Dhabi, décembre 2026</span></div>${S.statut === 'gele' ? `<span class="chip chip-clay">${ic('calendar')}Signature avant le ${fmtLong(DEADLINE)}</span>` : ''}</div>`;
+}
+function phone(){
+  let html = topBar();
+  const net = S.net ? `<div class="netbar ${S.net === 'ok' ? 'ok' : ''}">${ic(S.net === 'ok' ? 'wifi' : 'wifi-off')}${S.net === 'ok' ? 'Connexion rétablie, signature envoyée.' : 'Connexion perdue. Votre signature est gardée sur cet appareil.'}</div>` : '';
+  if (S.statut === 'publie') html += S.screen === 'doleances' ? doleances() : S.screen === 'dolForm' ? dolForm() : published();
+  else if (S.statut === 'clos') html += closedScreen();
+  else html += reading();
+  if (['infos', 'signature', 'confirmer', 'merci', 'fiche'].includes(S.screen)) html += flow();
+  if (S.sheet) html += sheet();
+  return html + net + (S.toast ? `<div class="ptoast">${ic('check')}${esc(S.toast)}</div>` : '');
+}
+function readingBlocks(selectable){
+  const nums = numsOf(V.blocks);
+  return `<div class="read">${S.statut === 'redaction' ? '<div class="kick">Proposition de texte</div>' : ''}<div class="t">${esc(V.titre).replace(/\n/g, '<br>')}</div><div class="st">${esc(V.sousTitre)}</div><div class="rule"></div>
+    ${V.blocks.map((b, i) => `<div class="rb ${b.type} ${S.focus === b.id ? 'sel' : ''}" ${selectable ? `data-a="tap" data-id="${b.id}"` : ''}>${b.type === 'li' ? `<span class="num">${nums[i]}.</span>` : ''}<span>${b.html}</span>${S.focus === b.id ? `<span class="act"><button class="linkish" data-a="comment" data-id="${b.id}">${ic('message-square')}Commenter ce passage</button></span>` : ''}</div>`).join('')}</div>`;
+}
+function viewToggle(){ return `<div class="seg" role="group" aria-label="Affichage"><button aria-pressed="${S.view === 'lecture'}" data-a="view" data-v="lecture">${ic('book-open')}Lecture</button><button aria-pressed="${S.view === 'a4'}" data-a="view" data-v="a4">${ic('file-text')}Page A4</button></div>`; }
+function a4Block(withAnnex){
+  const Dc = documentHtml(withAnnex);
+  return `<div class="a4-scroll ${S.zoom ? 'zoom' : ''}"><div class="a4-stack">${Dc.html}</div></div><button class="linkish" data-a="zoom">${ic(S.zoom ? 'zoom-out' : 'zoom-in')}${S.zoom ? 'Réduire' : 'Agrandir la page'}</button>`;
+}
+function reading(){
+  const s = S.signed;
+  const intro = S.known
+    ? `<div class="hello">Bonjour ${esc(firstName())},</div><p class="lead">${s ? "Merci pour votre signature. Vous pouvez relire le texte, retrouver votre accusé et compléter votre fiche." : "Voici le Manifeste qui sera présenté à Abu Dhabi. Lisez-le, puis signez-le. Vous pouvez aussi laisser un commentaire à l'équipe de rédaction."}</p>`
+    : `<div class="hello">Le Manifeste du secteur privé de l'eau et de l'assainissement</div><p class="lead">Vous dirigez une entreprise sénégalaise de l'eau ou de l'assainissement ? Lisez ce Manifeste, présenté à Abu Dhabi, et signez-le au nom de votre entreprise.</p>`;
+  const signedCard = s ? `<div class="card"><h3>${ic('pen-tool')}Votre signature</h3>
+        <button class="btn" data-a="accuse">${ic('file-down')}Télécharger mon accusé de signature</button>
+        <button class="btn" data-a="openFiche">${ic('user-round')}${S.fiche.saved ? 'Modifier ma fiche' : 'Compléter ma fiche'}</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn btn-sm" data-a="redo">${ic('rotate-ccw')}Refaire</button><button class="btn btn-sm" data-a="askWithdraw">${ic('x-circle')}Retirer</button></div>
+        <p class="small muted">Possible jusqu'à la clôture, le ${fmtLong(DEADLINE)}.</p></div>` : '';
+  return `<div class="scr" data-scroll="read"><div class="lay">
+      <div class="side">
+        <div class="eyebrow mob">Manifeste</div>
+        ${s ? `<div class="notice ok">${ic('check-circle-2')}<div>Vous avez signé le ${fmt(s.le)}.${s.aVerifier && !S.known ? " Votre signature sera ajoutée à l'annexe après vérification." : ''}</div></div>` : ''}
+        ${intro}
+        <p class="from">${ic('send')}<span>Envoyé par ${esc(EXPEDITEUR.charAt(0).toLowerCase() + EXPEDITEUR.slice(1))}</span></p>
+        <div class="meta"><span class="chip">${ic('file-check')}Version ${V.num}</span><span class="chip chip-clay mob">${ic('calendar')}Signature avant le ${fmtLong(DEADLINE)}</span></div>
+        ${s ? '' : `<div class="dact desk"><button class="btn btn-primary btn-lg" data-a="startSign">${ic('pen-tool')}Signer le Manifeste</button><p class="small muted">Trois étapes : vos informations, votre signature, la vérification. Environ deux minutes.</p></div>`}
+        ${signedCard}
+        ${canComment() ? `<div class="dact desk"><button class="btn" data-a="comment">${ic('message-square')}Laisser un commentaire</button></div>` : ''}
+      </div>
+      <div class="main">
+        ${viewToggle()}
+        ${S.view === 'lecture' ? readingBlocks(canComment()) + (canComment() ? `<p class="small muted mob">Touchez un paragraphe pour le commenter.</p><p class="small muted desk">Cliquez sur un paragraphe pour le commenter.</p>` : `<p class="small muted">Vous pourrez commenter le texte dès que vous aurez indiqué votre nom, à la première étape de la signature.</p>`) : a4Block(false)}
+        ${footLinks()}
+      </div>
+    </div></div>
+    <div class="bar mob ${s || !canComment() ? 'one' : ''}">${s ? `<button class="btn" data-a="comment">${ic('message-square')}Laisser un commentaire</button>` : `${canComment() ? `<button class="btn" data-a="comment" aria-label="Commenter">${ic('message-square')}</button>` : ''}<button class="btn btn-primary" data-a="startSign">${ic('pen-tool')}Signer le Manifeste</button>`}</div>`;
+}
+function canComment(){ return S.known || !!S.signed; }
+function footLinks(){
+  return `<div class="foot-links"><button class="linkish" data-a="help">${ic('message-circle')}Une question ?</button><span aria-hidden="true">·</span><button class="linkish" data-a="confid">${ic('shield')}Confidentialité</button></div>`;
+}
+function closedScreen(){
+  return `<div class="scr" data-scroll="read"><div class="wrap narrow"><div class="done"><div class="big wait">${ic('circle-slash')}</div><h2 style="font-size:22px">Les signatures sont closes</h2><p class="muted">La période de signature s'est terminée le ${fmtLong(DEADLINE)}. Le Manifeste a été imprimé pour Abu Dhabi.</p></div>
+    <div>${viewToggle()}</div>${S.view === 'lecture' ? readingBlocks(false) : a4Block(false)}${footLinks()}</div></div>`;
+}
+function published(){
+  const s = S.signed;
+  const share = `<a class="btn" href="https://wa.me/?text=${encodeURIComponent("Le Manifeste du secteur privé sénégalais de l'eau et de l'assainissement, présenté à Abu Dhabi.")}" target="_blank" rel="noopener">${ic('share-2')}Partager</a>`;
+  return `<div class="scr" data-scroll="pub"><div class="lay">
+      <div class="side">
+        <div class="eyebrow">Manifeste</div>
+        <div class="hello">${s ? `Merci, ${esc(s.prenom)}` : 'Bonjour'}</div>
+        <p class="lead">Le Manifeste a été présenté à Abu Dhabi. Voici le document final, avec l'annexe des entreprises signataires${s ? ', dont la vôtre' : ''}.</p>
+        <div class="meta"><span class="chip chip-ok">${ic('badge-check')}Présenté à Abu Dhabi, décembre 2026</span></div>
+        <div class="desk" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">${share}<button class="btn btn-primary" data-a="dlFinal">${ic('file-down')}Télécharger</button></div>
+        <div class="card" style="border-color:var(--water);background:#F6FAFA"><h3>${ic('list-todo')}Cahier de doléances</h3><p class="muted">Faites remonter vos attentes, et soutenez celles des autres. Ouvert jusqu'au 8 janvier 2027.</p><button class="btn btn-primary" data-a="openDol">${ic('arrow-right')}Ouvrir le cahier</button></div>
+      </div>
+      <div class="main">${a4Block(true)}${footLinks()}</div>
+    </div></div>
+    <div class="bar mob" style="grid-template-columns:1fr 1fr">${share}<button class="btn btn-primary" data-a="dlFinal">${ic('file-down')}Télécharger</button></div>`;
+}
+function flow(){
+  const h = flowInner(); if (!h) return '';
+  return `<div class="flow"><div class="flow-card">${h.replace(/^<div class="flow">/, '').replace(/<\/div>$/, '')}</div></div>`;
+}
+function flowInner(){
+  const idx = {infos:1, signature:2, confirmer:3}[S.screen] || 0;
+  const headF = idx ? `<div class="flow-head"><button class="icon-btn" data-a="back" aria-label="Retour">${ic('arrow-left')}</button><span class="grow">Étape ${idx} sur 3</span><span class="dots">${[1,2,3].map(i => `<span class="${i <= idx ? 'on' : ''}"></span>`).join('')}</span></div>` : '';
+  const f = S.form;
+  if (S.screen === 'infos'){
+    const known = S.known; const diff = k => known && f && norm(f[k]) !== norm(LISTE[k]) ? 'changed' : '';
+    return `<div class="flow">${headF}<div class="flow-body">
+      <h2 style="font-size:23px">Vos informations</h2>
+      <p class="muted">${known ? 'Nous avons prérempli à partir de la liste du déjeuner du 22 octobre. <strong>Vérifiez et corrigez si besoin</strong> : ces informations seront imprimées telles quelles dans l\'annexe.' : 'Ces informations seront imprimées telles quelles dans l\'annexe du Manifeste.'}</p>
+      <div class="fgrid"><div class="field"><label for="f-prenom">Prénom</label><input class="input ${diff('prenom')}" id="f-prenom" value="${esc(f.prenom)}" autocomplete="given-name"></div>
+      <div class="field"><label for="f-nom">Nom</label><input class="input ${diff('nom')}" id="f-nom" value="${esc(f.nom)}" autocomplete="family-name"></div>
+      <div class="field"><label for="f-fonction">Fonction</label><input class="input ${diff('fonction')}" id="f-fonction" value="${esc(f.fonction)}" placeholder="Directeur général, gérante…"></div>
+      <div class="field"><label for="f-entreprise">Entreprise (nom officiel)</label><input class="input ${diff('entreprise')}" id="f-entreprise" value="${esc(f.entreprise)}" autocomplete="organization"></div>
+      <div class="field"><label for="f-maillon">Maillon de la chaîne de valeur</label><select class="select ${diff('maillon')}" id="f-maillon"><option value="">Choisissez</option>${MAILLONS.map(m => `<option value="${m[0]}" ${f.maillon === m[0] ? 'selected' : ''}>${m[0]}</option>`).join('')}</select><span class="hint">${f.maillon ? esc((MAILLONS.find(m => m[0] === f.maillon) || ['', ''])[1]) : ''}</span></div>
+      <div class="field"><label for="f-tel">Téléphone WhatsApp</label><input class="input ${diff('tel')}" id="f-tel" value="${esc(f.tel)}" inputmode="tel" placeholder="+221 …"></div>
+      ${!known ? `<div class="field full"><label for="f-invite">Qui vous a invité ? (facultatif)</label><input class="input" id="f-invite" value="${esc(f.invite)}" placeholder="Nom de la personne ou de l'entreprise"><span class="hint">Ça aide l'équipe à vérifier votre inscription.</span></div>` : ''}</div>
+      ${known && ['prenom','nom','fonction','entreprise','maillon','tel'].some(k => diff(k)) ? `<div class="notice clay">${ic('pencil')}<div>Vous avez modifié certaines informations. C'est votre version qui sera retenue.</div></div>` : ''}
+      ${S.err ? `<div class="err">${esc(S.err)}</div>` : ''}
+    </div><div class="flow-foot"><button class="btn btn-primary" data-a="infosNext">Continuer${ic('arrow-right')}</button></div></div>`;
+  }
+  if (S.screen === 'signature'){
+    return `<div class="flow">${headF}<div class="flow-body"><h2 style="font-size:23px">Votre signature</h2><p class="muted mob">Signez avec le doigt dans le cadre.</p><p class="muted desk">Signez dans le cadre avec la souris, le pavé tactile ou un stylet.</p>
+      <div class="pad"><canvas id="pad" aria-label="Zone de signature"></canvas>${S.sig ? '' : '<div class="hintp">Signez ici</div>'}<div class="line"></div></div>
+      <div><button class="btn btn-sm btn-ghost" data-a="padClear">${ic('eraser')}Effacer</button></div>
+      <div class="notice grey desk">${ic('smartphone')}<div><strong>Plus simple au doigt ?</strong> Continuez sur votre téléphone : vos informations sont gardées, il ne reste que la signature.<div style="margin-top:8px"><button class="btn btn-sm" data-a="qr">${ic('qr-code')}Signer sur mon téléphone</button></div></div></div>
+    </div><div class="flow-foot"><button class="btn btn-primary" id="sig-next" data-a="sigNext" ${S.sig ? '' : 'disabled'}>Continuer${ic('arrow-right')}</button></div></div>`;
+  }
+  if (S.screen === 'confirmer'){
+    return `<div class="flow">${headF}<div class="flow-body"><h2 style="font-size:23px">Vérifiez et signez</h2><p class="muted">Voici votre ligne dans l'annexe, telle qu'elle sera imprimée.</p>
+      <div class="annex-row"><div class="hd"><div>N°</div><div>Entreprise</div><div>Maillon</div><div>Nom et fonction</div><div>Signature</div></div>
+        <div class="rw"><div>…</div><div>${esc(f.entreprise)}</div><div>${esc(f.maillon)}</div><div class="nf"><b>${esc(f.prenom)} ${esc(f.nom)}</b><span>${esc(f.fonction)}</span></div><div class="sg">${sigSvg(S.sig, 'xMidYMid meet')}</div></div>
+        <div class="annex-cap">Les signataires sont classés par entreprise. Le numéro est attribué à l'impression.</div></div>
+      <label class="check"><input type="checkbox" id="consent" data-change="consent" ${S.consent ? 'checked' : ''}><span>${esc(CONSENT)}</span></label>
+      <p class="small muted">Vous signez la version ${V.num} du texte. Vous pourrez refaire ou retirer votre signature jusqu'au ${fmtLong(DEADLINE)}.</p>
+      ${S.err ? `<div class="err">${esc(S.err)}</div>` : ''}
+    </div><div class="flow-foot"><button class="btn btn-primary" id="sign-btn" data-a="sign" ${S.consent ? '' : 'disabled'}>${ic('pen-tool')}Je signe le Manifeste</button></div></div>`;
+  }
+  if (S.screen === 'merci'){
+    const s = S.signed; const pending = !S.known || s.aVerifierInfos;
+    return `<div class="flow"><div class="flow-body">
+      <div class="done">${inscribed(s, pending)}<h2 style="font-size:28px">Merci, ${esc(s.prenom)}</h2>
+        <p class="muted">Votre signature est inscrite dans l'annexe du Manifeste, sur la version ${V.num} du texte, le ${fmt(s.le)}.</p>
+        ${pending ? `<div class="notice clay" style="text-align:left">${ic('hourglass')}<div>${S.known ? "Vous avez modifié vos informations : l'équipe les vérifie avant l'impression. Votre version est retenue." : "L'équipe vérifie votre inscription. Votre signature sera ensuite ajoutée à l'annexe et vous recevrez votre lien personnel sur WhatsApp."}</div></div>` : ''}</div>
+      <button class="btn" data-a="accuse">${ic('file-down')}Télécharger mon accusé de signature</button>
+      <div class="card"><h3>${ic('user-round')}Complétez votre fiche</h3><p class="muted">Facultatif. Ajoutez votre photo et choisissez comment rester en contact.</p><button class="btn" data-a="openFiche">${S.fiche.saved ? ic('check') + 'Fiche enregistrée, modifier' : ic('camera') + 'Ajouter ma photo'}</button></div>
+      <div class="card"><h3>${ic('user-plus')}Invitez un confrère</h3><p class="muted">Transférez ce lien à un dirigeant d'une entreprise sénégalaise de l'eau ou de l'assainissement. Il pourra signer à son tour.</p>
+        <a class="btn btn-wa" href="https://wa.me/?text=${encodeURIComponent("Je viens de signer le Manifeste du secteur privé sénégalais de l'eau et de l'assainissement, qui sera présenté à Abu Dhabi. Vous pouvez le lire et le signer ici : https://[domaine-du-secteur-prive].sn/rejoindre?par=MND")}" target="_blank" rel="noopener">${ic('message-circle')}Partager sur WhatsApp</a>
+        <button class="linkish" data-a="copyRef">${ic('copy')}Copier le lien d'invitation</button></div>
+      <p class="small muted" style="text-align:center">Gardez ce lien : vous y retrouverez le document final après Abu Dhabi.</p>
+      <button class="btn btn-ghost" data-a="toRead">${ic('book-open')}Relire le texte</button>
+    </div></div>`;
+  }
+  if (S.screen === 'fiche'){
+    const fi = S.fiche;
+    return `<div class="flow"><div class="flow-head"><button class="icon-btn" data-a="closeFiche" aria-label="Retour">${ic('arrow-left')}</button><span class="grow">Votre fiche</span></div><div class="flow-body">
+      <h2 style="font-size:23px">Votre photo</h2><p class="muted">Facultatif. Une photo portrait, de face, sur un fond simple.</p>
+      <div class="avatar">${fi.photo ? `<img src="${fi.photo}" alt="Votre photo">` : ic('user-round')}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="btn btn-sm upl">${ic('camera')}${fi.photo ? 'Changer' : 'Prendre ou choisir une photo'}<input type="file" accept="image/*" id="photo-in" aria-label="Choisir une photo"></span>${fi.photo ? `<button class="btn btn-sm btn-ghost" data-a="rmPhoto">${ic('trash-2')}Retirer</button>` : `<button class="btn btn-sm btn-ghost" data-a="demoPhoto">Photo d'exemple</button>`}</div>
+      <h2 style="font-size:20px;margin-top:6px">Vos choix</h2>
+      <label class="check"><input type="checkbox" id="c-suite" ${fi.consSuite ? 'checked' : ''}><span>J'accepte d'être recontacté pour la suite de la démarche du secteur privé.</span></label>
+      <label class="check"><input type="checkbox" id="c-ann" ${fi.consAnnuaire ? 'checked' : ''}><span>J'accepte de figurer, avec ma photo, dans l'annuaire du secteur privé, visible uniquement par ses membres.</span></label>
+      <label class="check ${fi.photo ? '' : 'disabled'}"><input type="checkbox" id="c-com" ${fi.consCom ? 'checked' : ''} ${fi.photo ? '' : 'disabled'}><span>J'accepte que ma photo soit utilisée dans la communication autour du Manifeste.</span></label>
+      <p class="small muted">Chaque choix est indépendant. Vous pouvez le modifier à tout moment depuis ce lien.</p>
+    </div><div class="flow-foot"><button class="btn btn-primary" data-a="saveFiche">${ic('save')}Enregistrer</button></div></div>`;
+  }
+  return '';
+}
+function inscribed(s, pending){
+  const list = annexEntries(); const i = list.indexOf(s);
+  const rows = [list[i - 1], s, list[i + 1]].filter(Boolean);
+  const draw = !S._drawn; S._drawn = true;
+  return `<div class="moment" aria-label="Votre ligne dans l'annexe du Manifeste">
+    <div class="m-head"><span>Annexe · Les signataires</span>${pending ? '<span class="m-wait">En attente de vérification</span>' : ''}</div>
+    ${rows.map(r => `<div class="m-row ${r === s ? 'me' : ''}"><div class="m-co"><b>${esc(r.entreprise)}</b><span>${esc(r.maillon)}</span></div><div class="m-nf"><b>${esc(r.prenom)} ${esc(r.nom)}</b><span>${esc(r.fonction)}</span></div><div class="m-sg ${r === s && draw ? 'draw' : ''}">${sigSvg(r.img, 'xMidYMid meet')}</div></div>`).join('')}
+  </div>`;
+}
+function sheet(){
+  if (S.sheet === 'comment'){
+    const b = S.commentBlock ? V.blocks.find(x => x.id === S.commentBlock) : null;
+    return `<div class="sheet-back" data-a="closeSheetBack"><div class="sheet" role="dialog" aria-label="Votre commentaire"><h3>Votre commentaire</h3>
+      ${b ? `<div class="quote">« ${esc(excerpt(plain(b.html), 110))} »</div>` : '<p class="small muted">Commentaire général sur le texte.</p>'}
+      <textarea class="textarea" id="cmt" placeholder="Écrivez votre remarque"></textarea>
+      <p class="small muted">Lu uniquement par l'équipe de rédaction, pas par les autres signataires.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn" data-a="closeSheet">Annuler</button><button class="btn btn-primary" data-a="sendComment">${ic('send')}Envoyer</button></div></div></div>`;
+  }
+  if (S.sheet === 'qr'){
+    const link = S.known ? 'https://[domaine-du-secteur-prive].sn/s/K7M2QX' : 'https://[domaine-du-secteur-prive].sn/s/R4TZ8N';
+    return `<div class="sheet-back" data-a="closeSheetBack"><div class="sheet" role="dialog" aria-label="Signer sur mon téléphone"><h3>Signer sur votre téléphone</h3>
+      <p class="muted">Scannez ce code avec l'appareil photo de votre téléphone. ${S.known ? 'Vous arrivez directement à la signature.' : 'Votre inscription est gardée : ce lien vous est désormais personnel.'}</p>
+      <div class="qrbox"><div id="qr" data-text="${link}"></div></div>
+      <div class="linkline">${link}</div>
+      <p class="small muted">Cette page se met à jour dès que vous avez signé sur le téléphone.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn" data-a="closeSheet">Fermer</button><button class="btn" data-a="signedOnPhone">${ic('smartphone')}Démo : c'est signé</button></div></div></div>`;
+  }
+  if (S.sheet === 'confid') return `<div class="sheet-back" data-a="closeSheetBack"><div class="sheet" role="dialog" aria-label="Confidentialité"><h3>Confidentialité</h3>
+      <p><strong>Ce que nous recueillons.</strong> Votre nom, votre fonction, votre entreprise, son maillon, votre numéro WhatsApp et votre signature. Si vous le choisissez : votre photo et vos commentaires.</p>
+      <p><strong>Pourquoi.</strong> Pour faire figurer votre signature dans l'annexe du Manifeste et pour vous recontacter si vous l'acceptez.</p>
+      <p><strong>Qui le voit.</strong> Votre nom, votre fonction, votre entreprise et votre signature sont publiés avec le Manifeste. Votre numéro et vos commentaires ne sont lus que par l'équipe de rédaction. Votre photo n'est visible que selon les choix de votre fiche.</p>
+      <p><strong>Vos droits.</strong> Vous pouvez retirer votre signature jusqu'à la clôture, modifier vos choix à tout moment depuis ce lien, et demander la suppression de vos données avec le bouton « Une question ? ».</p>
+      <p class="small muted">Plateforme gérée par Aziz Fall pour le compte de ${esc(EXPEDITEUR.charAt(0).toLowerCase() + EXPEDITEUR.slice(1))}, dans le respect de la loi sénégalaise sur la protection des données personnelles.</p>
+      <div style="display:grid"><button class="btn" data-a="closeSheet">Fermer</button></div></div></div>`;
+  if (S.sheet === 'withdraw') return `<div class="sheet-back" data-a="closeSheetBack"><div class="sheet" role="dialog" aria-label="Retirer ma signature"><h3>Retirer votre signature ?</h3>
+      <p class="muted">Votre nom et celui de votre entreprise n'apparaîtront pas dans l'annexe. Vous pourrez signer à nouveau jusqu'au ${fmtLong(DEADLINE)}.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn" data-a="closeSheet">Garder</button><button class="btn btn-danger" data-a="withdraw">Retirer</button></div></div></div>`;
+  if (S.sheet === 'accuse'){
+    const s = S.signed;
+    return `<div class="sheet-back" data-a="closeSheetBack"><div class="sheet" role="dialog" aria-label="Accusé de signature"><h3>Accusé de signature</h3>
+      <div class="card" style="font-family:var(--doc-sans)"><div class="eyebrow" style="color:var(--doc-gold)">Accusé de signature</div>
+        <div style="font-family:var(--doc-serif);color:var(--doc-green);font-size:17px">${esc(V.titre.replace('\n', ' '))}</div>
+        <div style="border-top:1px solid var(--doc-line);padding-top:8px;display:grid;gap:3px;font-size:14px"><strong>${esc(s.prenom)} ${esc(s.nom)}</strong><span>${esc(s.fonction)}, ${esc(s.entreprise)}</span><span class="muted">Maillon : ${esc(s.maillon)}</span></div>
+        <div style="height:70px">${sigSvg(s.img)}</div>
+        <div class="small muted">Signé le ${fmt(s.le)}, sur la version ${s.version} du texte. Référence ${esc(s.ref)}.</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn" data-a="closeSheet">Fermer</button><button class="btn btn-primary" data-a="dlAccuse">${ic('file-down')}Télécharger</button></div></div></div>`;
+  }
+  return '';
+}
+
+/* ----- Doléances ----- */
+function doleances(){
+  const counts = THEMES.map((t, i) => S.dol.filter(d => d.theme === i && d.statut === 'publiee').length);
+  const mine = S.dol.filter(d => d.mine);
+  let body;
+  if (S.dolTheme == null){
+    body = `<p class="lead">Faites remonter vos attentes. Les doléances publiées sont visibles par les autres CEO, <strong>sans nom ni entreprise</strong>. Si une doléance vous concerne déjà, soutenez-la plutôt que de la réécrire.</p>
+      <div><button class="btn btn-primary" data-a="newDol">${ic('plus')}Ajouter une doléance</button></div>
+      <div class="eyebrow">Les thèmes</div>
+      <div class="themes">${THEMES.map((t, i) => `<button class="theme" data-a="dolTheme" data-i="${i}"><strong>${esc(t)}</strong><span class="chip">${counts[i]} doléance${counts[i] > 1 ? 's' : ''}</span></button>`).join('')}</div>
+      ${mine.length ? `<div class="eyebrow">Mes doléances</div><div class="dlist">${mine.map(d => `<div class="dl"><span class="chip ${d.statut === 'publiee' ? 'chip-ok' : 'chip-clay'}">${d.statut === 'publiee' ? `Publiée · ${d.sup + 1} soutien${d.sup ? 's' : ''}` : 'En cours de validation'}</span><div>${esc(d.texte)}</div><span class="small muted">${d.theme != null ? esc(THEMES[d.theme]) : 'Autre' + (d.prop ? ` : « ${esc(d.prop)} »` : '')}</span></div>`).join('')}</div>` : ''}`;
+  } else {
+    const list = S.dol.filter(d => d.theme === S.dolTheme && d.statut === 'publiee').sort((a, b) => b.sup - a.sup);
+    body = `<button class="linkish" data-a="dolBack">${ic('arrow-left')}Tous les thèmes</button><h2 style="font-size:22px">${esc(THEMES[S.dolTheme])}</h2>
+      <div><button class="btn btn-primary" data-a="newDol" data-t="${S.dolTheme}">${ic('plus')}Ajouter une doléance sur ce thème</button></div>
+      ${list.length ? `<div class="dlist">${list.map(dolCard).join('')}</div>` : '<p class="muted">Aucune doléance publiée sur ce thème pour l\'instant.</p>'}`;
+  }
+  return `<div class="scr" data-scroll="dol"><div class="wrap"><div><button class="linkish" data-a="toPub">${ic('arrow-left')}Document final</button></div><div class="eyebrow">Cahier de doléances</div>${body}</div></div>`;
+}
+function dolCard(d){
+  const total = d.sup + 1;
+  return `<div class="dl"><div>${esc(d.texte)}</div>${d.solution ? `<div class="sol"><strong style="color:var(--ink)">Solution proposée :</strong> ${esc(d.solution)}</div>` : ''}
+    ${d.mine ? `<span class="sup mine">${ic('user-round')}Votre doléance · ${total} soutien${total > 1 ? 's' : ''}</span>` : `<button class="sup" aria-pressed="${d.me}" data-a="support" data-id="${d.id}">${ic(d.me ? 'check' : 'thumbs-up')}${d.me ? 'Vous soutenez' : 'Je soutiens'} · ${total}</button>`}</div>`;
+}
+function dolForm(){
+  const f = S.dolForm; const similar = f.theme !== '' && f.theme != null && f.theme !== 'autre' ? S.dol.filter(d => d.theme === +f.theme && d.statut === 'publiee') : [];
+  const sim = similar.length
+    ? `<div class="notice">${ic('info')}<div><strong>Déjà déposées sur ce thème.</strong> Si l'une d'elles dit la même chose, soutenez-la plutôt.</div></div>${similar.map(dolCard).join('')}`
+    : `<div class="notice grey desk">${ic('info')}<div>${f.theme === 'autre' ? "Votre doléance sera classée par l'équipe." : 'Choisissez un thème : les doléances déjà déposées sur ce thème s\'afficheront ici.'}</div></div>`;
+  return `<div class="scr" data-scroll="dolf"><div class="wrap"><div><button class="linkish" data-a="cancelDol">${ic('arrow-left')}Annuler</button></div><h2 style="font-size:23px">Nouvelle doléance</h2>
+    <div class="dform">
+      <div class="df-theme"><div class="field"><label for="d-theme">Thème</label><select class="select" id="d-theme" data-change="dTheme"><option value="">Choisissez un thème</option>${THEMES.map((t, i) => `<option value="${i}" ${String(f.theme) === String(i) ? 'selected' : ''}>${esc(t)}</option>`).join('')}<option value="autre" ${f.theme === 'autre' ? 'selected' : ''}>Autre</option></select></div>
+      ${f.theme === 'autre' ? `<div class="field"><label for="d-prop">Thème que vous proposez (facultatif)</label><input class="input" id="d-prop" value="${esc(f.prop)}" placeholder="Ex. : fiscalité"><span class="hint">L'équipe pourra créer ce thème s'il revient souvent.</span></div>` : ''}</div>
+      <div class="df-sim">${sim}</div>
+      <div class="df-body">
+        <div class="field"><label for="d-texte">Votre doléance</label><textarea class="textarea" id="d-texte" maxlength="500" data-input="count" placeholder="Décrivez le problème en quelques phrases.">${esc(f.texte)}</textarea><div class="counter" id="cnt">${f.texte.length} / 500</div></div>
+        <div class="field"><label for="d-sol">Solution proposée (facultatif)</label><textarea class="textarea" id="d-sol" style="min-height:80px" maxlength="400" placeholder="Ce qui réglerait le problème selon vous.">${esc(f.solution)}</textarea></div>
+        <p class="small muted">Votre doléance est relue par l'équipe avant d'être visible des autres CEO, sans votre nom ni celui de votre entreprise.</p>
+        ${S.err ? `<div class="err">${esc(S.err)}</div>` : ''}
+        <div><button class="btn btn-primary" data-a="sendDol">${ic('send')}Envoyer ma doléance</button></div>
+      </div>
+    </div></div></div>`;
+}
+
+/* ===================== Signature vectorielle ===================== */
+function initPad(cv){
+  const ratio = window.devicePixelRatio || 1; const rect = cv.getBoundingClientRect(); const W = Math.round(rect.width), H = Math.round(rect.height);
+  cv.width = W * ratio; cv.height = H * ratio; const g = cv.getContext('2d'); g.scale(ratio, ratio);
+  g.strokeStyle = '#14212B'; g.lineWidth = 2.6; g.lineCap = 'round'; g.lineJoin = 'round';
+  if (S.sig){ const [, , vw, vh] = S.sig.vb.split(' ').map(Number); g.save(); g.scale(W / vw, H / vh); S.sig.d.forEach(p => g.stroke(new Path2D(p))); g.restore(); }
+  let drawing = false, last = null, path = ''; const f = v => v.toFixed(1);
+  const pos = e => { const r = cv.getBoundingClientRect(); return {x:e.clientX - r.left, y:e.clientY - r.top}; };
+  cv.addEventListener('pointerdown', e => { drawing = true; last = pos(e); path = `M${f(last.x)} ${f(last.y)}`; cv.setPointerCapture(e.pointerId); const h = cv.parentNode.querySelector('.hintp'); if (h) h.remove(); });
+  cv.addEventListener('pointermove', e => { if (!drawing) return; const p = pos(e); g.beginPath(); g.moveTo(last.x, last.y); g.lineTo(p.x, p.y); g.stroke(); path += ` L${f(p.x)} ${f(p.y)}`; last = p; });
+  const end = () => { if (!drawing) return; drawing = false; if (path.includes('L')){ const cur = S.sig && S.sig.vb === `0 0 ${W} ${H}` ? S.sig : {vb:`0 0 ${W} ${H}`, d:[]}; cur.d.push(path); S.sig = cur; const b = document.getElementById('sig-next'); if (b) b.disabled = false; } };
+  cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end); cv.addEventListener('pointerleave', end);
+}
+
+/* ===================== Actions ===================== */
+function copy(text, ok){ try { navigator.clipboard.writeText(text).then(() => ptoast(ok)).catch(() => ptoast('Copie impossible ici')); } catch(e) { ptoast('Copie impossible ici'); } }
+function finishSign(){
+  const f = S.form; const changed = S.known && ['prenom','nom','fonction','entreprise','maillon','tel'].some(k => norm(f[k]) !== norm(LISTE[k]));
+  S.signed = {...f, img:S.sig, le:S.clock += 60000, version:V.num, aVerifierInfos:changed, ref:'MSP-2026-' + String(Math.floor(Math.random() * 900) + 100).padStart(4, '0')};
+  S._drawn = false; S.screen = 'merci'; S.net = S.net ? 'ok' : null; render();
+  if (S.net === 'ok') setTimeout(() => { S.net = null; render(); }, 2600);
+}
+const A = {
+  reset(){ load(S.sit); render(); },
+  help(){ ptoast('Ouvre WhatsApp vers le numéro de la Task Force'); },
+  confid(){ S.sheet = 'confid'; render(); },
+  device(el){ DEVICE = el.dataset.v; render(); },
+  qr(){ S.sheet = 'qr'; render(); },
+  signedOnPhone(){ S.sheet = null; S.sig = scribble(11); S.consent = true; finishSign(); },
+  view(el){ S.view = el.dataset.v; render(); },
+  zoom(){ S.zoom = !S.zoom; render(); },
+  tap(el, e){ if (e.target.closest('[data-a="comment"]')) return; S.focus = S.focus === el.dataset.id ? null : el.dataset.id; render(); },
+  comment(el){ S.sheet = 'comment'; S.commentBlock = el.dataset.id || null; S._focus = '#cmt'; render(); },
+  closeSheet(){ S.sheet = null; render(); },
+  closeSheetBack(el, e){ if (e.target === el){ S.sheet = null; render(); } },
+  sendComment(){ const t = val('cmt').trim(); if (!t) return; S.sheet = null; S.focus = null; S.comments++; ptoast("Commentaire transmis à l'équipe"); },
+  startSign(){ S._redo = false; S.form = S.known ? {...LISTE, invite:''} : {prenom:'', nom:'', fonction:'', entreprise:'', maillon:'', tel:'+221 ', invite:''}; S.err = null; S.screen = 'infos'; render(); },
+  redo(){ S._redo = true; S.form = {...S.signed}; S.sig = null; S.consent = false; S.screen = 'signature'; render(); },
+  infosNext(){
+    const f = {prenom:val('f-prenom').trim(), nom:val('f-nom').trim(), fonction:val('f-fonction').trim(), entreprise:val('f-entreprise').trim(), maillon:val('f-maillon'), tel:val('f-tel').trim(), invite:val('f-invite').trim()};
+    S.form = f;
+    if (!f.prenom || !f.nom || !f.fonction || !f.entreprise){ S.err = 'Prénom, nom, fonction et entreprise sont nécessaires pour l\'annexe.'; render(); return; }
+    if (!f.maillon){ S.err = 'Choisissez votre maillon.'; render(); return; }
+    if (f.tel.replace(/\D/g, '').length < 9){ S.err = 'Indiquez votre numéro WhatsApp complet, avec l\'indicatif.'; render(); return; }
+    S.err = null; S.screen = 'signature'; render();
+  },
+  padClear(){ S.sig = null; render(); },
+  sigNext(){ if (!S.sig) return; S.consent = false; S.err = null; S.screen = 'confirmer'; render(); },
+  back(){ S.screen = S.screen === 'confirmer' ? 'signature' : S.screen === 'signature' ? (S._redo ? 'lire' : 'infos') : 'lire'; render(); },
+  sign(){
+    if (!S.consent) return;
+    if (S.sit === 'reseau' && !S._netDone){ S._netDone = true; S.net = 'off'; render(); setTimeout(finishSign, 2200); return; }
+    finishSign();
+  },
+  toRead(){ S.screen = 'lire'; S.view = 'lecture'; render(); },
+  accuse(){ S.sheet = 'accuse'; render(); },
+  dlAccuse(){ S.sheet = null; ptoast("L'accusé de signature se télécharge en PDF"); },
+  copyRef(){ copy('https://[domaine-du-secteur-prive].sn/rejoindre?par=MND', "Lien d'invitation copié"); },
+  openFiche(){ S._ficheFrom = S.screen; S.screen = 'fiche'; render(); },
+  closeFiche(){ S.screen = S._ficheFrom || 'lire'; render(); },
+  demoPhoto(){ S.fiche.photo = DEMO_PHOTO; render(); },
+  rmPhoto(){ S.fiche.photo = null; S.fiche.consCom = false; render(); },
+  saveFiche(){ S.fiche.consSuite = document.getElementById('c-suite').checked; S.fiche.consAnnuaire = document.getElementById('c-ann').checked; const c = document.getElementById('c-com'); S.fiche.consCom = !!(c && c.checked && S.fiche.photo); S.fiche.saved = true; S.screen = S._ficheFrom || 'lire'; ptoast('Fiche enregistrée'); },
+  askWithdraw(){ S.sheet = 'withdraw'; render(); },
+  withdraw(){ S.signed = null; S.sheet = null; S.sig = null; ptoast('Signature retirée'); },
+  dlFinal(){ ptoast('Le document final se télécharge en PDF'); },
+  openDol(){ S.screen = 'doleances'; S.dolTheme = null; render(); },
+  toPub(){ S.screen = 'lire'; render(); },
+  dolTheme(el){ S.dolTheme = +el.dataset.i; render(); },
+  dolBack(){ S.dolTheme = null; render(); },
+  support(el){ const d = S.dol.find(x => x.id === el.dataset.id); d.me = !d.me; d.sup += d.me ? 1 : -1; render(); },
+  newDol(el){ S.dolForm = {theme:el.dataset.t != null ? +el.dataset.t : '', prop:'', texte:'', solution:''}; S.err = null; S.screen = 'dolForm'; render(); },
+  cancelDol(){ S.screen = 'doleances'; render(); },
+  sendDol(){
+    const f = S.dolForm; f.texte = val('d-texte').trim(); f.solution = val('d-sol').trim(); f.prop = val('d-prop').trim();
+    if (f.theme === '' || f.theme == null){ S.err = 'Choisissez un thème, ou « Autre ».'; render(); return; }
+    if (f.texte.length < 15){ S.err = 'Décrivez la doléance en une ou deux phrases au moins.'; render(); return; }
+    S.dol.push({id:uid('o'), theme:f.theme === 'autre' ? null : +f.theme, prop:f.prop, texte:f.texte, solution:f.solution, sup:0, me:false, mine:true, statut:'attente'});
+    S.err = null; S.screen = 'doleances'; S.dolTheme = null; ptoast('Doléance envoyée. Elle sera visible après validation.');
+  }
+};
+const CH = {
+  sit(el){ load(el.value); render(); },
+  consent(el){ S.consent = el.checked; const b = document.getElementById('sign-btn'); if (b) b.disabled = !el.checked; },
+  dTheme(el){ S.dolForm.texte = val('d-texte'); S.dolForm.solution = val('d-sol'); S.dolForm.theme = el.value === 'autre' ? 'autre' : el.value === '' ? '' : +el.value; render(); }
+};
+
+/* ===================== Écouteurs ===================== */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-a]'); if (!el || !A[el.dataset.a]) return;
+  if (el.tagName === 'BUTTON') e.preventDefault();
+  if (el.disabled) return;
+  A[el.dataset.a](el, e);
+});
+document.addEventListener('change', e => {
+  if (e.target.id === 'photo-in'){
+    const file = e.target.files[0]; if (!file) return;
+    const img = new Image(); const url = URL.createObjectURL(file);
+    img.onload = () => { const s = Math.min(img.width, img.height); const c = document.createElement('canvas'); c.width = c.height = 400; c.getContext('2d').drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 400, 400); S.fiche.photo = c.toDataURL('image/jpeg', .82); URL.revokeObjectURL(url); render(); };
+    img.onerror = () => ptoast("Cette image n'a pas pu être lue");
+    img.src = url; return;
+  }
+  if (e.target.id === 'f-maillon'){ S.form.maillon = e.target.value; ['prenom','nom','fonction','entreprise','tel','invite'].forEach(k => { const x = document.getElementById('f-' + k); if (x) S.form[k] = x.value; }); render(); return; }
+  const k = e.target.dataset && e.target.dataset.change; if (k && CH[k]) CH[k](e.target);
+});
+document.addEventListener('input', e => {
+  if (e.target.dataset && e.target.dataset.input === 'count'){ const c = document.getElementById('cnt'); if (c) c.textContent = `${e.target.value.length} / 500`; }
+  if (S && S.screen === 'infos' && S.known && e.target.id && e.target.id.startsWith('f-')){ const k = e.target.id.slice(2); if (k in LISTE) e.target.classList.toggle('changed', norm(e.target.value) !== norm(LISTE[k])); }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && S.sheet){ S.sheet = null; render(); } });
+
+/* ===================== Démarrage ===================== */
+load('perso');
+render();
+NARROW.addEventListener('change', render);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => render());
+</script>
+</body>
+</html>
