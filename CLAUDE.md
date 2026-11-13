@@ -9,7 +9,7 @@ Documents de référence (ne jamais modifier leur contenu) :
 - `docs/prototypes/1-admin.html` et `docs/prototypes/2-ceo.html` : la référence visuelle et comportementale validée (JavaScript vanilla, un fichier chacun). On reproduit leur rendu et leur logique dans la stack du projet, sans copier leur code ;
 - `docs/prototypes/Modele_Manifeste_GoogleDoc.docx` : le modèle Word, référence pour l'import du texte.
 
-En cas d'écart entre ces documents : signaler l'écart dans le rapport et ne rien trancher seul.
+Ordre de priorité en cas d'écart : pour les règles métier, `decisions.md` prime, puis `docs/CAHIER_DES_CHARGES.md`, puis les prototypes. Les prototypes restent la référence visuelle (rendu, mise en page, composition). Un écart non couvert par cet ordre est signalé dans le rapport, sans être tranché.
 
 ---
 
@@ -227,7 +227,7 @@ Le vert et le rouge de l'interface ne servent qu'au sens (succès, erreur).
 10. **RLS sur toutes les tables**, et **la clé secrète Supabase reste côté serveur**. Stockage privé uniquement (imports, photos, exports).
 11. Cycle de vie du Manifeste : `redaction`, puis `gele`, puis `clos`, puis `publie`. Les liens CEO ne sont actifs qu'à partir du gel. La version gelée est celle que les CEO signent.
 12. Une seule signature active par invitation, protégée par une clé anti-doublon (une signature renvoyée après une coupure réseau n'est jamais enregistrée deux fois). Une seule signature par entreprise est recommandée, sans être imposée.
-13. La signature d'un nouveau inscrit (lien ouvert) n'entre dans l'annexe qu'après validation par un admin.
+13. La signature d'un nouveau inscrit (lien ouvert) n'entre dans l'annexe qu'après validation par un admin. La signature d'un CEO de la liste qui a modifié ses informations entre tout de suite dans l'annexe avec sa version (D20).
 14. Les signatures sont enregistrées en vectoriel (`{vb, d[]}`), avec les informations imprimées figées, la version signée, le texte de consentement accepté et une référence au format `MSP-2026-0001`.
 15. Jamais publiés : le téléphone, les commentaires, l'auteur d'une doléance. Chaque consentement est historisé avec le texte exact présenté et la date.
 16. Le journal des actions n'est jamais modifié.

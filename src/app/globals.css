@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+/*
+  Charte du Manifeste : solennel, posé, chaleureux.
+  Un seul accent (eau), l'argile réservée à « à vérifier » et aux champs modifiés,
+  le vert et le rouge réservés au sens (succès, erreur).
+*/
+@theme {
+  /* Couleurs de l'interface */
+  --color-eau: #1d4e5c;
+  --color-eau-doux: #e4eef0;
+  --color-argile: #b5653a;
+  --color-argile-doux: #f6e7db;
+  --color-encre: #14212b;
+  --color-texte-secondaire: #5b6670;
+  --color-papier: #f7f3ea;
+  --color-fond-admin: #f7f7f6;
+  --color-sureleve: #f1f1ef;
+  --color-surface: #ffffff;
+  --color-filet: rgba(20, 33, 43, 0.1);
+  --color-filet-fort: rgba(20, 33, 43, 0.2);
+  --color-succes: #2f6b4f;
+  --color-succes-doux: #e2efe6;
+  --color-erreur: #a23b2a;
+  --color-erreur-doux: #f7e2dd;
+
+  /* Couleurs du document */
+  --color-doc-vert: #0e4b3a;
+  --color-doc-or: #c2a14d;
+  --color-doc-gris: #6a736e;
+  --color-doc-filet: #d9d3c2;
+  --color-doc-texte: #1e2622;
+
+  /* Familles de polices */
+  --font-titre: var(--font-fraunces), Georgia, serif;
+  --font-interface: var(--font-jost), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-doc-serif: Georgia, var(--font-gelasio), "Times New Roman", serif;
+  --font-doc-sans: Calibri, var(--font-carlito), "Segoe UI", Arial, sans-serif;
+
+  /* Courbe d'animation unique du projet */
+  --ease-projet: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Variable utilisable hors Tailwind (Motion, styles en ligne) */
+:root {
+  --courbe: cubic-bezier(0.22, 1, 0.36, 1);
+  color-scheme: light;
+}
+
+@layer base {
+  body {
+    margin: 0;
+    font-family: var(--font-interface);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--color-encre);
+    background-color: var(--color-surface);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Deux ambiances de fond, posées sur le conteneur de chaque espace */
+  [data-ambiance="ceo"] {
+    background-color: var(--color-papier);
+  }
+
+  [data-ambiance="admin"] {
+    background-color: var(--color-fond-admin);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-eau);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

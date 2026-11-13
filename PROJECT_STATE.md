@@ -1,23 +1,23 @@
 # État du projet
 
-Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 00, 13 novembre 2026.
+Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 01, 13 novembre 2026.
 
 ---
 
 ## Feuille de route des prompts
 
-Selon la partie 17 du cahier des charges. Un prompt d'audit est ajouté après les prompts 08 et 09.
+Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26. Un prompt d'audit est ajouté après les prompts 08 et 09.
 
 | N° | Contenu | Branche | À livrer avant | Statut |
 | --- | --- | --- | --- | --- |
-| 00 | Initialisation : rangement du dépôt, lecture du cahier des charges, fichiers mémoire | `main` | 14 novembre 2026 | En cours de validation |
-| 01 | Socle : Next.js, configuration, charte et polices, clients Supabase, page minimale | `main` | 14 novembre 2026 | À faire |
-| 02 | Base de données, connexion et gestion des admins, journal | `main` | 16 novembre 2026 | À faire |
+| 00 | Initialisation : rangement du dépôt, lecture du cahier des charges, fichiers mémoire | `main` | 14 novembre 2026 | Validé |
+| 01 | Décisions du prompt 00 ; socle : Next.js, configuration, charte et polices, clients Supabase, page minimale | `main` | 14 novembre 2026 | En cours de validation |
+| 02 | Base de données, connexion et gestion des admins, journal, tâche planifiée de maintien en éveil | `main` | 16 novembre 2026 | À faire |
 | 03 | Texte : import Word, versions, comparaison, page A4, gel et corrections mineures | `main` | 17 novembre 2026 | À faire |
-| 04 | Liste des CEO : import Excel ou CSV, liens personnels, envoi et relance WhatsApp, lien ouvert et QR code | `main` | 19 novembre 2026 | À faire |
-| 05 | Espace CEO : lecture, signature en 3 étapes, moment de l'annexe, accusé, fiche, confidentialité, coupures réseau, signature depuis le téléphone | `main` | 21 novembre 2026 | À faire |
+| 04 | Liste des CEO : import Excel ou CSV, liens personnels, envoi et relance WhatsApp, lien ouvert et QR code, export des signatures | `main` | 19 novembre 2026 | À faire |
+| 05 | Espace CEO : lecture, signature en 3 étapes, moment de l'annexe, accusé, fiche, confidentialité, coupures réseau, signature depuis le téléphone, refus des signatures après la date limite | `main` | 21 novembre 2026 | À faire |
 | 06 | Audit complet et vérifications d'avant mise en ligne (domaine, redirections, RLS, parcours sur téléphone et ordinateur) | `main` | 22 novembre 2026 | À faire |
-| 07 | Vérification, commentaires, export des signatures | branche | 25 novembre 2026 | À faire |
+| 07 | Vérification, commentaires | branche | 25 novembre 2026 | À faire |
 | 08 | Document final : PDF A4, clôture, publication, signataires sur place | branche | 2 décembre 2026 | À faire |
 | 09 | Cahier de doléances | branche | décembre 2026 | À faire |
 
@@ -26,6 +26,11 @@ Selon la partie 17 du cahier des charges. Un prompt d'audit est ajouté après l
 ## Fait
 
 - Prompt 00 : dépôt rangé (`docs/`, `docs/prototypes/`), ancienne version 1 du cahier des charges supprimée, fichiers mémoire créés (`CLAUDE.md`, `PROJECT_STATE.md`, `decisions.md`, `.gitignore`, `.env.example`). Aucun code applicatif.
+- Prompt 01, décisions : D15 à D32 inscrites dans `decisions.md`, règle de priorité entre les documents et règle 13 complétées dans `CLAUDE.md`, feuille de route réordonnée (D26), thèmes de doléances ajoutés aux contenus à fournir.
+- Prompt 01, socle : projet Next.js 16.4.6 (App Router, TypeScript strict, `src/`, alias `@/*`, ESLint, Tailwind 4.3), dépendances `@supabase/supabase-js`, `@supabase/ssr`, `lucide-react`, `zod`, `motion`.
+- Polices Fraunces, Jost, Gelasio et Carlito dans `src/lib/fonts.ts` ; charte complète en jetons Tailwind dans `src/app/globals.css` (couleurs, polices, courbe, ambiances `data-ambiance="ceo"` et `data-ambiance="admin"`, focus visible, animations réduites).
+- Lecture des variables à l'appel (`src/lib/env.ts`), clients Supabase navigateur et serveur (`src/lib/supabase/`).
+- Page d'accueil minimale, page 404, `robots.txt` qui interdit tout et balise noindex sur tout le site (D29), `vercel.json` en région `cdg1`.
 
 ---
 
@@ -67,6 +72,7 @@ Selon la partie 19 du cahier des charges.
 | Confirmation de « Axes transversaux » comme cinquième maillon | Avant l'import de la liste | À fournir |
 | Confirmation de la clôture des doléances au 8 janvier 2027 | Avant la publication | À fournir |
 | Test du modèle Word après passage dans Google Docs | Avant le prompt 03 | À fournir |
+| Thèmes de doléances issus des tables du déjeuner du 22 octobre (à défaut, les 6 thèmes de départ, D23) | Avant la publication | À fournir |
 
 ---
 
