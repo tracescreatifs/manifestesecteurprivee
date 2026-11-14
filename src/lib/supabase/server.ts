@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 import { lireSupabaseClePublique, lireSupabaseUrl } from "@/lib/env";
+import type { Database } from "@/types/database";
 
 /*
   Client Supabase côté serveur (clé publique, soumise aux règles RLS),
@@ -11,7 +12,7 @@ import { lireSupabaseClePublique, lireSupabaseUrl } from "@/lib/env";
 export async function creerClientServeur() {
   const magasin = await cookies();
 
-  return createServerClient(lireSupabaseUrl(), lireSupabaseClePublique(), {
+  return createServerClient<Database>(lireSupabaseUrl(), lireSupabaseClePublique(), {
     cookies: {
       getAll() {
         return magasin.getAll();

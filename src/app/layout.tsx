@@ -6,7 +6,10 @@ import { fontVariables } from "@/lib/fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Manifeste du secteur privé sénégalais de l'eau et de l'assainissement",
+  title: {
+    default: "Manifeste du secteur privé sénégalais de l'eau et de l'assainissement",
+    template: "%s · Manifeste du secteur privé sénégalais de l'eau et de l'assainissement",
+  },
   /* Aucune page à référencer (D29) */
   robots: { index: false, follow: false },
 };
