@@ -1,19 +1,26 @@
 import type { Metadata } from "next";
+import { MessageSquareText, ShieldCheck, Users } from "lucide-react";
 
+import { Tabs } from "@/components/ui/tabs";
 import { lireMaillons, lireListeCeo } from "@/lib/ceo/serveur";
 import { formaterDateLimite } from "@/lib/ceo/message";
 import { lireSiteUrl } from "@/lib/env";
 import { exigerSessionAdmin } from "@/lib/session-admin";
 import { creerClientServeur } from "@/lib/supabase/server";
-import { lireManifeste } from "@/lib/texte/serveur";
+import { lireManifeste, lireVersionCourante } from "@/lib/texte/serveur";
+import { lireCommentaires, lireVerification } from "@/lib/verification/serveur";
 
+import { OngletCommentaires } from "./onglet-commentaires";
+import { OngletVerifier } from "./onglet-verifier";
 import { TableauCeo } from "./tableau-ceo";
 
 export const metadata: Metadata = { title: "CEO" };
 
-/* Rubrique CEO, onglet « Liste et suivi ». « À vérifier » et « Commentaires » arriveront au prompt 07. */
-export default async function PageCeo() {
+/* Rubrique CEO : « Liste et suivi », « À vérifier » (prompt 07) et « Commentaires » (prompt 07) */
+export default async function PageCeo({ searchParams }: { searchParams: Promise<{ onglet?: string; cas?: string }> }) {
   await exigerSessionAdmin();
+  const { onglet, cas } = await searchParams;
+  const actif = onglet === "verifier" || onglet === "commentaires" ? onglet : "liste";
   const supabase = await creerClientServeur();
   const manifeste = await lireManifeste(supabase);
 
@@ -25,9 +32,12 @@ export default async function PageCeo() {
     );
   }
 
-  const [{ lignes, recentes }, maillons] = await Promise.all([
+  const [{ lignes, recentes }, maillons, verification, commentaires, version] = await Promise.all([
     lireListeCeo(supabase, manifeste.id),
     lireMaillons(supabase),
+    lireVerification(supabase, manifeste.id),
+    lireCommentaires(supabase, manifeste.id),
+    lireVersionCourante(supabase, manifeste.id),
   ]);
 
   let siteUrl: string | null = null;
@@ -36,6 +46,44 @@ export default async function PageCeo() {
   } catch {
     siteUrl = null;
   }
+
+  const nouveaux = commentaires.filter((c) => c.statut === "nouveau").length;
+  const onglets = (
+    <Tabs
+      libelle="Rubrique CEO"
+      actif={actif}
+      onglets={[
+        { cle: "liste", libelle: "Liste et suivi", href: "/admin/ceo", icone: Users },
+        {
+          cle: "verifier",
+          libelle: "À vérifier",
+          href: "/admin/ceo?onglet=verifier",
+          icone: ShieldCheck,
+          pastille: { nombre: verification.aTraiter.length, variante: "argile", titre: "Signatures à vérifier" },
+        },
+        {
+          cle: "commentaires",
+          libelle: "Commentaires",
+          href: "/admin/ceo?onglet=commentaires",
+          icone: MessageSquareText,
+          pastille: { nombre: nouveaux, variante: "neutre", titre: "Nouveaux commentaires" },
+        },
+      ]}
+    />
+  );
+
+  const contenu =
+    actif === "verifier" ? (
+      <OngletVerifier
+        aTraiter={verification.aTraiter}
+        traites={verification.traites}
+        autoValidation={manifeste.auto_validation}
+        statutManifeste={manifeste.statut}
+        cible={typeof cas === "string" ? cas : null}
+      />
+    ) : actif === "commentaires" ? (
+      <OngletCommentaires commentaires={commentaires} blocs={version?.blocs ?? []} statutManifeste={manifeste.statut} />
+    ) : null;
 
   return (
     <TableauCeo
@@ -46,7 +94,10 @@ export default async function PageCeo() {
       siteUrl={siteUrl}
       modele={manifeste.modele_message_whatsapp}
       dateLimite={formaterDateLimite(manifeste.date_limite)}
+      dateLimiteIso={manifeste.date_limite}
       lienOuvertActif={manifeste.lien_ouvert_actif}
+      onglets={onglets}
+      contenu={contenu}
     />
   );
 }

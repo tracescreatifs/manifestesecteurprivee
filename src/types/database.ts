@@ -13,6 +13,15 @@ export type TypeVersion = "redaction" | "correction_mineure";
 export type OrigineInvitation = "liste" | "lien_ouvert" | "parrainage";
 export type StatutEnvoi = "a_envoyer" | "envoye" | "ouvert" | "signe";
 export type EtatVerification = "aucune" | "a_verifier" | "valide" | "rejete";
+/* Migration 0006 : décision de l'admin sur une signature à vérifier (ou sur toute signature, pour le retrait) */
+export type DecisionVerification =
+  | "verifiee"
+  | "validee"
+  | "deux_gardees"
+  | "entreprise_mise_a_jour"
+  | "retiree"
+  | "refusee"
+  | "retablie";
 export type MotifVerification = "modification" | "nouveau" | "doublon";
 export type OrigineSignature = "en_ligne" | "sur_place";
 export type TypeConsentement = "signature_publique" | "recontact" | "annuaire" | "photo_communication";
@@ -431,6 +440,8 @@ export type Database = {
           motif: MotifVerification | null;
           verifie_par: string | null;
           verifie_le: string | null;
+          decision: DecisionVerification | null;
+          decision_signature_id: string | null;
           cree_le: string;
           modifie_le: string;
         };
@@ -455,6 +466,8 @@ export type Database = {
           motif?: MotifVerification | null;
           verifie_par?: string | null;
           verifie_le?: string | null;
+          decision?: DecisionVerification | null;
+          decision_signature_id?: string | null;
           cree_le?: string;
           modifie_le?: string;
         };
@@ -479,6 +492,8 @@ export type Database = {
           motif?: MotifVerification | null;
           verifie_par?: string | null;
           verifie_le?: string | null;
+          decision?: DecisionVerification | null;
+          decision_signature_id?: string | null;
           cree_le?: string;
           modifie_le?: string;
         };
@@ -776,6 +791,31 @@ export type Database = {
       enregistrer_brouillon: {
         Args: { p_invitation_id: string; p_saisie: Json };
         Returns: boolean;
+      };
+      /* Migration 0006 : décisions des admins (session de l'admin, contrôle est_admin dans la fonction) */
+      exiger_admin: {
+        Args: Record<string, never>;
+        Returns: string;
+      };
+      confirmer_signature: {
+        Args: { p_invitation_id: string; p_decision: "verifiee" | "validee" | "deux_gardees" };
+        Returns: Json;
+      };
+      mettre_a_jour_entreprise: {
+        Args: { p_invitation_id: string };
+        Returns: Json;
+      };
+      retirer_signature_admin: {
+        Args: { p_invitation_id: string; p_motif: string };
+        Returns: Json;
+      };
+      retablir_signature: {
+        Args: { p_invitation_id: string };
+        Returns: Json;
+      };
+      traiter_commentaire: {
+        Args: { p_commentaire_id: string; p_statut: StatutCommentaire; p_note: string };
+        Returns: Json;
       };
       /* Exécution révoquée pour anon et authenticated : SQL Editor uniquement */
       promouvoir_premier_admin: {

@@ -188,7 +188,9 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
         }
       : null;
 
-  const peutCommenter = ouvert && espace.identifie && jeton !== null;
+  /* Signature retirée ou refusée par un admin : ni signature, ni commentaire, ni fiche sur ce lien */
+  const refus = espace.refus;
+  const peutCommenter = ouvert && espace.identifie && jeton !== null && !refus;
   const prenom = espace.signature?.prenom || signeeLocale?.signature.prenom || espace.saisieInitiale.prenom;
   const dateLimite = formaterJourLong(espace.dateLimite);
   const blocs = useMemo(() => version?.blocs ?? [], [version]);
@@ -456,7 +458,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
         Manifeste du secteur privé sénégalais de l&apos;eau et de l&apos;assainissement
         {version?.sousTitre ? <span className="block font-interface text-[12.5px] text-texte-secondaire">{version.sousTitre}</span> : null}
       </div>
-      {ouvert && !signature ? (
+      {ouvert && !signature && !refus ? (
         <span className="inline-flex items-center gap-1.5 text-[13px] text-texte-secondaire [&_svg]:size-4">
           <Calendar aria-hidden="true" strokeWidth={1.75} />
           Signature avant le {dateLimite}
@@ -467,7 +469,40 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
 
   /* ----- Écran principal ----- */
   let colonne;
-  if (ouvert) {
+  if (refus && jeton) {
+    colonne = (
+      <>
+        <div className="grid gap-3 rounded-2xl border border-filet bg-surface p-5">
+          <span className="grid size-12 place-items-center rounded-full bg-argile-doux text-argile [&_svg]:size-6">
+            <CircleSlash aria-hidden="true" strokeWidth={1.75} />
+          </span>
+          <h1 className="font-titre text-[24px] leading-tight font-normal">Votre signature n&apos;a pas été retenue</h1>
+          {espace.whatsappTaskForce ? (
+            <p className="text-[15px] text-texte-secondaire">
+              Pour toute question, écrivez à {EXPEDITEUR} avec le bouton « Une question ? », en bas de la page.
+            </p>
+          ) : null}
+        </div>
+        <div className="grid gap-3 rounded-2xl border border-filet bg-surface p-5">
+          <h2 className="flex items-center gap-2 font-titre text-[19px] font-normal [&_svg]:size-[18px] [&_svg]:text-texte-secondaire">
+            <PenTool aria-hidden="true" strokeWidth={1.75} />
+            Votre signature
+          </h2>
+          <p className="text-[14.5px]">
+            Signée le {formaterDateHeure(refus.signeLe)}.
+            <br />
+            Référence <span className="tabular-nums">{refus.reference}</span>.
+            <br />
+            Signature retirée le {formaterDateHeure(refus.retireeLe)}.
+          </p>
+          <a className={classesBouton("secondaire")} href={`/s/${jeton}/accuse/pdf`} download={`Accuse-${refus.reference}.pdf`}>
+            <FileDown aria-hidden="true" strokeWidth={1.75} />
+            Télécharger mon accusé
+          </a>
+        </div>
+      </>
+    );
+  } else if (ouvert) {
     colonne = (
       <>
         {signature ? (
@@ -598,7 +633,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
       </main>
 
       {/* Barre fixe du bas (téléphone) */}
-      {ouvert ? (
+      {ouvert && !refus ? (
         <div
           className={
             "barre-fixe fixed inset-x-0 bottom-0 z-20 grid gap-2.5 border-t border-filet px-4 py-3 min-[760px]:hidden " +
@@ -727,7 +762,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
         />
       ) : null}
 
-      {ouvert && version && (!espace.signature || signeeLocale) ? (
+      {ouvert && version && !refus && (!espace.signature || signeeLocale) ? (
         <ParcoursSignature
           key={numeroParcours}
           ouvert={parcours}

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { classesBouton } from "@/components/ui/button";
 import { formaterDateHeure } from "@/lib/dates";
 import { libelleAction } from "@/lib/journal-libelles";
+import { LIBELLES_STATUTS_COMMENTAIRE } from "@/lib/verification/regles";
+import type { StatutCommentaire } from "@/types/database";
 import { creerClientServeur } from "@/lib/supabase/server";
 
 const PAR_PAGE = 50;
@@ -50,8 +52,10 @@ export async function OngletJournal({ page }: { page: number }) {
       return email ?? "";
     }
     if (type === "ceo") {
-      const d = details as { nom?: string; entreprise?: string } | null;
-      return [d?.nom, d?.entreprise].filter(Boolean).join(", ");
+      const d = details as { nom?: string; entreprise?: string; motif?: string; statut?: string } | null;
+      const base = [d?.nom, d?.entreprise].filter(Boolean).join(", ");
+      const statut = d?.statut && d.statut in LIBELLES_STATUTS_COMMENTAIRE ? LIBELLES_STATUTS_COMMENTAIRE[d.statut as StatutCommentaire] : null;
+      return `${base}${statut ? ` : ${statut}` : ""}${d?.motif ? ` (motif : ${d.motif})` : ""}`;
     }
     if (!type) {
       const d = details as { nombre?: number; fichier?: string } | null;

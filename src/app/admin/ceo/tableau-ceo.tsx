@@ -14,7 +14,7 @@ import {
   Upload,
   UserPlus,
 } from "lucide-react";
-import { useMemo, useState, useTransition, type KeyboardEvent, type MouseEvent } from "react";
+import { useMemo, useState, useTransition, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 
 import { SignatureSvg } from "@/components/document/signature";
 import { BoutonAvecRaison } from "@/components/ui/bouton-raison";
@@ -47,7 +47,12 @@ type Props = {
   siteUrl: string | null;
   modele: string;
   dateLimite: string;
+  /* Date limite brute, pour « Rétablir » dans la fiche (seulement tant que les signatures sont ouvertes) */
+  dateLimiteIso: string;
   lienOuvertActif: boolean;
+  /* Onglets de la rubrique (Liste et suivi, À vérifier, Commentaires), et contenu d'un autre onglet que la liste */
+  onglets: ReactNode;
+  contenu: ReactNode | null;
 };
 
 const FILTRES: { cle: "tous" | StatutEnvoi; libelle: string }[] = [
@@ -95,7 +100,10 @@ export function TableauCeo({
   siteUrl,
   modele,
   dateLimite,
+  dateLimiteIso,
   lienOuvertActif,
+  onglets,
+  contenu,
 }: Props) {
   const { message: toast, afficher } = useToast();
   const [enCours, demarrer] = useTransition();
@@ -252,6 +260,8 @@ export function TableauCeo({
         </div>
       </div>
 
+      {onglets}
+
       {!siteUrl ? (
         <p role="alert" className="mb-4 rounded-[10px] bg-erreur-doux px-4 py-3 text-[14.5px] text-[#7a2a1d]">
           L&apos;adresse du site n&apos;est pas configurée : ajoutez NEXT_PUBLIC_SITE_URL dans Vercel, puis redéployez.
@@ -259,6 +269,8 @@ export function TableauCeo({
         </p>
       ) : null}
 
+      {contenu ?? (
+        <>
       {statutManifeste === "redaction" ? (
         <p className="mb-4 rounded-[10px] bg-eau-doux px-4 py-3 text-[14.5px] text-[#173e49]">
           Préparez la liste dès maintenant. Les liens deviennent actifs et envoyables au gel du texte : gelez le texte avant
@@ -417,7 +429,11 @@ export function TableauCeo({
                       <span className="size-[7px] rounded-full bg-current" />
                       {STATUTS[l.statut].libelle}
                     </Chip>
-                    {l.signature && !l.signature.validee ? <Chip variante="argile">À valider</Chip> : null}
+                    {l.verification === "a_verifier" && l.signature ? (
+                      <Chip variante="argile">{l.signature.validee ? "À vérifier" : "À valider"}</Chip>
+                    ) : l.verification === "rejete" ? (
+                      <Chip variante="erreur">{l.decision === "refusee" ? "Refusée" : "Retirée par un admin"}</Chip>
+                    ) : null}
                     <span className="text-[12.5px] text-texte-secondaire min-[820px]:hidden">{derniereActivite(l)}</span>
                   </div>
                   <div className="hidden text-[13px] text-texte-secondaire min-[820px]:block">{derniereActivite(l)}</div>
@@ -449,6 +465,8 @@ export function TableauCeo({
           Exporter les signatures
         </a>
       </div>
+        </>
+      )}
 
       {envoi ? (
         <FenetreWhatsApp
@@ -538,6 +556,8 @@ export function TableauCeo({
         onModifier={() => ceoFiche && setFormulaire({ ceo: ceoFiche })}
         onNonEnvoye={() => ceoFiche && nonEnvoye(ceoFiche)}
         onRetirer={() => ceoFiche && setARetirer(ceoFiche)}
+        manifeste={{ statut: statutManifeste, dateLimite: dateLimiteIso }}
+        onSignale={afficher}
       />
 
       <Toast message={toast} />

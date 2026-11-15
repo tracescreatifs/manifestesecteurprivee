@@ -2,7 +2,16 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { Database, OrigineInvitation, StatutEnvoi, TraceSignature, TypeConsentement } from "@/types/database";
+import type {
+  Database,
+  DecisionVerification,
+  EtatVerification,
+  OrigineInvitation,
+  StatutCommentaire,
+  StatutEnvoi,
+  TraceSignature,
+  TypeConsentement,
+} from "@/types/database";
 
 type Client = SupabaseClient<Database>;
 
@@ -32,6 +41,14 @@ export type LigneCeo = {
   invitePar: string | null;
   /* Consentements courants de la fiche */
   consentements: { type: TypeConsentement; accorde: boolean; le: string }[];
+  /* Vérification de la signature (prompt 07) : état, décision de l'admin, signature concernée */
+  verification: EtatVerification;
+  decision: DecisionVerification | null;
+  decidePar: string | null;
+  decideLe: string | null;
+  signatureDecision: { reference: string; retireeLe: string | null } | null;
+  /* Commentaires du CEO (lus par les admins seulement) */
+  commentaires: { id: string; texte: string; statut: StatutCommentaire; creeLe: string }[];
   creeLe: string;
 };
 
@@ -61,7 +78,7 @@ export async function lireListeCeo(
       .from("invitations")
       .select(
         "id, jeton, origine, statut_envoi, envoye_le, ouvert_le, derniere_relance_le, relances, cree_le, " +
-          "invite_par_texte, parrain_invitation_id, personne_id, " +
+          "invite_par_texte, parrain_invitation_id, personne_id, verification, decision, decision_signature_id, verifie_par, verifie_le, " +
           "personne:personnes(prenom, nom, fonction, telephone, email, photo_path), " +
           "entreprise:entreprises(nom, maillon:maillons(libelle))",
       )
@@ -88,6 +105,11 @@ export async function lireListeCeo(
     invite_par_texte: string | null;
     parrain_invitation_id: string | null;
     personne_id: string | null;
+    verification: EtatVerification;
+    decision: DecisionVerification | null;
+    decision_signature_id: string | null;
+    verifie_par: string | null;
+    verifie_le: string | null;
     personne: {
       prenom: string;
       nom: string;
@@ -140,6 +162,24 @@ export async function lireListeCeo(
     });
   }
 
+  /* Décisions des admins, signatures concernées (même retirées) et commentaires de chaque CEO */
+  const idsDecision = brutes.map((b) => b.decision_signature_id).filter((x): x is string => Boolean(x));
+  const [{ data: admins }, { data: signaturesDecision }, { data: commentaires }] = await Promise.all([
+    supabase.from("admins").select("user_id, prenom, nom"),
+    idsDecision.length
+      ? supabase.from("signatures").select("id, reference, retiree_le").in("id", idsDecision)
+      : Promise.resolve({ data: [] as { id: string; reference: string; retiree_le: string | null }[] }),
+    supabase.from("commentaires").select("id, invitation_id, texte, statut, cree_le").order("cree_le", { ascending: true }),
+  ]);
+  const nomsAdmins = new Map((admins ?? []).map((a) => [a.user_id, `${a.prenom} ${a.nom}`.trim()]));
+  const decisions = new Map((signaturesDecision ?? []).map((d) => [d.id, { reference: d.reference, retireeLe: d.retiree_le }]));
+  const commentairesParInvitation = new Map<string, LigneCeo["commentaires"]>();
+  (commentaires ?? []).forEach((c) => {
+    const liste = commentairesParInvitation.get(c.invitation_id) ?? [];
+    liste.push({ id: c.id, texte: c.texte, statut: c.statut, creeLe: c.cree_le });
+    commentairesParInvitation.set(c.invitation_id, liste);
+  });
+
   const lignes: LigneCeo[] = brutes.map((b) => {
     const active = actives.get(b.id) ?? null;
     const signe = active?.signeLe ?? null;
@@ -164,6 +204,12 @@ export async function lireListeCeo(
       signature: active ? { reference: active.reference, trace: active.trace, validee: active.validee } : null,
       parrain: b.parrain_invitation_id ? (nomsParInvitation.get(b.parrain_invitation_id) ?? null) : null,
       invitePar: b.invite_par_texte,
+      verification: b.verification,
+      decision: b.decision,
+      decidePar: b.verifie_par ? (nomsAdmins.get(b.verifie_par) ?? "Admin supprimé") : null,
+      decideLe: b.verifie_le,
+      signatureDecision: b.decision_signature_id ? (decisions.get(b.decision_signature_id) ?? null) : null,
+      commentaires: commentairesParInvitation.get(b.id) ?? [],
       consentements: b.personne_id ? (consentementsParPersonne.get(b.personne_id) ?? []) : [],
       creeLe: b.cree_le,
     };

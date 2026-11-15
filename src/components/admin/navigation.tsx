@@ -11,8 +11,24 @@ const RUBRIQUES: { href: string; libelle: string; court: string; icone: LucideIc
   { href: "/admin/reglages", libelle: "Réglages", court: "Réglages", icone: Settings },
 ];
 
+/* Nombre de signatures à vérifier, à côté de « CEO » (argile : réservée à « à vérifier ») */
+function Pastille({ nombre, compacte = false }: { nombre: number; compacte?: boolean }) {
+  if (!nombre) return null;
+  return (
+    <span
+      className={
+        "rounded-md bg-argile-doux font-semibold text-[#8a4724] tabular-nums " +
+        (compacte ? "absolute -top-0.5 right-1 px-1 text-[10.5px] leading-4" : "ml-auto px-1.5 text-[12.5px]")
+      }
+    >
+      <span className="sr-only">À vérifier : </span>
+      {nombre}
+    </span>
+  );
+}
+
 /* Barre latérale (ordinateur) */
-export function NavLaterale() {
+export function NavLaterale({ aVerifier }: { aVerifier: number }) {
   const chemin = usePathname();
   return (
     <nav aria-label="Navigation" className="grid gap-0.5">
@@ -32,6 +48,7 @@ export function NavLaterale() {
           >
             <Icone aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
             {libelle}
+            {href === "/admin/ceo" ? <Pastille nombre={aVerifier} /> : null}
           </Link>
         );
       })}
@@ -40,7 +57,7 @@ export function NavLaterale() {
 }
 
 /* Barre basse (téléphone), en verre dépoli */
-export function NavBasse() {
+export function NavBasse({ aVerifier }: { aVerifier: number }) {
   const chemin = usePathname();
   return (
     <nav
@@ -59,12 +76,13 @@ export function NavBasse() {
             href={href}
             aria-current={courant ? "page" : undefined}
             className={
-              "grid min-h-11 min-w-16 justify-items-center gap-0.5 px-2 py-1 text-[11px] " +
+              "relative grid min-h-11 min-w-16 justify-items-center gap-0.5 px-2 py-1 text-[11px] " +
               (courant ? "font-semibold text-encre" : "text-texte-secondaire")
             }
           >
             <Icone aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
             <span>{court}</span>
+            {href === "/admin/ceo" ? <Pastille nombre={aVerifier} compacte /> : null}
           </Link>
         );
       })}

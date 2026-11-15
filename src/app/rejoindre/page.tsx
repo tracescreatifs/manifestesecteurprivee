@@ -77,6 +77,7 @@ export default async function PageRejoindre({ searchParams }: { searchParams: Pr
         photoUrl: null,
         choix: { recontact: false, annuaire: false, photo_communication: false },
         codeParrainage: null,
+        refus: null,
       }}
     />
   );

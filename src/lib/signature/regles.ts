@@ -65,6 +65,7 @@ export type CodeErreur =
   | "deja_signe"
   | "cle_invalide"
   | "aucune_version"
+  | "signature_refusee"
   | "echec";
 
 export type SignatureEnregistree = {
@@ -82,7 +83,13 @@ export type SignatureEnregistree = {
 };
 
 export type ContexteSignature = {
-  invitation: { id: string; origine: OrigineInvitation; saisieListe: Partial<Record<Champ, string | null>> | null };
+  invitation: {
+    id: string;
+    origine: OrigineInvitation;
+    saisieListe: Partial<Record<Champ, string | null>> | null;
+    /* Signature retirée ou refusée par un admin (vérification « rejete ») : ce lien ne peut plus signer */
+    refusee?: boolean;
+  };
   manifeste: { statut: StatutManifeste; dateLimite: string; autoValidation: boolean };
   signatureActive: boolean;
 };
@@ -119,6 +126,7 @@ export async function signer(
       : { ok: false, code: "cle_invalide" };
   }
 
+  if (contexte.invitation.refusee) return { ok: false, code: "signature_refusee" };
   const etat = etatCampagne(contexte.manifeste.statut, contexte.manifeste.dateLimite, maintenant);
   if (etat === "pas_ouvert") return { ok: false, code: "pas_ouvert" };
   if (etat !== "ouvert") return { ok: false, code: "signatures_closes" };

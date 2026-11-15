@@ -1,12 +1,12 @@
 # État du projet
 
-Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 05.3, 15 novembre 2026.
+Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 07, 15 novembre 2026.
 
 ---
 
 ## Feuille de route des prompts
 
-Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26. Un prompt d'audit est ajouté après les prompts 08 et 09.
+Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26. Le prompt 07 est avancé avant l'audit (06), pour que l'audit porte sur la plateforme complète avant l'envoi du 23 novembre. Un prompt d'audit est ajouté après les prompts 08 et 09.
 
 | N° | Contenu | Branche | À livrer avant | Statut |
 | --- | --- | --- | --- | --- |
@@ -18,9 +18,9 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 | 04.1 | Correctifs CEO : menu des lignes visible, fiche du CEO, raison des boutons désactivés, import de l'email | `main` | 19 novembre 2026 | Validé |
 | 05 | Espace CEO, partie 1 : lecture, commentaires, signature en 3 étapes, annexe, moment de l'annexe, accusé, confidentialité, refus des signatures après la date limite | `main` | 21 novembre 2026 | Validé |
 | 05.2 | Espace CEO, partie 2 : lien ouvert (`/rejoindre`), parrainage, fiche et photo, refaire ou retirer sa signature, coupures réseau (signature gardée sur l'appareil), signature depuis le téléphone (QR code), accusé PDF et correctifs | `main` | 21 novembre 2026 | Validé |
-| 05.3 | Correctifs de l'espace CEO : fermeture des fenêtres du parcours, signature par QR code après une inscription par le lien ouvert | `main` | 21 novembre 2026 | En cours de validation |
-| 06 | Audit complet et vérifications d'avant mise en ligne (domaine, redirections, RLS, parcours sur téléphone et ordinateur) | `main` | 22 novembre 2026 | À faire |
-| 07 | Vérification, commentaires | branche | 25 novembre 2026 | À faire |
+| 05.3 | Correctifs de l'espace CEO : fermeture des fenêtres du parcours, signature par QR code après une inscription par le lien ouvert | `main` | 21 novembre 2026 | Validé |
+| 07 | Vérification des signatures (« À vérifier ») et traitement des commentaires, avancé avant l'audit | `main` | 21 novembre 2026 | En cours de validation |
+| 06 | Audit complet et vérifications d'avant mise en ligne (domaine, redirections, RLS, parcours sur téléphone et ordinateur), sur la plateforme complète | `main` | 22 novembre 2026 | À faire |
 | 08 | Document final : PDF A4, clôture, publication, signataires sur place | branche | 2 décembre 2026 | À faire |
 | 09 | Cahier de doléances | branche | décembre 2026 | À faire |
 
@@ -65,6 +65,9 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 - Lien ouvert et parrainage (`/rejoindre`, D78, D79), fiche (photo et consentements, D80), inviter un confrère, retirer et refaire (D81), signature gardée sur l'appareil en cas de coupure (D82), signature sur le téléphone par QR code (D83).
 - Admin : origine, parrain, « À valider », photo et consentements dans la fiche (D85). Tests vitest : 67.
 - Prompt 05.3, aucune migration : bouton « Fermer » en haut à droite et Échap sur toutes les fenêtres du parcours CEO, avec la confirmation « Quitter sans signer ? » quand des informations ou une signature seraient perdues (D87) ; après une inscription par /rejoindre, chargement complet du nouveau lien personnel à l'étape 2, avec « Signer sur mon téléphone » (D88). Tests vitest : 71.
+- Prompt 07, migration `0006_verification.sql` : décision sur l'invitation (`decision`, `decision_signature_id`), fonctions `confirmer_signature`, `mettre_a_jour_entreprise`, `retirer_signature_admin`, `retablir_signature` et `traiter_commentaire` (admins actifs seulement, journalisées), et nouvelle version d'`enregistrer_signature` qui refuse un lien rejeté. Testée deux fois de suite sur PostgreSQL 16, avec chaque décision, le refus sans session d'admin, le refus d'une nouvelle signature après un rejet, le rétablissement et la date limite.
+- Rubrique CEO, onglet « À vérifier » : modification (comparaison champ par champ, empilée sur téléphone ; « Marquer comme vérifié », « Mettre à jour l'entreprise »), nouvel inscrit (« Valider », puis « Prévenir sur WhatsApp » ; « Refuser »), doublon d'entreprise (les deux signatures côte à côte ; « Garder les deux », « Retirer cette signature ») ; retrait ou refus avec confirmation et motif facultatif ; filtre « Traités » avec la décision, l'admin et la date. Nombre de cas à côté de « CEO » dans la navigation, en argile (D89, D90).
+- Onglet « Commentaires » : regroupés par paragraphe, filtres par statut, statut et note interne, avertissement avant « Intégré » après le gel (D92). Fiche du CEO : état de vérification, raccourci vers le cas, « Rétablir », commentaires. Côté CEO : « Votre signature n'a pas été retenue », accusé toujours téléchargeable (D91). Tests vitest : 82.
 
 ---
 
@@ -80,6 +83,7 @@ Claude Code ne marque jamais une migration comme exécutée : Ziza le confirme, 
 | 0003 | `supabase/migrations/0003_ceo_email.sql` | Email des CEO enregistré à l'import et à la modification (fonctions de 0002 remplacées) | Oui (15 novembre 2026) |
 | 0004 | `supabase/migrations/0004_signature.sql` | Numéro WhatsApp de la Task Force (`manifestes.whatsapp_task_force`), fonctions `enregistrer_signature` et `resultat_signature` (une transaction, clé secrète seulement) | Oui (15 novembre 2026) |
 | 0005 | `supabase/migrations/0005_espace_ceo.sql` | Bucket privé `accuses`, table `inscriptions_ouvertes` (empreintes), fonctions `inscrire_par_lien_ouvert`, `retirer_signature` et `enregistrer_brouillon` (clé secrète seulement) | Oui (15 novembre 2026) |
+| 0006 | `supabase/migrations/0006_verification.sql` | Décision de l'admin sur l'invitation, fonctions de vérification et de traitement des commentaires (admins actifs, journalisées), signature refusée après un rejet | Non |
 
 ---
 

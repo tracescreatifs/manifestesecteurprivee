@@ -1,17 +1,22 @@
 "use client";
 
-import { BellRing, Link2, MessageCircle, Pencil, Trash2, Undo2, UserRound } from "lucide-react";
-import type { ReactNode } from "react";
+import { BellRing, Link2, MessageCircle, Pencil, RotateCcw, ShieldCheck, Trash2, Undo2, UserRound } from "lucide-react";
+import Link from "next/link";
+import { useState, useTransition, type ReactNode } from "react";
 
 import { SignatureSvg } from "@/components/document/signature";
 import { BoutonAvecRaison } from "@/components/ui/bouton-raison";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
+import { Modal } from "@/components/ui/modal";
 import { Panneau } from "@/components/ui/panneau";
 import { formaterDateHeure } from "@/lib/dates";
 import { formaterTelephone } from "@/lib/ceo/normaliser";
 import type { LigneCeo } from "@/lib/ceo/serveur";
-import type { OrigineInvitation, TypeConsentement } from "@/types/database";
+import { LIBELLES_DECISIONS, LIBELLES_STATUTS_COMMENTAIRE, peutRetablir } from "@/lib/verification/regles";
+import type { OrigineInvitation, StatutManifeste, TypeConsentement } from "@/types/database";
+
+import { retablirSignature } from "./actions-verification";
 
 import { LIBELLES_STATUTS } from "./statuts";
 
@@ -39,6 +44,9 @@ type Props = {
   onModifier: () => void;
   onNonEnvoye: () => void;
   onRetirer: () => void;
+  /* Pour « Rétablir » : seulement tant que les signatures sont ouvertes */
+  manifeste: { statut: StatutManifeste; dateLimite: string };
+  onSignale: (message: string) => void;
 };
 
 function Ligne({ terme, children }: { terme: string; children: ReactNode }) {
@@ -51,7 +59,39 @@ function Ligne({ terme, children }: { terme: string; children: ReactNode }) {
 }
 
 /* Fiche d'un CEO : panneau à droite sur ordinateur, plein écran sur téléphone */
-export function FicheCeo({ ceo, onFermer, raisonEnvoi, occupe, onEnvoyer, onCopier, onModifier, onNonEnvoye, onRetirer }: Props) {
+export function FicheCeo({
+  ceo,
+  onFermer,
+  raisonEnvoi,
+  occupe,
+  onEnvoyer,
+  onCopier,
+  onModifier,
+  onNonEnvoye,
+  onRetirer,
+  manifeste,
+  onSignale,
+}: Props) {
+  const [confirmer, setConfirmer] = useState(false);
+  const [erreur, setErreur] = useState<string>();
+  const [enCours, demarrer] = useTransition();
+  const retablissable =
+    ceo !== null &&
+    peutRetablir(
+      { verification: ceo.verification, decisionSignature: ceo.signatureDecision !== null, signatureActive: ceo.signature !== null },
+      manifeste,
+      new Date(),
+    );
+  const retablir = () => {
+    if (!ceo) return;
+    setErreur(undefined);
+    demarrer(async () => {
+      const r = await retablirSignature({ invitationId: ceo.invitationId });
+      if (!r.ok) return setErreur(r.erreur);
+      setConfirmer(false);
+      onSignale("Signature rétablie : elle revient dans l'annexe");
+    });
+  };
   const nom = ceo ? `${ceo.prenom} ${ceo.nom}`.trim() || "Dirigeant à préciser" : "";
   const relance = ceo?.statut === "envoye" || ceo?.statut === "ouvert";
 
@@ -147,6 +187,41 @@ export function FicheCeo({ ceo, onFermer, raisonEnvoi, occupe, onEnvoyer, onCopi
           ) : null}
 
           <section className="grid gap-2">
+            <h4 className="text-[13px] font-medium text-texte-secondaire">Vérification</h4>
+            <EtatVerification ceo={ceo} />
+            {retablissable ? (
+              <div>
+                <Button onClick={() => setConfirmer(true)}>
+                  <RotateCcw aria-hidden="true" strokeWidth={1.75} />
+                  Rétablir la signature
+                </Button>
+              </div>
+            ) : null}
+          </section>
+
+          {ceo.commentaires.length ? (
+            <section className="grid gap-2">
+              <h4 className="text-[13px] font-medium text-texte-secondaire">Commentaires ({ceo.commentaires.length})</h4>
+              <ul className="grid gap-2">
+                {ceo.commentaires.map((c) => (
+                  <li key={c.id} className="grid gap-1 rounded-[10px] border border-filet p-3 text-[14px]">
+                    <span className="flex flex-wrap items-center justify-between gap-2 text-[12.5px] text-texte-secondaire">
+                      {formaterDateHeure(c.creeLe)}
+                      <Chip variante={c.statut === "nouveau" ? "neutre" : c.statut === "non_retenu" ? "neutre" : "eau"}>
+                        {LIBELLES_STATUTS_COMMENTAIRE[c.statut]}
+                      </Chip>
+                    </span>
+                    <p className="whitespace-pre-line [overflow-wrap:anywhere]">{c.texte}</p>
+                  </li>
+                ))}
+              </ul>
+              <Link href="/admin/ceo?onglet=commentaires" className="inline-flex min-h-11 items-center text-[14px] font-medium text-eau">
+                Traiter dans « Commentaires »
+              </Link>
+            </section>
+          ) : null}
+
+          <section className="grid gap-2">
             <h4 className="text-[13px] font-medium text-texte-secondaire">Actions</h4>
             <div className="grid gap-2">
               {raisonEnvoi !== undefined ? (
@@ -185,6 +260,85 @@ export function FicheCeo({ ceo, onFermer, raisonEnvoi, occupe, onEnvoyer, onCopi
           </section>
         </>
       ) : null}
+      <Modal
+        ouvert={confirmer}
+        titre="Rétablir la signature"
+        onFermer={() => setConfirmer(false)}
+        pied={
+          <>
+            <Button variante="discret" onClick={() => setConfirmer(false)}>
+              Annuler
+            </Button>
+            <Button variante="principal" onClick={retablir} disabled={enCours}>
+              <RotateCcw aria-hidden="true" strokeWidth={1.75} />
+              Rétablir
+            </Button>
+          </>
+        }
+      >
+        <p>
+          La signature {ceo?.signatureDecision?.reference} redevient active et vérifiée : elle revient dans l&apos;annexe, et le CEO
+          retrouve sa signature sur son lien.
+        </p>
+        {erreur ? (
+          <p role="alert" className="text-[13.5px] text-erreur">
+            {erreur}
+          </p>
+        ) : null}
+      </Modal>
     </Panneau>
   );
+}
+
+/* État de vérification de la signature : à vérifier, vérifiée (par qui, quand), retirée ou refusée */
+function EtatVerification({ ceo }: { ceo: LigneCeo }) {
+  const lien = (
+    <Link
+      href={`/admin/ceo?onglet=verifier&cas=${ceo.invitationId}`}
+      className="inline-flex min-h-11 items-center gap-1.5 text-[14px] font-medium text-eau [&_svg]:size-4"
+    >
+      <ShieldCheck aria-hidden="true" strokeWidth={1.75} />
+      Voir dans « À vérifier »
+    </Link>
+  );
+  const par = ceo.decidePar ? ` par ${ceo.decidePar}` : "";
+  const le = ceo.decideLe ? `, le ${formaterDateHeure(ceo.decideLe)}` : "";
+
+  if (ceo.verification === "a_verifier" && ceo.signature) {
+    return (
+      <div className="grid gap-1">
+        <div>
+          <Chip variante="argile">{ceo.signature.validee ? "À vérifier" : "À valider"}</Chip>
+        </div>
+        {lien}
+      </div>
+    );
+  }
+  if (ceo.verification === "rejete") {
+    return (
+      <div className="grid gap-1 text-[14.5px]">
+        <div>
+          <Chip variante="erreur">{ceo.decision ? LIBELLES_DECISIONS[ceo.decision] : "Retirée par un admin"}</Chip>
+        </div>
+        <p className="text-texte-secondaire">
+          Signature {ceo.signatureDecision?.reference}
+          {par}
+          {le}. Le CEO ne peut plus signer avec ce lien.
+        </p>
+        {lien}
+      </div>
+    );
+  }
+  if (ceo.verification === "valide" && ceo.signature) {
+    return (
+      <div className="grid gap-1 text-[14.5px]">
+        <div>
+          <Chip variante="succes">{ceo.decision ? LIBELLES_DECISIONS[ceo.decision] : "Vérifiée"}</Chip>
+        </div>
+        <p className="text-texte-secondaire">{ceo.decision ? `Décision${par}${le}.` : "Validée automatiquement : informations identiques à la liste."}</p>
+        {ceo.decision ? lien : null}
+      </div>
+    );
+  }
+  return <p className="text-[14.5px] text-texte-secondaire">{ceo.signature ? "Aucune vérification nécessaire." : "Pas encore de signature."}</p>;
 }

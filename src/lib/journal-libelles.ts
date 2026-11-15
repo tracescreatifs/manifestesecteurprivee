@@ -31,6 +31,14 @@ export const LIBELLES_ACTIONS = {
   signature_enregistree: "Signature enregistrée",
   signature_retiree: "Signature retirée",
   inscription_lien_ouvert: "Inscription par le lien ouvert",
+  signature_verifiee: "Signature vérifiée",
+  signature_validee: "Signature validée (nouvel inscrit)",
+  doublon_garde: "Doublon d'entreprise : les deux signatures gardées",
+  entreprise_mise_a_jour: "Entreprise mise à jour avec la saisie du CEO",
+  signature_retiree_admin: "Signature retirée par un admin",
+  signature_refusee: "Signature refusée",
+  signature_retablie: "Signature rétablie",
+  commentaire_traite: "Commentaire traité",
 } as const;
 
 export type ActionJournal = keyof typeof LIBELLES_ACTIONS;

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { BarreEtapes } from "@/components/admin/barre-etapes";
+import { compterAVerifier } from "@/lib/verification/serveur";
 import { NavBasse, NavLaterale } from "@/components/admin/navigation";
 import { exigerSessionAdmin } from "@/lib/session-admin";
 import { creerClientServeur } from "@/lib/supabase/server";
@@ -31,6 +32,8 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
         .limit(1)
         .maybeSingle()
     : { data: null };
+  /* Signatures à vérifier, affichées à côté de « CEO » dans la navigation */
+  const aVerifier = manifeste ? await compterAVerifier(supabase, manifeste.id) : 0;
 
   return (
     <div data-ambiance="admin" className="min-h-dvh min-[820px]:grid min-[820px]:grid-cols-[228px_minmax(0,1fr)]">
@@ -46,7 +49,7 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
             </small>
           </span>
         </div>
-        <NavLaterale />
+        <NavLaterale aVerifier={aVerifier} />
       </aside>
 
       <section className="min-w-0 px-4 pt-4 pb-24 min-[820px]:px-8 min-[820px]:pt-6">
@@ -58,7 +61,7 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
         {children}
       </section>
 
-      <NavBasse />
+      <NavBasse aVerifier={aVerifier} />
     </div>
   );
 }

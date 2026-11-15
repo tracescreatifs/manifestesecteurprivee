@@ -30,9 +30,11 @@ export async function GET(_requete: Request, { params }: { params: Promise<{ jet
     .eq("invitation_id", invitation.id)
     .is("retiree_le", null)
     .maybeSingle();
-  if (!signature) return introuvable("Aucune signature pour ce lien.");
+  /* Signature retirée ou refusée par un admin : l'accusé déjà émis reste téléchargeable (D25) */
+  const id = signature?.id ?? (invitation.refusee ? invitation.decisionSignatureId : null);
+  if (!id) return introuvable("Aucune signature pour ce lien.");
 
-  const accuse = await accusePourSignature(signature.id);
+  const accuse = await accusePourSignature(id);
   if (!accuse) return introuvable("Aucune signature pour ce lien.");
 
   return new Response(Buffer.from(accuse.octets), {

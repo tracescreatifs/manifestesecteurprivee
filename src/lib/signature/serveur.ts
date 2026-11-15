@@ -6,7 +6,7 @@ import type { ChoixFiche } from "@/lib/signature/fiche";
 import { formaterTelephone, normaliserNomEntreprise } from "@/lib/ceo/normaliser";
 import { lireSiteUrl } from "@/lib/env";
 import { creerClientAdmin } from "@/lib/supabase/admin";
-import type { Bloc, Json, TraceSignature } from "@/types/database";
+import type { Bloc, EtatVerification, Json, TraceSignature } from "@/types/database";
 
 import {
   CHAMPS,
@@ -84,6 +84,8 @@ export type EspaceCeo = {
   choix: ChoixFiche;
   /* Code de parrainage du CEO, pour « Inviter un confrère » */
   codeParrainage: string | null;
+  /* Signature retirée ou refusée par un admin : « Votre signature n'a pas été retenue » ; l'accusé émis reste téléchargeable */
+  refus: { reference: string; signeLe: string; retireeLe: string } | null;
 };
 
 type InvitationLue = {
@@ -92,6 +94,8 @@ type InvitationLue = {
   personne_id: string | null;
   origine: "liste" | "lien_ouvert" | "parrainage";
   code_parrainage: string | null;
+  verification: EtatVerification;
+  decision_signature_id: string | null;
   saisie_liste: Json | null;
   saisie_ceo: Json | null;
   personne: { prenom: string; nom: string; fonction: string | null; telephone: string | null; photo_path: string | null } | null;
@@ -113,7 +117,7 @@ async function lireInvitation(jeton: string): Promise<InvitationLue | null> {
   const { data } = await creerClientAdmin()
     .from("invitations")
     .select(
-      "id, manifeste_id, personne_id, origine, code_parrainage, saisie_liste, saisie_ceo, " +
+      "id, manifeste_id, personne_id, origine, code_parrainage, verification, decision_signature_id, saisie_liste, saisie_ceo, " +
         "personne:personnes(prenom, nom, fonction, telephone, photo_path), entreprise:entreprises(nom, maillon:maillons(libelle))",
     )
     .eq("jeton", jeton)
@@ -124,10 +128,24 @@ async function lireInvitation(jeton: string): Promise<InvitationLue | null> {
 /* Invitation d'un jeton valide (pour les actions du CEO) */
 export async function invitationDuJeton(
   jeton: string,
-): Promise<{ id: string; manifesteId: string; personneId: string | null; photoPath: string | null } | null> {
+): Promise<{
+  id: string;
+  manifesteId: string;
+  personneId: string | null;
+  photoPath: string | null;
+  refusee: boolean;
+  decisionSignatureId: string | null;
+} | null> {
   const inv = await lireInvitation(jeton);
   return inv
-    ? { id: inv.id, manifesteId: inv.manifeste_id, personneId: inv.personne_id, photoPath: inv.personne?.photo_path ?? null }
+    ? {
+        id: inv.id,
+        manifesteId: inv.manifeste_id,
+        personneId: inv.personne_id,
+        photoPath: inv.personne?.photo_path ?? null,
+        refusee: inv.verification === "rejete",
+        decisionSignatureId: inv.decision_signature_id,
+      }
     : null;
 }
 
@@ -228,6 +246,18 @@ export async function lireEspace(jeton: string): Promise<EspaceCeo | null> {
   /* Images des autres signatures retirées avant la publication (D75) : elles ne quittent pas le serveur */
   const annexe = masquerAnnexe(lignes, etat === "publie");
 
+  /* Refus par un admin : la signature concernée (retirée), pour la carte et l'accusé déjà émis */
+  const refus =
+    inv.verification === "rejete" && inv.decision_signature_id
+      ? (
+          await supabase
+            .from("signatures")
+            .select("reference, signe_le, retiree_le")
+            .eq("id", inv.decision_signature_id)
+            .maybeSingle()
+        ).data
+      : null;
+
   const [photo, choix] = await Promise.all([
     inv.personne?.photo_path
       ? supabase.storage.from("photos").createSignedUrl(inv.personne.photo_path, 3600)
@@ -288,13 +318,14 @@ export async function lireEspace(jeton: string): Promise<EspaceCeo | null> {
     photoUrl: photo.data?.signedUrl ?? null,
     choix,
     codeParrainage: inv.code_parrainage,
+    refus: refus ? { reference: refus.reference, signeLe: refus.signe_le, retireeLe: refus.retiree_le ?? refus.signe_le } : null,
     commentaires: (commentaires ?? []).map((c) => ({ id: c.id, blocId: c.bloc_id, texte: c.texte, creeLe: c.cree_le })),
   };
 }
 
 /* ----- Dépôt réel pour l'orchestration de la signature ----- */
 
-const CODES: CodeErreur[] = ["cle_invalide", "lien_invalide", "deja_signe", "aucune_version"];
+const CODES: CodeErreur[] = ["cle_invalide", "lien_invalide", "deja_signe", "aucune_version", "signature_refusee"];
 
 function versSignature(r: Record<string, unknown>): SignatureEnregistree {
   return {
@@ -331,7 +362,12 @@ export function creerDepot(options: { trace: TraceSignature; appareil: string })
       ]);
       if (!manifeste) return null;
       return {
-        invitation: { id: inv.id, origine: inv.origine, saisieListe: versSaisie(inv.saisie_liste) },
+        invitation: {
+          id: inv.id,
+          origine: inv.origine,
+          saisieListe: versSaisie(inv.saisie_liste),
+          refusee: inv.verification === "rejete",
+        },
         manifeste: {
           statut: manifeste.statut,
           dateLimite: manifeste.date_limite,

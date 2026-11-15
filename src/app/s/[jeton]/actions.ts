@@ -39,6 +39,7 @@ const MESSAGES: Record<CodeErreur, string> = {
   deja_signe: "Vous avez déjà signé le Manifeste.",
   cle_invalide: "La signature n'a pas pu être enregistrée. Rechargez la page, puis réessayez.",
   aucune_version: "Le texte n'est pas disponible. Réessayez dans quelques minutes.",
+  signature_refusee: "Votre signature n'a pas été retenue : ce lien ne permet plus de signer.",
   echec: "La signature n'a pas pu être enregistrée. Réessayez : elle ne sera jamais enregistrée deux fois.",
 };
 
@@ -143,6 +144,7 @@ export async function commenter(entree: { jeton: string; texte: string; blocId: 
   if (!invitation.personneId) {
     return { ok: false, erreur: "Indiquez d'abord votre nom, à la première étape de la signature." };
   }
+  if (invitation.refusee) return { ok: false, erreur: MESSAGES.signature_refusee };
 
   const supabase = creerClientAdmin();
   const [{ data: manifeste }, { data: version }] = await Promise.all([
