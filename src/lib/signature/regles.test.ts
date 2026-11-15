@@ -156,6 +156,24 @@ describe("signature", () => {
   });
 });
 
+describe("renvoi d'une signature retirée depuis (audit 06)", () => {
+  it("n'est jamais présenté comme enregistré, et dit le refus si un admin l'a refusée", async () => {
+    const d = depot();
+    await signer(d, { jeton: "JETON-VALIDE-1234567", cle: "cle-1", saisie: SAISIE }, LE_23);
+    d.enregistrees[0].retiree = true;
+    expect(await signer(d, { jeton: "JETON-VALIDE-1234567", cle: "cle-1", saisie: SAISIE }, LE_23)).toEqual({ ok: false, code: "cle_invalide" });
+    const refusee = depot();
+    await signer(refusee, { jeton: "JETON-VALIDE-1234567", cle: "cle-1", saisie: SAISIE }, LE_23);
+    refusee.enregistrees[0].retiree = true;
+    const contexte = await refusee.contexte("JETON-VALIDE-1234567");
+    if (contexte) contexte.invitation.refusee = true;
+    expect(await signer(refusee, { jeton: "JETON-VALIDE-1234567", cle: "cle-1", saisie: SAISIE }, LE_23)).toEqual({
+      ok: false,
+      code: "signature_refusee",
+    });
+  });
+});
+
 describe("tracé", () => {
   it("refuse un tracé trop court (un simple point)", () => {
     const point = { vb: "0 0 600 250", d: ["M100 100 L100.5 100.5"] };

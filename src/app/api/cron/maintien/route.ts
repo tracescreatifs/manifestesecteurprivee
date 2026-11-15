@@ -23,7 +23,9 @@ export async function GET(request: NextRequest) {
   try {
     secret = lireCronSecret();
   } catch (e) {
-    return NextResponse.json({ ok: false, erreur: (e as Error).message }, { status: 500 });
+    /* La cause (variable absente) va dans les journaux de Vercel, jamais dans la réponse publique */
+    console.error("Tâche planifiée :", (e as Error).message);
+    return NextResponse.json({ ok: false, erreur: "Accès refusé." }, { status: 401 });
   }
 
   if (!secretValide(request.headers.get("authorization"), secret)) {

@@ -129,9 +129,9 @@ export function comparerChamps(
   }));
 }
 
-/* Message après la validation d'un nouvel inscrit (texte du prompt 07) */
-export function messageValidation(prenom: string): string {
-  return `Bonjour ${prenom}, votre signature du Manifeste du secteur privé sénégalais de l'eau et de l'assainissement est validée. Merci. La Task Force du secteur privé sénégalais de l'eau et de l'assainissement`;
+/* Message après la validation d'un nouvel inscrit, avec son lien personnel (D93) */
+export function messageValidation(prenom: string, lien: string): string {
+  return `Bonjour ${prenom}, votre signature du Manifeste du secteur privé sénégalais de l'eau et de l'assainissement est validée. Merci. Vous pouvez retrouver votre accusé et compléter votre fiche avec ce lien : ${lien} La Task Force du secteur privé sénégalais de l'eau et de l'assainissement`;
 }
 
 /* ----- Commentaires ----- */

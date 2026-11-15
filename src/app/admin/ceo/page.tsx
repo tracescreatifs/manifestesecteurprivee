@@ -80,6 +80,7 @@ export default async function PageCeo({ searchParams }: { searchParams: Promise<
         autoValidation={manifeste.auto_validation}
         statutManifeste={manifeste.statut}
         cible={typeof cas === "string" ? cas : null}
+        siteUrl={siteUrl}
       />
     ) : actif === "commentaires" ? (
       <OngletCommentaires commentaires={commentaires} blocs={version?.blocs ?? []} statutManifeste={manifeste.statut} />

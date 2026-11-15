@@ -126,7 +126,8 @@ export function BarreReseau({ etat }: { etat: "perdue" | "retablie" | null }) {
         <div
           className={
             "flex items-center gap-2 px-4 py-2.5 text-[13.5px] text-white [&_svg]:size-[18px] [&_svg]:shrink-0 " +
-            (etat === "perdue" ? "bg-argile" : "bg-succes")
+            /* Encre et non argile : l'argile est réservée à « à vérifier » (charte), et le contraste est AA */
+            (etat === "perdue" ? "bg-encre" : "bg-succes")
           }
         >
           {etat === "perdue" ? <WifiOff aria-hidden="true" strokeWidth={1.75} /> : <Wifi aria-hidden="true" strokeWidth={1.75} />}

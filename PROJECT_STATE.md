@@ -1,12 +1,12 @@
 # État du projet
 
-Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 07, 15 novembre 2026.
+Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 06, 15 novembre 2026.
 
 ---
 
 ## Feuille de route des prompts
 
-Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26. Le prompt 07 est avancé avant l'audit (06), pour que l'audit porte sur la plateforme complète avant l'envoi du 23 novembre. Un prompt d'audit est ajouté après les prompts 08 et 09.
+Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26. Le prompt 07 est avancé avant l'audit (06), pour que l'audit porte sur la plateforme complète avant l'envoi du 23 novembre. Un prompt d'audit est ajouté après les prompts 08 et 09. À partir du 23 novembre 2026, chaque lot part sur sa propre branche (`feat/...`, `fix/...`) avant sa fusion dans `main`.
 
 | N° | Contenu | Branche | À livrer avant | Statut |
 | --- | --- | --- | --- | --- |
@@ -19,10 +19,10 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 | 05 | Espace CEO, partie 1 : lecture, commentaires, signature en 3 étapes, annexe, moment de l'annexe, accusé, confidentialité, refus des signatures après la date limite | `main` | 21 novembre 2026 | Validé |
 | 05.2 | Espace CEO, partie 2 : lien ouvert (`/rejoindre`), parrainage, fiche et photo, refaire ou retirer sa signature, coupures réseau (signature gardée sur l'appareil), signature depuis le téléphone (QR code), accusé PDF et correctifs | `main` | 21 novembre 2026 | Validé |
 | 05.3 | Correctifs de l'espace CEO : fermeture des fenêtres du parcours, signature par QR code après une inscription par le lien ouvert | `main` | 21 novembre 2026 | Validé |
-| 07 | Vérification des signatures (« À vérifier ») et traitement des commentaires, avancé avant l'audit | `main` | 21 novembre 2026 | En cours de validation |
-| 06 | Audit complet et vérifications d'avant mise en ligne (domaine, redirections, RLS, parcours sur téléphone et ordinateur), sur la plateforme complète | `main` | 22 novembre 2026 | À faire |
-| 08 | Document final : PDF A4, clôture, publication, signataires sur place | branche | 2 décembre 2026 | À faire |
-| 09 | Cahier de doléances | branche | décembre 2026 | À faire |
+| 07 | Vérification des signatures (« À vérifier ») et traitement des commentaires, avancé avant l'audit | `main` | 21 novembre 2026 | Validé |
+| 06 | Audit complet et vérifications d'avant mise en ligne (domaine, redirections, RLS, parcours sur téléphone et ordinateur), sur la plateforme complète ; message de validation avec le lien ; script de nettoyage des données de test | `main` | 22 novembre 2026 | En cours de validation |
+| 08 | Document final : PDF A4, clôture, publication, signataires sur place | branche `feat/...`, après le 23 novembre | 2 décembre 2026 | À faire |
+| 09 | Cahier de doléances | branche `feat/...`, après le 23 novembre | décembre 2026 | À faire |
 
 ---
 
@@ -68,6 +68,12 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 - Prompt 07, migration `0006_verification.sql` : décision sur l'invitation (`decision`, `decision_signature_id`), fonctions `confirmer_signature`, `mettre_a_jour_entreprise`, `retirer_signature_admin`, `retablir_signature` et `traiter_commentaire` (admins actifs seulement, journalisées), et nouvelle version d'`enregistrer_signature` qui refuse un lien rejeté. Testée deux fois de suite sur PostgreSQL 16, avec chaque décision, le refus sans session d'admin, le refus d'une nouvelle signature après un rejet, le rétablissement et la date limite.
 - Rubrique CEO, onglet « À vérifier » : modification (comparaison champ par champ, empilée sur téléphone ; « Marquer comme vérifié », « Mettre à jour l'entreprise »), nouvel inscrit (« Valider », puis « Prévenir sur WhatsApp » ; « Refuser »), doublon d'entreprise (les deux signatures côte à côte ; « Garder les deux », « Retirer cette signature ») ; retrait ou refus avec confirmation et motif facultatif ; filtre « Traités » avec la décision, l'admin et la date. Nombre de cas à côté de « CEO » dans la navigation, en argile (D89, D90).
 - Onglet « Commentaires » : regroupés par paragraphe, filtres par statut, statut et note interne, avertissement avant « Intégré » après le gel (D92). Fiche du CEO : état de vérification, raccourci vers le cas, « Rétablir », commentaires. Côté CEO : « Votre signature n'a pas été retenue », accusé toujours téléchargeable (D91). Tests vitest : 82.
+- Prompt 06, audit avant l'envoi des liens : parcours admin et CEO relus dans le code et rejoués dans un navigateur (05, 05.2, 05.3, 07), audit de sécurité table par table, bucket par bucket, fonction par fonction et route par route, cohérence des libellés et règles de rédaction, 17 écrans à 5 tailles, accessibilité, contrastes, charte, performance de l'espace CEO remesurée.
+- Migration `0007_audit.sql` : références de signature et séquence réservées à la clé secrète, numérotation au-delà de 9999 sans troncature, droits d'exécution retirés à `anon` sur les fonctions d'admin, signatures jamais supprimées, versions du texte immuables, journal écrit au nom de l'admin connecté seulement, verrou contre le retrait simultané des deux derniers admins, clé anti-doublon obligatoire, refus des changements après la publication, buckets privés avec taille et format limités (D94). Testée deux fois de suite sur PostgreSQL 16.
+- Correctifs du code relevés par l'audit (D95, D97, D98) : photo (envoi limité avant lecture, deux envois simultanés, retrait toujours possible), accords de la fiche donnés seulement avec une signature active, limite de 30 commentaires par heure et double clic absorbé, signature retirée renvoyée sans être réenregistrée, page « Le service est momentanément indisponible » au lieu d'un faux « lien non valide », aperçu WhatsApp sans aucune lecture en base, accusé encore téléchargeable après un refus, envoi et relance comptés une seule fois en cas de double clic, taille du Word décompressé limitée, aucun Referer depuis `/auth/confirm`.
+- Charte : bandeau de coupure réseau en encre, icônes et pastilles neutres, l'argile réservée à « à vérifier » et aux champs modifiés (D99).
+- Message « Prévenir sur WhatsApp » après la validation d'un nouvel inscrit : il contient le lien personnel (D93).
+- Script `supabase/seed/9000_nettoyage_donnees_test.sql` : aperçu d'abord, puis suppression des entreprises de test en une transaction, séquence des références remise à MSP-2026-0001 s'il ne reste aucune signature, journal intact (D96). Testé sur PostgreSQL 16 avec une entreprise réelle qui reste intacte. Tests vitest : 83.
 
 ---
 
@@ -83,7 +89,9 @@ Claude Code ne marque jamais une migration comme exécutée : Ziza le confirme, 
 | 0003 | `supabase/migrations/0003_ceo_email.sql` | Email des CEO enregistré à l'import et à la modification (fonctions de 0002 remplacées) | Oui (15 novembre 2026) |
 | 0004 | `supabase/migrations/0004_signature.sql` | Numéro WhatsApp de la Task Force (`manifestes.whatsapp_task_force`), fonctions `enregistrer_signature` et `resultat_signature` (une transaction, clé secrète seulement) | Oui (15 novembre 2026) |
 | 0005 | `supabase/migrations/0005_espace_ceo.sql` | Bucket privé `accuses`, table `inscriptions_ouvertes` (empreintes), fonctions `inscrire_par_lien_ouvert`, `retirer_signature` et `enregistrer_brouillon` (clé secrète seulement) | Oui (15 novembre 2026) |
-| 0006 | `supabase/migrations/0006_verification.sql` | Décision de l'admin sur l'invitation, fonctions de vérification et de traitement des commentaires (admins actifs, journalisées), signature refusée après un rejet | Non |
+| 0006 | `supabase/migrations/0006_verification.sql` | Décision de l'admin sur l'invitation, fonctions de vérification et de traitement des commentaires (admins actifs, journalisées), signature refusée après un rejet | Oui (15 novembre 2026) |
+| 0007 | `supabase/migrations/0007_audit.sql` | Correctifs de l'audit 06 : droits des fonctions et de la séquence, signatures et versions jamais supprimées, journal au nom de l'admin, verrou du dernier admin, clé anti-doublon obligatoire, document publié protégé, limites des buckets | Non |
+| seed 9000 | `supabase/seed/9000_nettoyage_donnees_test.sql` | Nettoyage des données de test avant l'envoi des liens (aperçu, puis `confirmer` à `true`). Exécuté par Ziza seulement, jamais par Claude Code | Non |
 
 ---
 
@@ -124,3 +132,9 @@ Selon la partie 19 du cahier des charges.
 - Fichiers importés puis abandonnés sans cliquer sur « Annuler » : ils restent dans le bucket `imports` (quelques dizaines de Ko chacun). Un nettoyage pourra être ajouté si besoin.
 
 - « Mot de passe oublié » par email : le fournisseur email par défaut de Supabase n'envoie qu'aux membres du projet Supabase. Pour les autres admins, utiliser « Générer un lien de réinitialisation » (D16) tant qu'aucun SMTP n'est configuré sur le domaine définitif.
+
+- Inscription par le lien ouvert renvoyée après une coupure réseau : elle peut créer une deuxième invitation (sans deuxième signature). Une clé anti-doublon sur l'inscription demande une migration : à traiter dans un lot dédié.
+- Un admin connecté peut écrire directement dans les tables par l'API de Supabase (RLS « admin peut tout »), sans passer par les fonctions journalisées. À restreindre dans un lot dédié, après le 23 novembre.
+- Les jetons apparaissent dans les journaux d'accès de Vercel (adresse de la page) : accès réservé au compte Vercel.
+- La limite d'inscriptions par heure du lien ouvert repose sur l'adresse IP : un changement d'adresse la contourne (protection anti-spam, pas une barrière).
+- Le prompt 08 (signataires sur place) devra produire la référence par le serveur : `generer_reference_signature` n'est plus appelable par une session d'admin (0007).

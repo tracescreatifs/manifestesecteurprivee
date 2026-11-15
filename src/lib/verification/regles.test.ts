@@ -148,8 +148,8 @@ describe("comparaison, commentaires et messages", () => {
     expect(avertirIntegration("integre", "gele")).toBe(true);
     expect(avertirIntegration("integre", "redaction")).toBe(false);
     expect(avertirIntegration("retenu", "gele")).toBe(false);
-    expect(messageValidation("Ousmane")).toBe(
-      "Bonjour Ousmane, votre signature du Manifeste du secteur privé sénégalais de l'eau et de l'assainissement est validée. Merci. La Task Force du secteur privé sénégalais de l'eau et de l'assainissement",
+    expect(messageValidation("Ousmane", "https://exemple.sn/s/AbCdEfGhJkMnPqRsTuVw")).toBe(
+      "Bonjour Ousmane, votre signature du Manifeste du secteur privé sénégalais de l'eau et de l'assainissement est validée. Merci. Vous pouvez retrouver votre accusé et compléter votre fiche avec ce lien : https://exemple.sn/s/AbCdEfGhJkMnPqRsTuVw La Task Force du secteur privé sénégalais de l'eau et de l'assainissement",
     );
   });
 });

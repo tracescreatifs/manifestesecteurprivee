@@ -10,7 +10,7 @@ import { Modal } from "@/components/ui/modal";
 import { Toast, useToast } from "@/components/ui/toast";
 import { formaterDateHeure } from "@/lib/dates";
 import { formaterTelephone } from "@/lib/ceo/normaliser";
-import { lienWhatsApp } from "@/lib/ceo/message";
+import { lienPersonnel, lienWhatsApp } from "@/lib/ceo/message";
 import {
   comparerChamps,
   LIBELLES_DECISIONS,
@@ -54,6 +54,7 @@ export function OngletVerifier({
   autoValidation,
   statutManifeste,
   cible,
+  siteUrl,
 }: {
   aTraiter: CasVerification[];
   traites: CasVerification[];
@@ -61,6 +62,8 @@ export function OngletVerifier({
   statutManifeste: StatutManifeste;
   /* Raccourci depuis la fiche du CEO : le cas à montrer */
   cible?: string | null;
+  /* Adresse publique, pour le lien personnel du message de validation */
+  siteUrl: string | null;
 }) {
   const { message, afficher } = useToast();
   const [enCours, demarrer] = useTransition();
@@ -71,7 +74,7 @@ export function OngletVerifier({
   const [motif, setMotif] = useState("");
   const [erreur, setErreur] = useState<string>();
   /* Après « Valider » : proposer de prévenir le nouvel inscrit sur WhatsApp (facultatif) */
-  const [valide, setValide] = useState<{ prenom: string; telephone: string } | null>(null);
+  const [valide, setValide] = useState<{ prenom: string; telephone: string; jeton: string } | null>(null);
 
   /* Raccourci depuis la fiche : le cas visé est amené à l'écran */
   useEffect(() => {
@@ -92,7 +95,7 @@ export function OngletVerifier({
       setConfirmation(null);
       setMotif("");
       if (action === "valider") {
-        setValide({ prenom: cas.signature?.prenom || cas.saisie.prenom || "", telephone: cas.telephone });
+        setValide({ prenom: cas.signature?.prenom || cas.saisie.prenom || "", telephone: cas.telephone, jeton: cas.jeton });
       }
       afficher(
         action === "retirer"
@@ -126,10 +129,10 @@ export function OngletVerifier({
           <span className="min-w-0 flex-1">
             La signature de {valide.prenom || "ce CEO"} est validée. Vous pouvez le prévenir sur WhatsApp (facultatif).
           </span>
-          {valide.telephone ? (
+          {valide.telephone && siteUrl ? (
             <a
               className={classesBouton("secondaire", "min-h-10 px-3 text-[14px]")}
-              href={lienWhatsApp(valide.telephone, messageValidation(valide.prenom))}
+              href={lienWhatsApp(valide.telephone, messageValidation(valide.prenom, lienPersonnel(siteUrl, valide.jeton)))}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -137,7 +140,9 @@ export function OngletVerifier({
               Prévenir sur WhatsApp
             </a>
           ) : (
-            <span className="text-[13px]">Aucun numéro WhatsApp.</span>
+            <span className="text-[13px]">
+              {valide.telephone ? "L'adresse du site n'est pas configurée : le lien ne peut pas être construit." : "Aucun numéro WhatsApp."}
+            </span>
           )}
           <Button variante="discret" className="min-h-10 px-3 text-[14px]" onClick={() => setValide(null)}>
             Fermer

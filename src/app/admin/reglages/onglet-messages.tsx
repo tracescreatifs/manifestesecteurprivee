@@ -68,7 +68,7 @@ export function OngletMessages({ modele, dateLimite, siteUrl }: Props) {
       <div className="grid gap-2 border-t border-filet pt-3">
         <p className="text-[13px] font-medium text-texte-secondaire">Aperçu, avec un CEO fictif</p>
         <div className="relative rounded-[10px] bg-sureleve p-3 pt-8 text-[14px] whitespace-pre-wrap">
-          <span className="absolute top-2 left-3 rounded-md bg-argile-doux px-2 py-0.5 text-[12px] font-medium text-[#8a4724]">
+          <span className="absolute top-2 left-3 rounded-md bg-[#ECECEA] px-2 py-0.5 text-[12px] font-medium text-encre">
             Exemple
           </span>
           {apercu}

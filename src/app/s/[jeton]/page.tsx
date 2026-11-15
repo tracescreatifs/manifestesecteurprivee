@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Hourglass, Link2Off } from "lucide-react";
+import { Droplets, Hourglass, Link2Off } from "lucide-react";
+import { headers } from "next/headers";
 
 import { adresseDuSite, lireEspace, lireWhatsappTaskForce } from "@/lib/signature/serveur";
 
@@ -12,6 +13,8 @@ import { EspaceCeoClient } from "./espace-ceo";
   Titre générique : aucune donnée personnelle dans l'aperçu d'un lien partagé. La page reste en noindex.
   ?etape=2 : la signature reprend à l'étape 2 (QR code depuis l'ordinateur, ou juste après l'inscription).
 */
+
+const ROBOT_APERCU = /WhatsApp|facebookexternalhit|Facebot|meta-externalagent/i;
 
 export const metadata: Metadata = {
   title: "Votre espace de signature",
@@ -26,7 +29,23 @@ export default async function PageEspaceCeo({
   params: Promise<{ jeton: string }>;
   searchParams: Promise<{ etape?: string }>;
 }) {
-  const [{ jeton }, { etape }] = await Promise.all([params, searchParams]);
+  const [{ jeton }, { etape }, entetes] = await Promise.all([params, searchParams, headers()]);
+
+  /*
+    Robots d'aperçu de lien (WhatsApp, Facebook, D58) : ils ne lisent que le titre et l'image,
+    jamais les données du CEO. Rien n'est lu en base pour eux, et rien de personnel n'est envoyé.
+  */
+  if (ROBOT_APERCU.test(entetes.get("user-agent") ?? "")) {
+    return (
+      <EcranMessage
+        icone={<Droplets aria-hidden="true" strokeWidth={1.75} />}
+        titre="Manifeste du secteur privé sénégalais de l'eau et de l'assainissement"
+        texte="Lien personnel de signature."
+        whatsapp={null}
+      />
+    );
+  }
+
   const espace = await lireEspace(jeton);
 
   if (!espace) {

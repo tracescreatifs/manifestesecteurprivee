@@ -39,8 +39,26 @@ export default async function PageAccuse({ params }: { params: Promise<{ jeton: 
     return (
       <main data-ambiance="ceo" className="grid min-h-dvh place-items-center bg-papier px-5 py-12 text-center text-encre">
         <div className="grid max-w-[480px] justify-items-center gap-3">
-          <h1 className="font-titre text-[24px] font-normal">{espace ? "Aucune signature pour ce lien" : "Ce lien n'est pas valide"}</h1>
-          {espace ? (
+          <h1 className="font-titre text-[24px] font-normal">
+            {!espace ? "Ce lien n'est pas valide" : espace.refus ? "Votre signature n'a pas été retenue" : "Aucune signature pour ce lien"}
+          </h1>
+          {espace?.refus ? (
+            <>
+              <p className="text-texte-secondaire">L&apos;accusé déjà émis reste téléchargeable.</p>
+              <a
+                className={classesBouton("principal")}
+                href={`/s/${jeton}/accuse/pdf`}
+                download={`Accuse-${espace.refus.reference}.pdf`}
+              >
+                <FileDown aria-hidden="true" strokeWidth={1.75} />
+                Télécharger mon accusé
+              </a>
+              <Link className={classesBouton("secondaire")} href={`/s/${jeton}`}>
+                <ArrowLeft aria-hidden="true" strokeWidth={1.75} />
+                Retour au Manifeste
+              </Link>
+            </>
+          ) : espace ? (
             <>
               <p className="text-texte-secondaire">L&apos;accusé est disponible dès que vous avez signé le Manifeste.</p>
               <Link className={classesBouton("secondaire")} href={`/s/${jeton}`}>

@@ -211,7 +211,7 @@ export function OngletCommentaires({
           ) : null
         }
       >
-        <p className="flex items-start gap-2.5 rounded-[10px] bg-argile-doux px-4 py-3 text-[14px] text-[#6d3818] [&_svg]:mt-0.5 [&_svg]:size-[18px] [&_svg]:shrink-0">
+        <p className="flex items-start gap-2.5 rounded-[10px] bg-sureleve px-4 py-3 text-[14px] text-encre [&_svg]:mt-0.5 [&_svg]:size-[18px] [&_svg]:shrink-0">
           <AlertTriangle aria-hidden="true" strokeWidth={1.75} />
           <span>
             Le texte est gelé : seules des corrections mineures restent possibles. Intégrer un changement de fond demanderait de

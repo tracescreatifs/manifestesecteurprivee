@@ -29,6 +29,13 @@ import type { DepotRetrait } from "./retrait";
 
 export const JETON_VALIDE = /^[A-Za-z0-9]{16,64}$/;
 
+/* Base momentanément injoignable : l'écran d'erreur de l'espace CEO le dit clairement */
+export class ServiceIndisponible extends Error {
+  constructor() {
+    super("service_indisponible");
+  }
+}
+
 export type LigneAnnexe = {
   cle: string;
   prenom: string;
@@ -114,7 +121,7 @@ function versSaisie(valeur: Json | null): Partial<Record<Champ, string>> | null 
 
 async function lireInvitation(jeton: string): Promise<InvitationLue | null> {
   if (!JETON_VALIDE.test(jeton)) return null;
-  const { data } = await creerClientAdmin()
+  const { data, error } = await creerClientAdmin()
     .from("invitations")
     .select(
       "id, manifeste_id, personne_id, origine, code_parrainage, verification, decision_signature_id, saisie_liste, saisie_ceo, " +
@@ -122,6 +129,8 @@ async function lireInvitation(jeton: string): Promise<InvitationLue | null> {
     )
     .eq("jeton", jeton)
     .maybeSingle();
+  /* Base injoignable : ce n'est pas un lien invalide (écran « momentanément indisponible ») */
+  if (error) throw new ServiceIndisponible();
   return (data as unknown as InvitationLue | null) ?? null;
 }
 
@@ -179,8 +188,13 @@ export async function lireEspace(jeton: string): Promise<EspaceCeo | null> {
   if (!inv) return null;
   const supabase = creerClientAdmin();
 
-  const [{ data: manifeste }, { data: version }, { data: maillons }, { data: signatures }, { data: commentaires }] =
-    await Promise.all([
+  const [
+    { data: manifeste, error: erreurManifeste },
+    { data: version, error: erreurVersion },
+    { data: maillons },
+    { data: signatures, error: erreurSignatures },
+    { data: commentaires },
+  ] = await Promise.all([
       supabase
         .from("manifestes")
         .select("statut, date_limite, texte_consentement, whatsapp_task_force")
@@ -208,6 +222,7 @@ export async function lireEspace(jeton: string): Promise<EspaceCeo | null> {
         .eq("invitation_id", inv.id)
         .order("cree_le", { ascending: true }),
     ]);
+  if (erreurManifeste || erreurVersion || erreurSignatures) throw new ServiceIndisponible();
   if (!manifeste) return null;
 
   type SignatureLue = {
@@ -232,15 +247,16 @@ export async function lireEspace(jeton: string): Promise<EspaceCeo | null> {
   const etat = etatCampagne(manifeste.statut, manifeste.date_limite, new Date());
   const lignes: LigneAnnexe[] = lues
     .filter((s) => s.validee || s.invitation_id === inv.id)
-    .map((s) => ({
-      cle: s.id === mienne?.id ? "moi" : `s${lues.indexOf(s)}`,
+    .map((s, rang) => ({
+      cle: s.id === mienne?.id ? "moi" : `s${rang}`,
       prenom: s.prenom ?? "",
       nom: s.nom ?? "",
       fonction: s.fonction ?? "",
       entreprise: s.entreprise_nom ?? "",
       maillon: s.maillon_libelle ?? "",
       trace: estTrace(s.trace) ? s.trace : null,
-      signeLe: s.signe_le,
+      /* La date exacte des autres signatures n'est pas transmise (seule la sienne sert) */
+      signeLe: s.invitation_id === inv.id ? s.signe_le : "",
       moi: s.invitation_id === inv.id,
     }));
   /* Images des autres signatures retirées avant la publication (D75) : elles ne quittent pas le serveur */
@@ -352,7 +368,7 @@ export function creerDepot(options: { trace: TraceSignature; appareil: string })
       const inv = await lireInvitation(jeton);
       if (!inv) return null;
       manifesteId = inv.manifeste_id;
-      const [{ data: manifeste }, { count }] = await Promise.all([
+      const [{ data: manifeste, error }, { count, error: erreurCompte }] = await Promise.all([
         supabase.from("manifestes").select("statut, date_limite, auto_validation").eq("id", inv.manifeste_id).single(),
         supabase
           .from("signatures")
@@ -360,6 +376,7 @@ export function creerDepot(options: { trace: TraceSignature; appareil: string })
           .eq("invitation_id", inv.id)
           .is("retiree_le", null),
       ]);
+      if (error || erreurCompte) throw new ServiceIndisponible();
       if (!manifeste) return null;
       return {
         invitation: {
@@ -378,10 +395,11 @@ export function creerDepot(options: { trace: TraceSignature; appareil: string })
     },
 
     async parCle(cle) {
-      const { data } = await supabase.from("signatures").select("id").eq("cle_idempotence", cle).maybeSingle();
+      const { data, error } = await supabase.from("signatures").select("id, retiree_le").eq("cle_idempotence", cle).maybeSingle();
+      if (error) throw new ServiceIndisponible();
       if (!data) return null;
       const { data: resultat } = await supabase.rpc("resultat_signature", { p_signature_id: data.id, p_deja: true });
-      return resultat ? versSignature(resultat as Record<string, unknown>) : null;
+      return resultat ? { ...versSignature(resultat as Record<string, unknown>), retiree: data.retiree_le !== null } : null;
     },
 
     async doublonEntreprise(entrepriseNormalisee, invitationId) {
@@ -502,12 +520,13 @@ export type PageRejoindre = {
 
 export async function lirePageRejoindre(codeParrain: string | null): Promise<PageRejoindre | null> {
   const supabase = creerClientAdmin();
-  const { data: manifeste } = await supabase
+  const { data: manifeste, error } = await supabase
     .from("manifestes")
     .select("id, statut, date_limite, lien_ouvert_actif, texte_consentement, whatsapp_task_force")
     .order("cree_le", { ascending: true })
     .limit(1)
     .maybeSingle();
+  if (error) throw new ServiceIndisponible();
   if (!manifeste) return null;
   const code = (codeParrain ?? "").trim().toUpperCase();
   const [{ data: version }, { data: maillons }, { data: parrain }] = await Promise.all([

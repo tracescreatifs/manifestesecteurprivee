@@ -473,7 +473,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
     colonne = (
       <>
         <div className="grid gap-3 rounded-2xl border border-filet bg-surface p-5">
-          <span className="grid size-12 place-items-center rounded-full bg-argile-doux text-argile [&_svg]:size-6">
+          <span className="grid size-12 place-items-center rounded-full bg-[#EDE8DE] text-texte-secondaire [&_svg]:size-6">
             <CircleSlash aria-hidden="true" strokeWidth={1.75} />
           </span>
           <h1 className="font-titre text-[24px] leading-tight font-normal">Votre signature n&apos;a pas été retenue</h1>
@@ -582,7 +582,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
       <>
         {espace.etat === "clos" ? (
           <div className="grid justify-items-center gap-3 text-center">
-            <span className="grid size-16 place-items-center rounded-full bg-argile-doux text-argile [&_svg]:size-[30px]">
+            <span className="grid size-16 place-items-center rounded-full bg-[#EDE8DE] text-texte-secondaire [&_svg]:size-[30px]">
               <CircleSlash aria-hidden="true" strokeWidth={1.75} />
             </span>
             <h1 className="font-titre text-[22px] font-normal">Les signatures sont closes</h1>

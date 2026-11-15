@@ -40,6 +40,8 @@ export type SignatureCas = {
 
 export type CasVerification = {
   invitationId: string;
+  /* Jeton du lien personnel (admin seulement), pour « Prévenir sur WhatsApp » après la validation */
+  jeton: string;
   motif: MotifCas;
   origine: OrigineInvitation;
   verification: EtatVerification;
@@ -100,7 +102,7 @@ export async function lireVerification(
     supabase
       .from("invitations")
       .select(
-        "id, origine, verification, motif, decision, decision_signature_id, verifie_par, verifie_le, saisie_liste, saisie_ceo, " +
+        "id, jeton, origine, verification, motif, decision, decision_signature_id, verifie_par, verifie_le, saisie_liste, saisie_ceo, " +
           "invite_par_texte, parrain_invitation_id, entreprise_id, cree_le, " +
           "personne:personnes(prenom, nom, telephone), entreprise:entreprises(nom, maillon:maillons(libelle))",
       )
@@ -115,6 +117,7 @@ export async function lireVerification(
 
   type Inv = {
     id: string;
+    jeton: string;
     origine: OrigineInvitation;
     verification: EtatVerification;
     motif: MotifVerification | null;
@@ -169,6 +172,7 @@ export async function lireVerification(
     const parrain = i.parrain_invitation_id ? parId.get(i.parrain_invitation_id) : null;
     return {
       invitationId: i.id,
+      jeton: i.jeton,
       motif: motifDuCas(i.motif),
       origine: i.origine,
       verification: i.verification,

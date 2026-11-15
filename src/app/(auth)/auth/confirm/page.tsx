@@ -4,7 +4,8 @@ import { CarteAuth } from "@/components/admin/carte-auth";
 
 import { BoutonConfirmer, LienInvalide } from "./confirmer";
 
-export const metadata: Metadata = { title: "Accès à l'espace admin" };
+/* Le lien contient un jeton à usage unique : il ne part jamais vers un autre site dans l'en-tête Referer */
+export const metadata: Metadata = { title: "Accès à l'espace admin", referrer: "no-referrer" };
 
 /*
   Lien reçu par WhatsApp ou par email (invitation ou réinitialisation).

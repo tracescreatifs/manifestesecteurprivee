@@ -44,6 +44,7 @@ const MESSAGES: Record<CodeErreur, string> = {
 };
 
 const schemaJeton = z.string().regex(JETON_VALIDE);
+const LIMITE_COMMENTAIRES_PAR_HEURE = 30;
 /* Clé anti-doublon tirée une fois par le navigateur, renvoyée telle quelle en cas de nouvel essai */
 const schemaCle = z.string().regex(/^[A-Za-z0-9-]{16,64}$/);
 
@@ -70,7 +71,8 @@ export async function signerManifeste(entree: {
   if (!schemaCle.safeParse(entree.cle).success) return { ok: false, erreur: MESSAGES.cle_invalide, code: "cle_invalide" };
 
   const supabase = creerClientAdmin();
-  const { data: maillons } = await supabase.from("maillons").select("libelle").eq("actif", true);
+  const { data: maillons, error: erreurMaillons } = await supabase.from("maillons").select("libelle").eq("actif", true);
+  if (erreurMaillons) return { ok: false, erreur: MESSAGES.echec, code: "echec" };
   const saisie = schemaSaisie((maillons ?? []).map((m) => m.libelle)).safeParse(entree.saisie);
   if (!saisie.success) {
     const champs: Partial<Record<Champ, string>> = {};
@@ -94,7 +96,7 @@ export async function signerManifeste(entree: {
     const reference = resultat.signature.reference;
     after(() => rangerAccuse(reference).catch(() => undefined));
   }
-  return resultat;
+  return { ...resultat, signature: { ...resultat.signature, invitationId: "" } };
 }
 
 /* ----- Lien ouvert : appelé par le navigateur après l'affichage de la page (D65) ----- */
@@ -169,6 +171,21 @@ export async function commenter(entree: { jeton: string; texte: string; blocId: 
     return { ok: false, erreur: "Ce passage n'existe plus dans le texte. Rechargez la page." };
   }
 
+  /* Au plus 30 commentaires par heure et par lien ; un double clic ne crée pas deux commentaires */
+  const { data: recents } = await supabase
+    .from("commentaires")
+    .select("id, bloc_id, texte, cree_le")
+    .eq("invitation_id", invitation.id)
+    .gte("cree_le", new Date(Date.now() - 3600 * 1000).toISOString())
+    .order("cree_le", { ascending: false });
+  const dernier = recents?.[0];
+  if (dernier && dernier.texte === donnees.data.texte && dernier.bloc_id === blocId && Date.now() - new Date(dernier.cree_le).getTime() < 60 * 1000) {
+    return { ok: true, commentaire: { id: dernier.id, blocId: dernier.bloc_id, texte: dernier.texte, creeLe: dernier.cree_le } };
+  }
+  if ((recents?.length ?? 0) >= LIMITE_COMMENTAIRES_PAR_HEURE) {
+    return { ok: false, erreur: "Vous avez envoyé beaucoup de commentaires en une heure. Réessayez un peu plus tard." };
+  }
+
   const { data: cree, error } = await supabase
     .from("commentaires")
     .insert({
@@ -209,9 +226,11 @@ export async function preparerTelephone(entree: {
   if (!schemaJeton.safeParse(entree.jeton).success) return { ok: false, erreur: MESSAGES.lien_invalide };
   const invitation = await invitationDuJeton(entree.jeton);
   if (!invitation) return { ok: false, erreur: MESSAGES.lien_invalide };
+  if (invitation.refusee) return { ok: false, erreur: MESSAGES.signature_refusee };
 
   const supabase = creerClientAdmin();
-  const { data: maillons } = await supabase.from("maillons").select("libelle").eq("actif", true);
+  const { data: maillons, error: erreurMaillons } = await supabase.from("maillons").select("libelle").eq("actif", true);
+  if (erreurMaillons) return { ok: false, erreur: "Le service est momentanément indisponible. Réessayez dans quelques minutes." };
   const saisie = schemaSaisie((maillons ?? []).map((m) => m.libelle)).safeParse(entree.saisie);
   if (!saisie.success) return { ok: false, erreur: "Vérifiez vos informations, à l'étape 1." };
 
@@ -222,7 +241,11 @@ export async function preparerTelephone(entree: {
   if (error) {
     return {
       ok: false,
-      erreur: /signatures_fermees|date_limite_depassee/.test(error.message ?? "") ? MESSAGES.signatures_closes : MESSAGES.echec,
+      erreur: /signatures_fermees|date_limite_depassee/.test(error.message ?? "")
+        ? MESSAGES.signatures_closes
+        : /signature_refusee/.test(error.message ?? "")
+          ? MESSAGES.signature_refusee
+          : "Vos informations n'ont pas pu être gardées pour le téléphone. Réessayez.",
     };
   }
 
@@ -246,7 +269,7 @@ export async function verifierSignature(entree: {
   const invitation = await invitationDuJeton(entree.jeton);
   if (!invitation) return null;
   const active = await lireSignatureActive(invitation.id);
-  return active ? { signature: active.signature, trace: active.trace, modifies: [] } : null;
+  return active ? { signature: { ...active.signature, invitationId: "" }, trace: active.trace, modifies: [] } : null;
 }
 
 /* ----- Fiche facultative : consentements (la photo passe par la route /s/[jeton]/photo) ----- */
@@ -265,6 +288,18 @@ export async function enregistrerFiche(entree: { jeton: string; choix: ChoixFich
   const actuels = await lireChoix(invitation.personneId);
   const changements = (Object.keys(voulus) as (keyof ChoixFiche)[]).filter((t) => voulus[t] !== actuels[t]);
   if (!changements.length) return { ok: true };
+
+  /* Donner un accord demande une signature active (la fiche vient après la signature) ; le retirer est toujours possible */
+  if (changements.some((t) => voulus[t])) {
+    const { count } = await creerClientAdmin()
+      .from("signatures")
+      .select("id", { count: "exact", head: true })
+      .eq("invitation_id", invitation.id)
+      .is("retiree_le", null);
+    if (invitation.refusee || (count ?? 0) === 0) {
+      return { ok: false, erreur: "La fiche se complète après votre signature. Vous pouvez toujours retirer un accord déjà donné." };
+    }
+  }
 
   /* Chaque changement ajoute une ligne, avec le texte exact présenté (jamais de modification) */
   const { error } = await creerClientAdmin()

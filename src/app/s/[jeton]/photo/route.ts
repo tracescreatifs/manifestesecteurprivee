@@ -15,10 +15,13 @@ export const dynamic = "force-dynamic";
 const reponse = (corps: Record<string, unknown>, status = 200) =>
   Response.json(corps, { status, headers: { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" } });
 
-async function cible(jeton: string) {
+/* Ajouter une photo demande une signature active ; la retirer est toujours possible (droit de retrait) */
+async function cible(jeton: string, signatureObligatoire: boolean) {
   if (!JETON_VALIDE.test(jeton)) return null;
   const invitation = await invitationDuJeton(jeton);
   if (!invitation?.personneId) return null;
+  if (!signatureObligatoire) return invitation;
+  if (invitation.refusee) return null;
   const { count } = await creerClientAdmin()
     .from("signatures")
     .select("id", { count: "exact", head: true })
@@ -29,7 +32,11 @@ async function cible(jeton: string) {
 
 export async function POST(requete: Request, { params }: { params: Promise<{ jeton: string }> }) {
   const { jeton } = await params;
-  const invitation = await cible(jeton);
+  /* Taille annoncée vérifiée avant de lire l'envoi */
+  const annoncee = Number(requete.headers.get("content-length") ?? 0);
+  if (annoncee > PHOTO_TAILLE_MAX + 64 * 1024) return reponse({ erreur: "Photo trop lourde. Choisissez-en une autre." }, 413);
+
+  const invitation = await cible(jeton, true);
   if (!invitation) return reponse({ erreur: "La photo est possible après votre signature." }, 403);
 
   const formulaire = await requete.formData().catch(() => null);
@@ -46,7 +53,14 @@ export async function POST(requete: Request, { params }: { params: Promise<{ jet
   const chemin = `${invitation.personneId}/${randomUUID()}.jpg`;
   const { error } = await supabase.storage.from("photos").upload(chemin, octets, { contentType: "image/jpeg", upsert: false });
   if (error) return reponse({ erreur: "La photo n'a pas pu être enregistrée. Réessayez." }, 500);
-  await supabase.from("personnes").update({ photo_path: chemin }).eq("id", invitation.personneId as string);
+
+  /* Mise à jour seulement si la photo n'a pas changé entre-temps (deux envois simultanés) */
+  const maj = supabase.from("personnes").update({ photo_path: chemin }, { count: "exact" }).eq("id", invitation.personneId as string);
+  const { error: erreurMaj, count } = await (invitation.photoPath ? maj.eq("photo_path", invitation.photoPath) : maj.is("photo_path", null));
+  if (erreurMaj || count === 0) {
+    await supabase.storage.from("photos").remove([chemin]);
+    return reponse({ erreur: "La photo n'a pas pu être enregistrée. Réessayez." }, erreurMaj ? 500 : 409);
+  }
   if (invitation.photoPath) await supabase.storage.from("photos").remove([invitation.photoPath]);
 
   const { data } = await supabase.storage.from("photos").createSignedUrl(chemin, 3600);
@@ -55,11 +69,12 @@ export async function POST(requete: Request, { params }: { params: Promise<{ jet
 
 export async function DELETE(_requete: Request, { params }: { params: Promise<{ jeton: string }> }) {
   const { jeton } = await params;
-  const invitation = await cible(jeton);
+  const invitation = await cible(jeton, false);
   if (!invitation) return reponse({ erreur: "Ce lien n'est pas valide." }, 403);
 
   const supabase = creerClientAdmin();
-  await supabase.from("personnes").update({ photo_path: null }).eq("id", invitation.personneId as string);
+  const { error } = await supabase.from("personnes").update({ photo_path: null }).eq("id", invitation.personneId as string);
+  if (error) return reponse({ erreur: "La photo n'a pas pu être retirée. Réessayez." }, 500);
   if (invitation.photoPath) await supabase.storage.from("photos").remove([invitation.photoPath]);
 
   /* Sans photo, l'accord pour la communication tombe : une ligne de retrait est ajoutée */

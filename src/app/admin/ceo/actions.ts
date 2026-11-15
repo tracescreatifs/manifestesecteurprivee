@@ -264,18 +264,24 @@ export async function enregistrerEnvoi(saisie: { invitationId: string; relance: 
     if (inv.statut_envoi !== "envoye" && inv.statut_envoi !== "ouvert") {
       return { ok: false, erreur: "Seul un CEO qui a reçu le lien sans signer peut être relancé." };
     }
-    const { error } = await supabase
+    /* Relance comptée une seule fois, même après un double clic (le nombre de relances sert de verrou) */
+    const { error, count } = await supabase
       .from("invitations")
-      .update({ relances: inv.relances + 1, derniere_relance_le: maintenant })
-      .eq("id", inv.id);
+      .update({ relances: inv.relances + 1, derniere_relance_le: maintenant }, { count: "exact" })
+      .eq("id", inv.id)
+      .eq("relances", inv.relances);
     if (error) return { ok: false, erreur: "La relance n'a pas pu être notée. Réessayez." };
+    if (count === 0) return { ok: true };
   } else {
     if (inv.statut_envoi !== "a_envoyer") return { ok: false, erreur: "Le lien a déjà été envoyé : utilisez « Relancer »." };
-    const { error } = await supabase
+    const { error, count } = await supabase
       .from("invitations")
-      .update({ statut_envoi: "envoye", envoye_le: maintenant })
-      .eq("id", inv.id);
+      .update({ statut_envoi: "envoye", envoye_le: maintenant }, { count: "exact" })
+      .eq("id", inv.id)
+      .eq("statut_envoi", "a_envoyer");
     if (error) return { ok: false, erreur: "L'envoi n'a pas pu être noté. Réessayez." };
+    /* Déjà noté par un premier clic : rien à journaliser de plus */
+    if (count === 0) return { ok: true };
   }
 
   await journaliser({

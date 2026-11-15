@@ -99,11 +99,21 @@ function nouvelId(): string {
   return `b${crypto.randomUUID().replace(/-/g, "").slice(0, 10)}`;
 }
 
+/* 20 Mo de XML décompressé par fichier, 40 Mo au total : bien au-delà d'un texte de Manifeste */
+const TAILLE_XML_MAX = 20 * 1024 * 1024;
+
 export function lireDocx(octets: Uint8Array): ResultatLecture {
   let fichiers: Record<string, Uint8Array>;
   try {
+    /* Taille décompressée plafonnée : un fichier piégé ne peut pas saturer la mémoire du serveur */
+    let total = 0;
     fichiers = unzipSync(octets, {
-      filter: (f) => f.name.startsWith("word/") && f.name.endsWith(".xml"),
+      filter: (f) => {
+        if (!(f.name.startsWith("word/") && f.name.endsWith(".xml"))) return false;
+        total += f.originalSize;
+        if (f.originalSize > TAILLE_XML_MAX || total > TAILLE_XML_MAX * 2) throw new Error("trop_gros");
+        return true;
+      },
     });
   } catch {
     throw new ErreurLecture("Ce fichier n'a pas pu être lu. Retéléchargez-le depuis le Google Doc au format Word (.docx).");

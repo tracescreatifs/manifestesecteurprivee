@@ -80,6 +80,8 @@ export type SignatureEnregistree = {
   validee: boolean;
   invitationId: string;
   deja: boolean;
+  /* Signature retrouvée par sa clé, mais retirée depuis (par le CEO ou par un admin) */
+  retiree?: boolean;
 };
 
 export type ContexteSignature = {
@@ -121,9 +123,10 @@ export async function signer(
   /* Clé anti-doublon : un renvoi renvoie la signature déjà enregistrée, sans rien créer */
   const existante = await depot.parCle(entree.cle);
   if (existante) {
-    return existante.invitationId === contexte.invitation.id
-      ? { ok: true, signature: { ...existante, deja: true }, modifies }
-      : { ok: false, code: "cle_invalide" };
+    if (existante.invitationId !== contexte.invitation.id) return { ok: false, code: "cle_invalide" };
+    /* Une signature retirée depuis n'est jamais présentée comme enregistrée */
+    if (existante.retiree) return { ok: false, code: contexte.invitation.refusee ? "signature_refusee" : "cle_invalide" };
+    return { ok: true, signature: { ...existante, deja: true }, modifies };
   }
 
   if (contexte.invitation.refusee) return { ok: false, code: "signature_refusee" };
