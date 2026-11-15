@@ -61,8 +61,8 @@ export const config = {
     /*
       Toutes les routes, sauf les fichiers de Next.js, les images,
       robots.txt, la tâche planifiée (qui n'a pas de session)
-      et l'espace CEO /s/[jeton] (sans compte : le jeton est validé par le serveur).
+      l'espace CEO /s/[jeton] (sans compte : le jeton est validé par le serveur) et /rejoindre.
     */
-    "/((?!_next/static|_next/image|favicon.ico|robots.txt|api/cron|s/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|api/cron|s/|rejoindre|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

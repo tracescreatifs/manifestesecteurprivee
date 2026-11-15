@@ -191,8 +191,19 @@ export function OngletAdmins({ admins, moi }: { admins: LigneAdmin[]; moi: strin
         ouvert={invitationOuverte}
         titre="Inviter un admin"
         onFermer={() => setInvitationOuverte(false)}
+        pied={
+          <>
+            <Button variante="discret" onClick={() => setInvitationOuverte(false)}>
+              Annuler
+            </Button>
+            <Button type="submit" form="formulaire-invitation" variante="principal" disabled={enCours}>
+              <UserPlus aria-hidden="true" strokeWidth={1.75} />
+              Créer le lien d&apos;invitation
+            </Button>
+          </>
+        }
       >
-        <form onSubmit={inviter} className="grid gap-4" noValidate>
+        <form id="formulaire-invitation" onSubmit={inviter} className="grid gap-4" noValidate>
           <div className="grid gap-4 min-[520px]:grid-cols-2">
             <Field id="i-prenom" libelle="Prénom">
               <Input id="i-prenom" name="prenom" autoComplete="off" required />
@@ -212,15 +223,6 @@ export function OngletAdmins({ admins, moi }: { admins: LigneAdmin[]; moi: strin
           <p className="text-[13px] text-texte-secondaire">
             Aucun email n&apos;est envoyé : un lien s&apos;affiche ensuite, à copier ou à envoyer sur WhatsApp.
           </p>
-          <div className="flex flex-wrap justify-end gap-2">
-            <Button variante="discret" onClick={() => setInvitationOuverte(false)}>
-              Annuler
-            </Button>
-            <Button type="submit" variante="principal" disabled={enCours}>
-              <UserPlus aria-hidden="true" strokeWidth={1.75} />
-              Créer le lien d&apos;invitation
-            </Button>
-          </div>
         </form>
       </Modal>
 

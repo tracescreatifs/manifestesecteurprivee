@@ -91,8 +91,23 @@ export function FormulaireCeo({ ouvert, onFermer, ceo, lignes, maillons, onEnreg
   };
 
   return (
-    <Modal ouvert={ouvert} titre={ceo ? "Modifier un CEO" : "Ajouter un CEO"} onFermer={fermer}>
-      <form onSubmit={envoyer} className="grid gap-4" noValidate key={ceo?.invitationId ?? "nouveau"}>
+    <Modal
+      ouvert={ouvert}
+      titre={ceo ? "Modifier un CEO" : "Ajouter un CEO"}
+      onFermer={fermer}
+      pied={
+        <>
+          <Button variante="discret" onClick={fermer}>
+            Annuler
+          </Button>
+          <Button type="submit" form="formulaire-ceo" variante="principal" disabled={enCours}>
+            {ceo ? <Save aria-hidden="true" strokeWidth={1.75} /> : <UserPlus aria-hidden="true" strokeWidth={1.75} />}
+            {doublon ? "Enregistrer quand même" : ceo ? "Enregistrer" : "Ajouter"}
+          </Button>
+        </>
+      }
+    >
+      <form id="formulaire-ceo" onSubmit={envoyer} className="grid gap-4" noValidate key={ceo?.invitationId ?? "nouveau"}>
         <div className="grid gap-4 min-[520px]:grid-cols-2">
           <Field id="c-prenom" libelle="Prénom">
             <Input id="c-prenom" name="prenom" defaultValue={initial.prenom} autoComplete="off" />
@@ -149,15 +164,6 @@ export function FormulaireCeo({ ouvert, onFermer, ceo, lignes, maillons, onEnreg
           </p>
         ) : null}
 
-        <div className="flex flex-wrap justify-end gap-2">
-          <Button variante="discret" onClick={fermer}>
-            Annuler
-          </Button>
-          <Button type="submit" variante="principal" disabled={enCours}>
-            {ceo ? <Save aria-hidden="true" strokeWidth={1.75} /> : <UserPlus aria-hidden="true" strokeWidth={1.75} />}
-            {doublon ? "Enregistrer quand même" : ceo ? "Enregistrer" : "Ajouter"}
-          </Button>
-        </div>
       </form>
     </Modal>
   );

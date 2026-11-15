@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle, Shield } from "lucide-react";
+import { MessageCircle, Shield, Wifi, WifiOff } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -17,17 +17,45 @@ export function lienQuestion(numero: string | null): string | null {
   return chiffres ? `https://wa.me/${chiffres}` : null;
 }
 
-/* Feuille : en bas de l'écran sur téléphone, au centre sur ordinateur */
+/* Copie dans le presse-papiers, avec un repli pour les navigateurs anciens */
+export async function copier(texte: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(texte);
+    return true;
+  } catch {
+    try {
+      const zone = document.createElement("textarea");
+      zone.value = texte;
+      zone.setAttribute("readonly", "");
+      zone.style.position = "fixed";
+      zone.style.opacity = "0";
+      document.body.appendChild(zone);
+      zone.select();
+      const ok = document.execCommand("copy");
+      zone.remove();
+      return ok;
+    } catch {
+      return false;
+    }
+  }
+}
+
+/*
+  Fenêtre centrée verticalement, sur téléphone comme sur ordinateur : 85 % de la hauteur de l'écran au plus,
+  contenu qui défile, boutons du bas toujours visibles.
+*/
 export function Feuille({
   ouverte,
   titre,
   onFermer,
   children,
+  pied,
 }: {
   ouverte: boolean;
   titre: string;
   onFermer: () => void;
   children: ReactNode;
+  pied?: ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const fermer = useRef(onFermer);
@@ -46,15 +74,47 @@ export function Feuille({
     <dialog
       ref={ref}
       aria-label={titre}
-      onClose={() => fermer.current()}
+      onClose={(e) => {
+        /* L'événement d'une fenêtre imbriquée remonte dans React : seule la fermeture de celle-ci compte */
+        if (e.target === e.currentTarget) fermer.current();
+      }}
       onClick={(e) => e.target === e.currentTarget && fermer.current()}
+      style={{ maxHeight: "min(85vh, 85dvh)" }}
       className={
-        "fixed inset-x-0 top-auto bottom-0 m-0 max-h-[85vh] w-full max-w-none overflow-y-auto rounded-t-[20px] bg-surface p-0 text-encre " +
-        "backdrop:bg-[rgba(20,33,43,0.4)] min-[760px]:inset-0 min-[760px]:m-auto min-[760px]:h-fit min-[760px]:max-w-[520px] min-[760px]:rounded-[18px]"
+        "fixed inset-0 m-auto h-fit max-h-[85vh] w-[calc(100%-32px)] max-w-[520px] overflow-hidden rounded-[18px] bg-surface p-0 text-encre " +
+        "backdrop:bg-[rgba(20,33,43,0.4)]"
       }
     >
-      {ouverte ? <div className="grid gap-3 px-5 pt-5 pb-6 min-[760px]:p-6">{children}</div> : null}
+      {ouverte ? (
+        <div className="flex max-h-[inherit] flex-col" style={{ maxHeight: "min(85vh, 85dvh)" }}>
+          <div className="grid min-h-0 flex-1 content-start gap-3 overflow-y-auto overscroll-contain px-5 pt-5 pb-4 min-[760px]:px-6 min-[760px]:pt-6">
+            {children}
+          </div>
+          {pied ? <div className="grid shrink-0 gap-2 border-t border-filet px-5 py-3 min-[760px]:px-6">{pied}</div> : null}
+        </div>
+      ) : null}
     </dialog>
+  );
+}
+
+/* Barre de connexion (signature gardée sur l'appareil, puis envoyée au retour du réseau) */
+export function BarreReseau({ etat }: { etat: "perdue" | "retablie" | null }) {
+  return (
+    <div role="status" aria-live="polite">
+      {etat ? (
+        <div
+          className={
+            "flex items-center gap-2 px-4 py-2.5 text-[13.5px] text-white [&_svg]:size-[18px] [&_svg]:shrink-0 " +
+            (etat === "perdue" ? "bg-argile" : "bg-succes")
+          }
+        >
+          {etat === "perdue" ? <WifiOff aria-hidden="true" strokeWidth={1.75} /> : <Wifi aria-hidden="true" strokeWidth={1.75} />}
+          {etat === "perdue"
+            ? "Connexion perdue. Votre signature est gardée sur cet appareil"
+            : "Connexion rétablie. Votre signature est enregistrée"}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -115,12 +175,16 @@ export function LiensPied({ whatsapp, confidentialite = true }: { whatsapp: stri
             <Shield aria-hidden="true" strokeWidth={1.75} />
             Confidentialité
           </button>
-          <Feuille ouverte={ouverte} titre="Confidentialité" onFermer={() => setOuverte(false)}>
+          <Feuille
+            ouverte={ouverte}
+            titre="Confidentialité"
+            onFermer={() => setOuverte(false)}
+            pied={<Button onClick={() => setOuverte(false)}>Fermer</Button>}
+          >
             <h3 className="font-titre text-xl font-normal">Confidentialité</h3>
             <div className="grid gap-3 text-[15px]">
               <TexteConfidentialite />
             </div>
-            <Button onClick={() => setOuverte(false)}>Fermer</Button>
           </Feuille>
         </>
       ) : null}

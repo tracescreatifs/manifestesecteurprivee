@@ -9,9 +9,14 @@ import {
   FileCheck,
   FileDown,
   FileText,
+  Hourglass,
   MessageSquare,
   PenTool,
+  RotateCcw,
   Send,
+  UserPlus,
+  UserRound,
+  XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -21,17 +26,22 @@ import { DocumentA4 } from "@/components/document/document-a4";
 import { Button, classesBouton } from "@/components/ui/button";
 import { formaterDateHeure, formaterJourLong } from "@/lib/dates";
 import type { LigneAnnexeA4 } from "@/lib/signature/annexe";
+import { garderEnAttente, INTERVALLE_RENVOI, lireEnAttente, oublierEnAttente, type EnvoiEnAttente } from "@/lib/signature/attente";
+import { schemaSaisie } from "@/lib/signature/saisie";
 import type { CommentaireCeo, EspaceCeo } from "@/lib/signature/serveur";
 import { numerosDesPoints } from "@/lib/texte/comparer";
 import { htmlSur, texteBrut } from "@/lib/texte/html";
 
-import { commenter, marquerOuvert } from "./actions";
-import { EXPEDITEUR, Feuille, LiensPied } from "./commun";
-import { ParcoursSignature, type Signee } from "./parcours-signature";
+import { commenter, marquerOuvert, retirerMaSignature, signerManifeste } from "./actions";
+import { BarreReseau, EXPEDITEUR, Feuille, LiensPied } from "./commun";
+import { FicheCeo } from "./fiche";
+import { InviterConfrere, ParcoursSignature, type EnvoiSignature, type Signee } from "./parcours-signature";
 
 /*
   Espace CEO (prototype 2-ceo.html) : lecture, page A4 avec l'annexe, commentaires,
-  signature en trois étapes, puis carte « Votre signature » au retour sur le lien.
+  signature en trois étapes, puis carte « Votre signature » au retour sur le lien
+  (accusé, fiche, refaire ou retirer, invitation d'un confrère).
+  Sur /rejoindre (lien ouvert), le même écran sert à l'inscription, sans jeton.
   Mise en page téléphone sous 760 px, ordinateur au-dessus.
 */
 
@@ -39,9 +49,32 @@ type Vue = "lecture" | "a4";
 
 const extrait = (t: string, n = 110) => (t.length > n ? `${t.slice(0, n).trim()}…` : t);
 
-export function EspaceCeoClient({ jeton, espace }: { jeton: string; espace: EspaceCeo }) {
+const stockage = () => {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+};
+
+type Props = {
+  jeton: string | null;
+  espace: EspaceCeo;
+  siteUrl: string | null;
+  /* ?etape=2 : arrivée depuis le QR code ou après l'inscription, la signature reprend à l'étape 2 */
+  reprendreSignature: boolean;
+  /* Page /rejoindre : inscription par le lien ouvert ou par parrainage */
+  rejoindre: { parrain: string | null; codeParrain: string } | null;
+};
+
+export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, rejoindre }: Props) {
   const router = useRouter();
   const version = espace.version;
+  const ouvert = espace.etat === "ouvert";
+  const saisieComplete = useMemo(
+    () => schemaSaisie(espace.maillons.map((m) => m.libelle)).safeParse(espace.saisieInitiale).success,
+    [espace.maillons, espace.saisieInitiale],
+  );
   const [vue, setVue] = useState<Vue>("lecture");
   const [focus, setFocus] = useState<string | null>(null);
   const [feuille, setFeuille] = useState<{ blocId: string | null } | null>(null);
@@ -49,14 +82,83 @@ export function EspaceCeoClient({ jeton, espace }: { jeton: string; espace: Espa
   const [erreurCommentaire, setErreurCommentaire] = useState<string>();
   const [envoiCommentaire, setEnvoiCommentaire] = useState(false);
   const [commentaires, setCommentaires] = useState<CommentaireCeo[]>(espace.commentaires);
-  const [parcours, setParcours] = useState(false);
+  const [parcours, setParcours] = useState(reprendreSignature && ouvert && !espace.signature);
+  /* Chaque nouvelle signature (après un retrait) repart d'un parcours neuf, avec une nouvelle clé */
+  const [numeroParcours, setNumeroParcours] = useState(0);
+  const [etapeInitiale, setEtapeInitiale] = useState<"infos" | "signature">(
+    reprendreSignature && saisieComplete ? "signature" : "infos",
+  );
   const [signeeLocale, setSigneeLocale] = useState<Signee | null>(null);
   const [annonce, setAnnonce] = useState<string | null>(null);
+  const [fiche, setFiche] = useState(false);
+  const [confirmation, setConfirmation] = useState<"retirer" | "refaire" | null>(null);
+  const [retrait, setRetrait] = useState<{ occupe: boolean; erreur?: string }>({ occupe: false });
+  const [attente, setAttente] = useState<EnvoiEnAttente | null>(null);
+  const [barre, setBarre] = useState<"perdue" | "retablie" | null>(null);
 
   /* « Ouvert » : noté par le navigateur après l'affichage, jamais par un aperçu de lien (D65) */
   useEffect(() => {
-    marquerOuvert({ jeton }).catch(() => undefined);
+    if (jeton) marquerOuvert({ jeton }).catch(() => undefined);
   }, [jeton]);
+
+  /* ?etape=2 n'est lu qu'une fois : l'adresse redevient le lien personnel */
+  useEffect(() => {
+    if (reprendreSignature) window.history.replaceState(null, "", window.location.pathname);
+  }, [reprendreSignature]);
+
+  /* Signature gardée sur l'appareil lors d'une coupure : reprise automatique au chargement */
+  const signatureServeur = espace.signature !== null;
+  useEffect(() => {
+    if (!jeton) return;
+    const t = window.setTimeout(() => {
+      if (signatureServeur) return oublierEnAttente(stockage(), jeton);
+      const gardee = lireEnAttente(stockage(), jeton, new Date());
+      if (gardee) {
+        setAttente(gardee);
+        setBarre("perdue");
+      }
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [jeton, signatureServeur]);
+
+  /* Renvoi au retour du réseau et toutes les 15 secondes, avec la même clé anti-doublon */
+  useEffect(() => {
+    if (!attente || !jeton) return;
+    let actif = true;
+    let enCours = false;
+    const tenter = async () => {
+      if (enCours || !actif || navigator.onLine === false) return;
+      enCours = true;
+      try {
+        const r = await signerManifeste({ jeton, cle: attente.cle, saisie: attente.saisie, trace: attente.trace });
+        if (!actif) return;
+        oublierEnAttente(stockage(), jeton);
+        setAttente(null);
+        if (r.ok) {
+          setSigneeLocale({ signature: r.signature, trace: attente.trace, modifies: r.modifies });
+          setBarre("retablie");
+          setParcours(true);
+        } else {
+          setBarre(null);
+          setAnnonce(r.erreur);
+        }
+        router.refresh();
+      } catch {
+        /* toujours hors ligne : nouvel essai plus tard */
+      } finally {
+        enCours = false;
+      }
+    };
+    const premier = window.setTimeout(tenter, 0);
+    const minuterie = window.setInterval(tenter, INTERVALLE_RENVOI);
+    window.addEventListener("online", tenter);
+    return () => {
+      actif = false;
+      window.clearTimeout(premier);
+      window.clearInterval(minuterie);
+      window.removeEventListener("online", tenter);
+    };
+  }, [attente, jeton, router]);
 
   /* Message bref, effacé après quelques secondes */
   useEffect(() => {
@@ -64,6 +166,11 @@ export function EspaceCeoClient({ jeton, espace }: { jeton: string; espace: Espa
     const t = window.setTimeout(() => setAnnonce(null), 2600);
     return () => window.clearTimeout(t);
   }, [annonce]);
+  useEffect(() => {
+    if (barre !== "retablie") return;
+    const t = window.setTimeout(() => setBarre(null), 3000);
+    return () => window.clearTimeout(t);
+  }, [barre]);
 
   const signature = espace.signature
     ? espace.signature
@@ -75,14 +182,15 @@ export function EspaceCeoClient({ jeton, espace }: { jeton: string; espace: Espa
         }
       : null;
 
-  const ouvert = espace.etat === "ouvert";
-  const peutCommenter = ouvert && espace.identifie;
+  const peutCommenter = ouvert && espace.identifie && jeton !== null;
   const prenom = espace.signature?.prenom || signeeLocale?.signature.prenom || espace.saisieInitiale.prenom;
   const dateLimite = formaterJourLong(espace.dateLimite);
   const blocs = useMemo(() => version?.blocs ?? [], [version]);
   const numeros = useMemo(() => numerosDesPoints(blocs), [blocs]);
+  const site = siteUrl ?? (typeof window === "undefined" ? "" : window.location.origin);
+  const lienInvitation = espace.codeParrainage ? `${site}/rejoindre?par=${espace.codeParrainage}` : null;
 
-  /* Annexe : signatures validées, et la sienne même en attente (jamais celles des autres en attente) */
+  /* Annexe : signatures validées, et la sienne même en attente (les images des autres sont masquées, D75) */
   const lignesAnnexe: LigneAnnexeA4[] = useMemo(() => {
     const lignes = espace.annexe.map((l) => ({ ...l }));
     if (signeeLocale && !espace.annexe.some((l) => l.moi)) {
@@ -110,7 +218,7 @@ export function EspaceCeoClient({ jeton, espace }: { jeton: string; espace: Espa
   };
 
   const envoyerCommentaire = async () => {
-    if (!feuille || envoiCommentaire) return;
+    if (!feuille || envoiCommentaire || !jeton) return;
     const texte = texteCommentaire.trim();
     if (texte.length < 2) return setErreurCommentaire("Écrivez au moins deux caractères.");
     setEnvoiCommentaire(true);
@@ -125,6 +233,33 @@ export function EspaceCeoClient({ jeton, espace }: { jeton: string; espace: Espa
       setErreurCommentaire("La connexion a échoué. Vérifiez votre connexion Internet, puis réessayez.");
     } finally {
       setEnvoiCommentaire(false);
+    }
+  };
+
+  const horsLigne = (envoi: EnvoiSignature) => {
+    if (!jeton) return;
+    garderEnAttente(stockage(), jeton, envoi, new Date());
+    setAttente({ ...envoi, garde: new Date().toISOString() });
+    setBarre("perdue");
+  };
+
+  const confirmerRetrait = async () => {
+    if (!jeton || !confirmation) return;
+    const refaire = confirmation === "refaire";
+    setRetrait({ occupe: true });
+    try {
+      const r = await retirerMaSignature({ jeton });
+      if (!r.ok) return setRetrait({ occupe: false, erreur: r.erreur });
+      setRetrait({ occupe: false });
+      setConfirmation(null);
+      setSigneeLocale(null);
+      setNumeroParcours((n) => n + 1);
+      setEtapeInitiale("infos");
+      router.refresh();
+      if (refaire) setParcours(true);
+      else setAnnonce("Signature retirée");
+    } catch {
+      setRetrait({ occupe: false, erreur: "La connexion a échoué. Vérifiez votre connexion Internet, puis réessayez." });
     }
   };
 
@@ -159,14 +294,8 @@ export function EspaceCeoClient({ jeton, espace }: { jeton: string; espace: Espa
 
   const lecture = version ? (
     <div className="lecture">
-      <h2 className="l-titre">
-        {version.titre.split("\n").map((ligne, i) => (
-          <span key={i}>
-            {i > 0 ? <br /> : null}
-            {ligne}
-          </span>
-        ))}
-      </h2>
+      {/* En lecture, le retour à la ligne du Word est ignoré : les lignes s'équilibrent selon l'écran */}
+      <h2 className="l-titre">{version.titre.replace(/\s*\n\s*/g, " ")}</h2>
       <div className="l-sous">{version.sousTitre}</div>
       <div className="l-filet" />
       {blocs.map((b, i) => {
@@ -226,27 +355,67 @@ export function EspaceCeoClient({ jeton, espace }: { jeton: string; espace: Espa
       blocs={blocs}
       brouillon={false}
       libelle={`Version ${version.numero}`}
-      annexe={{ lignes: lignesAnnexe }}
+      annexe={rejoindre ? undefined : { lignes: lignesAnnexe }}
     />
   ) : null;
 
-  const carteSignature = signature ? (
-    <div className="grid gap-3 rounded-2xl border border-filet bg-surface p-5">
-      <h2 className="flex items-center gap-2 font-titre text-[19px] font-normal [&_svg]:size-[18px] [&_svg]:text-texte-secondaire">
-        <PenTool aria-hidden="true" strokeWidth={1.75} />
-        Votre signature
-      </h2>
-      <p className="text-[14.5px]">
-        Signée le {formaterDateHeure(signature.signeLe)}.
-        <br />
-        Référence <span className="tabular-nums">{signature.reference}</span>.
-      </p>
-      <Link className={classesBouton("secondaire")} href={`/s/${jeton}/accuse`}>
-        <FileDown aria-hidden="true" strokeWidth={1.75} />
-        Télécharger mon accusé
-      </Link>
-    </div>
-  ) : null;
+  const carteSignature =
+    signature && jeton ? (
+      <div className="grid gap-3 rounded-2xl border border-filet bg-surface p-5">
+        <h2 className="flex items-center gap-2 font-titre text-[19px] font-normal [&_svg]:size-[18px] [&_svg]:text-texte-secondaire">
+          <PenTool aria-hidden="true" strokeWidth={1.75} />
+          Votre signature
+        </h2>
+        <p className="text-[14.5px]">
+          Signée le {formaterDateHeure(signature.signeLe)}.
+          <br />
+          Référence <span className="tabular-nums">{signature.reference}</span>.
+        </p>
+        {!signature.validee ? (
+          <p className="flex items-center gap-2 text-[13.5px] text-[#8a4724] [&_svg]:size-4">
+            <Hourglass aria-hidden="true" strokeWidth={1.75} />
+            En attente de vérification
+          </p>
+        ) : null}
+        <a className={classesBouton("secondaire")} href={`/s/${jeton}/accuse/pdf`} download={`Accuse-${signature.reference}.pdf`}>
+          <FileDown aria-hidden="true" strokeWidth={1.75} />
+          Télécharger mon accusé
+        </a>
+        <Link href={`/s/${jeton}/accuse`} className="inline-flex min-h-11 items-center justify-center text-[13.5px] text-eau">
+          Voir l&apos;aperçu de l&apos;accusé
+        </Link>
+        <Button onClick={() => setFiche(true)}>
+          <UserRound aria-hidden="true" strokeWidth={1.75} />
+          {espace.photoUrl || Object.values(espace.choix).some(Boolean) ? "Modifier ma fiche" : "Compléter ma fiche"}
+        </Button>
+        {ouvert ? (
+          <>
+            <div className="grid grid-cols-2 gap-2">
+              <Button className="min-h-11 px-3 text-[14px]" onClick={() => setConfirmation("refaire")}>
+                <RotateCcw aria-hidden="true" strokeWidth={1.75} />
+                Refaire
+              </Button>
+              <Button className="min-h-11 px-3 text-[14px]" onClick={() => setConfirmation("retirer")}>
+                <XCircle aria-hidden="true" strokeWidth={1.75} />
+                Retirer
+              </Button>
+            </div>
+            <p className="text-[13px] text-texte-secondaire">Possible jusqu&apos;à la clôture, le {dateLimite}.</p>
+          </>
+        ) : null}
+      </div>
+    ) : null;
+
+  const carteInvitation =
+    signature && ouvert && lienInvitation ? (
+      <div className="grid gap-3 rounded-2xl border border-filet bg-surface p-5">
+        <h2 className="flex items-center gap-2 font-titre text-[19px] font-normal [&_svg]:size-[18px] [&_svg]:text-texte-secondaire">
+          <UserPlus aria-hidden="true" strokeWidth={1.75} />
+          Invitez un confrère
+        </h2>
+        <InviterConfrere lien={lienInvitation} onCopie={setAnnonce} />
+      </div>
+    ) : null;
 
   const listeCommentaires = commentaires.length ? (
     <div className="grid gap-3 rounded-2xl border border-filet bg-surface p-5">
@@ -292,7 +461,7 @@ export function EspaceCeoClient({ jeton, espace }: { jeton: string; espace: Espa
 
   /* ----- Écran principal ----- */
   let colonne;
-  if (espace.etat === "ouvert") {
+  if (ouvert) {
     colonne = (
       <>
         {signature ? (
@@ -309,7 +478,7 @@ export function EspaceCeoClient({ jeton, espace }: { jeton: string; espace: Espa
             <h1 className="font-titre text-[28px] leading-[1.15] font-normal min-[760px]:text-[32px]">Bonjour {prenom},</h1>
             <p className="text-[16px] leading-[1.55] text-texte-secondaire">
               {signature
-                ? "Merci pour votre signature. Vous pouvez relire le texte et retrouver votre accusé."
+                ? "Merci pour votre signature. Vous pouvez relire le texte, retrouver votre accusé et compléter votre fiche."
                 : "Voici le Manifeste qui sera présenté à Abu Dhabi. Lisez-le, puis signez-le. Vous pouvez aussi laisser un commentaire à l'équipe de rédaction."}
             </p>
           </>
@@ -362,11 +531,12 @@ export function EspaceCeoClient({ jeton, espace }: { jeton: string; espace: Espa
             </Button>
           </div>
         ) : null}
+        {carteInvitation}
         {listeCommentaires}
       </>
     );
   } else {
-    /* Signatures closes (date limite passée ou clôture) et document publié : lecture seule */
+    /* Signatures closes (date limite ou clôture) et document publié : lecture seule */
     colonne = (
       <>
         {espace.etat === "clos" ? (
@@ -392,6 +562,11 @@ export function EspaceCeoClient({ jeton, espace }: { jeton: string; espace: Espa
   return (
     <div data-ambiance="ceo" className="min-h-dvh bg-papier text-encre">
       {entete}
+      {!parcours ? (
+        <div className="fixed inset-x-0 top-0 z-30 min-[760px]:top-16">
+          <BarreReseau etat={barre} />
+        </div>
+      ) : null}
       <main className="mx-auto grid w-full max-w-[1160px] content-start gap-4 px-5 pt-6 pb-[104px] min-[760px]:grid-cols-[minmax(0,1fr)_340px] min-[760px]:items-start min-[760px]:gap-12 min-[760px]:px-10 min-[760px]:pt-24 min-[760px]:pb-16">
         <aside className="grid min-w-0 content-start gap-4 min-[760px]:sticky min-[760px]:top-24 min-[760px]:order-2">
           <p className="text-[13px] text-texte-secondaire min-[760px]:hidden">Manifeste</p>
@@ -447,7 +622,20 @@ export function EspaceCeoClient({ jeton, espace }: { jeton: string; espace: Espa
         </div>
       ) : null}
 
-      <Feuille ouverte={feuille !== null} titre="Votre commentaire" onFermer={() => setFeuille(null)}>
+      <Feuille
+        ouverte={feuille !== null}
+        titre="Votre commentaire"
+        onFermer={() => setFeuille(null)}
+        pied={
+          <div className="grid grid-cols-2 gap-2">
+            <Button onClick={() => setFeuille(null)}>Annuler</Button>
+            <Button variante="principal" onClick={envoyerCommentaire} disabled={envoiCommentaire}>
+              <Send aria-hidden="true" strokeWidth={1.75} />
+              Envoyer
+            </Button>
+          </div>
+        }
+      >
         <h3 className="font-titre text-xl font-normal">Votre commentaire</h3>
         {blocCommente ? (
           <p className="rounded-lg bg-[#F6F2E8] px-3 py-2 text-[14px] text-texte-secondaire italic">
@@ -482,31 +670,89 @@ export function EspaceCeoClient({ jeton, espace }: { jeton: string; espace: Espa
             {erreurCommentaire}
           </p>
         ) : null}
-        <div className="grid grid-cols-2 gap-2">
-          <Button onClick={() => setFeuille(null)}>Annuler</Button>
-          <Button variante="principal" onClick={envoyerCommentaire} disabled={envoiCommentaire}>
-            <Send aria-hidden="true" strokeWidth={1.75} />
-            Envoyer
-          </Button>
-        </div>
       </Feuille>
+
+      <Feuille
+        ouverte={confirmation !== null}
+        titre={confirmation === "refaire" ? "Refaire votre signature" : "Retirer votre signature"}
+        onFermer={() => {
+          setConfirmation(null);
+          setRetrait({ occupe: false });
+        }}
+        pied={
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              onClick={() => {
+                setConfirmation(null);
+                setRetrait({ occupe: false });
+              }}
+            >
+              Garder
+            </Button>
+            <Button variante={confirmation === "refaire" ? "principal" : "danger"} onClick={confirmerRetrait} disabled={retrait.occupe}>
+              {confirmation === "refaire" ? "Refaire" : "Retirer"}
+            </Button>
+          </div>
+        }
+      >
+        <h3 className="font-titre text-xl font-normal">
+          {confirmation === "refaire" ? "Refaire votre signature ?" : "Retirer votre signature ?"}
+        </h3>
+        <p className="text-texte-secondaire">
+          {confirmation === "refaire"
+            ? "Votre signature actuelle est retirée, puis vous signez de nouveau. Vous recevrez une nouvelle référence et un nouvel accusé."
+            : `Votre nom et celui de votre entreprise n'apparaîtront pas dans l'annexe. Vous pourrez signer à nouveau jusqu'au ${dateLimite}.`}
+        </p>
+        {retrait.erreur ? (
+          <p role="alert" className="text-[13.5px] text-erreur">
+            {retrait.erreur}
+          </p>
+        ) : null}
+      </Feuille>
+
+      {jeton && signature ? (
+        <FicheCeo
+          ouverte={fiche}
+          onFermer={() => setFiche(false)}
+          jeton={jeton}
+          photoInitiale={espace.photoUrl}
+          choixInitiaux={espace.choix}
+          onEnregistree={(message) => {
+            setFiche(false);
+            setAnnonce(message);
+            router.refresh();
+          }}
+        />
+      ) : null}
 
       {ouvert && version && (!espace.signature || signeeLocale) ? (
         <ParcoursSignature
+          key={numeroParcours}
           ouvert={parcours}
           onFermer={() => setParcours(false)}
           jeton={jeton}
+          etapeInitiale={etapeInitiale}
           saisieInitiale={espace.saisieInitiale}
           saisieListe={espace.origine === "liste" ? espace.saisieListe : null}
           maillons={espace.maillons}
           version={version.numero}
           texteConsentement={espace.texteConsentement}
           annexe={autresLignes}
+          siteUrl={siteUrl}
+          codeParrainage={espace.codeParrainage}
+          nouvelInscrit={espace.origine !== "liste"}
+          inscription={rejoindre}
+          signee={signeeLocale}
           onSignee={(s) => {
             setSigneeLocale(s);
+            setParcours(true);
             router.refresh();
           }}
           onRefus={() => router.refresh()}
+          onHorsLigne={horsLigne}
+          envoiEnAttente={attente !== null}
+          barreReseau={barre}
+          onFiche={() => setFiche(true)}
         />
       ) : null}
 

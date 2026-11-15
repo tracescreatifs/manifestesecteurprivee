@@ -78,7 +78,11 @@ export function MomentAnnexe({
               <span className="block text-[11px] text-doc-gris">{l.fonction}</span>
             </div>
             <div className="h-11 min-[760px]:h-[52px]">
-              {l.trace ? estMoi ? <TraceEncre trace={l.trace} /> : <SignatureSvg trace={l.trace} className="h-full" /> : null}
+              {l.masquee ? (
+                <span className="grid h-full place-items-center font-doc-serif text-[12px] text-doc-gris italic">Signé</span>
+              ) : l.trace ? (
+                estMoi ? <TraceEncre trace={l.trace} /> : <SignatureSvg trace={l.trace} className="h-full" />
+              ) : null}
             </div>
           </div>
         );

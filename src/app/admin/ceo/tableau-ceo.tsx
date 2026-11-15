@@ -36,6 +36,7 @@ import { FileRelance } from "./file-relance";
 import { FormulaireCeo } from "./formulaire-ceo";
 import { ImportListe } from "./import-liste";
 import { LienOuvert } from "./lien-ouvert";
+import { ORIGINES_COURTES } from "./statuts";
 import { LIBELLES_STATUTS as STATUTS } from "./statuts";
 
 type Props = {
@@ -398,7 +399,10 @@ export function TableauCeo({
                     <Avatar ligne={l} />
                     <div className="min-w-0">
                       <div className="truncate font-semibold">{nomComplet}</div>
-                      <div className="truncate text-[13px] text-texte-secondaire">{l.fonction || " "}</div>
+                      <div className="truncate text-[13px] text-texte-secondaire">
+                        {l.fonction || " "}
+                        {l.origine !== "liste" ? ` · ${ORIGINES_COURTES[l.origine]}` : ""}
+                      </div>
                     </div>
                   </div>
                   <div className="col-span-2 row-start-2 min-w-0 min-[820px]:col-span-1 min-[820px]:row-start-auto">
@@ -413,6 +417,7 @@ export function TableauCeo({
                       <span className="size-[7px] rounded-full bg-current" />
                       {STATUTS[l.statut].libelle}
                     </Chip>
+                    {l.signature && !l.signature.validee ? <Chip variante="argile">À valider</Chip> : null}
                     <span className="text-[12.5px] text-texte-secondaire min-[820px]:hidden">{derniereActivite(l)}</span>
                   </div>
                   <div className="hidden text-[13px] text-texte-secondaire min-[820px]:block">{derniereActivite(l)}</div>

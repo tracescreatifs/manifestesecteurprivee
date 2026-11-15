@@ -282,6 +282,14 @@
   .ann-table .ghost {
     border-color: transparent !important;
   }
+  /* Signature d'un autre signataire, non montrée avant la publication (D75) */
+  .ann-table .ann-signe {
+    width: 100%;
+    text-align: center;
+    font-family: var(--font-doc-serif);
+    font-style: italic;
+    color: var(--color-doc-gris);
+  }
 }
 
 /*

@@ -2,7 +2,8 @@
 
 import { X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, useSyncExternalStore, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 const COURBE = [0.22, 1, 0.36, 1] as const;
 
@@ -51,7 +52,15 @@ export function Modal({ ouvert, titre, onFermer, children, pied, large = false }
 
   const transition = reduit ? { duration: 0 } : { duration: 0.22, ease: COURBE };
 
-  return (
+  /* Rendu dans un portail : un ancêtre en verre dépoli (backdrop-filter) ne déplace jamais la fenêtre */
+  const client = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
+  if (!client) return null;
+
+  return createPortal(
     <AnimatePresence>
       {ouvert ? (
         <motion.div
@@ -71,12 +80,13 @@ export function Modal({ ouvert, titre, onFermer, children, pied, large = false }
             aria-labelledby={idTitre}
             tabIndex={-1}
             className={`flex max-h-[85vh] w-full ${large ? "max-w-[820px]" : "max-w-[560px]"} flex-col overflow-hidden rounded-2xl bg-surface shadow-[0_24px_60px_rgba(20,33,43,0.25)] focus:outline-none`}
+            style={{ maxHeight: "min(85vh, 85dvh)" }}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
             transition={transition}
           >
-            <div className="flex items-center justify-between gap-3 border-b border-filet px-6 py-4">
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-filet px-6 py-4">
               <h3 id={idTitre} className="font-titre text-xl font-normal">
                 {titre}
               </h3>
@@ -90,13 +100,14 @@ export function Modal({ ouvert, titre, onFermer, children, pied, large = false }
                 <X aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
               </button>
             </div>
-            <div className="grid gap-4 overflow-y-auto px-6 py-6">{children}</div>
+            <div className="grid min-h-0 flex-1 content-start gap-4 overflow-y-auto overscroll-contain px-6 py-6">{children}</div>
             {pied ? (
-              <div className="flex flex-wrap justify-end gap-2 border-t border-filet px-6 py-4">{pied}</div>
+              <div className="flex shrink-0 flex-wrap justify-end gap-2 border-t border-filet px-6 py-4">{pied}</div>
             ) : null}
           </motion.div>
         </motion.div>
       ) : null}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }

@@ -1,9 +1,22 @@
 "use server";
 
 import { headers } from "next/headers";
+import { after } from "next/server";
+import QRCode from "qrcode";
 import { z } from "zod";
 
-import { creerDepot, invitationDuJeton, JETON_VALIDE } from "@/lib/signature/serveur";
+import { lireSiteUrl } from "@/lib/env";
+import { rangerAccuse } from "@/lib/signature/accuse-stockage";
+import { retirerSignature } from "@/lib/signature/retrait";
+import {
+  creerDepot,
+  creerDepotRetrait,
+  invitationDuJeton,
+  JETON_VALIDE,
+  lireChoix,
+  lireSignatureActive,
+} from "@/lib/signature/serveur";
+import { TEXTES_CHOIX, type ChoixFiche } from "@/lib/signature/fiche";
 import { etatCampagne, signer, type Champ, type CodeErreur, type SignatureEnregistree } from "@/lib/signature/regles";
 import { schemaSaisie, schemaTrace } from "@/lib/signature/saisie";
 import { creerClientAdmin } from "@/lib/supabase/admin";
@@ -75,6 +88,11 @@ export async function signerManifeste(entree: {
   const depot = creerDepot({ trace: trace.data, appareil: typeAppareil(agent) });
   const resultat = await signer(depot, { jeton: entree.jeton, cle: entree.cle, saisie: saisie.data }, new Date());
   if (!resultat.ok) return { ok: false, erreur: MESSAGES[resultat.code], code: resultat.code };
+  /* L'accusé PDF est produit et rangé juste après la réponse (D74) ; à défaut, au premier téléchargement */
+  if (!resultat.signature.deja) {
+    const reference = resultat.signature.reference;
+    after(() => rangerAccuse(reference).catch(() => undefined));
+  }
   return resultat;
 }
 
@@ -162,4 +180,102 @@ export async function commenter(entree: { jeton: string; texte: string; blocId: 
   if (error || !cree) return { ok: false, erreur: "Le commentaire n'a pas pu être envoyé. Réessayez." };
 
   return { ok: true, commentaire: { id: cree.id, blocId: cree.bloc_id, texte: cree.texte, creeLe: cree.cree_le } };
+}
+
+/* ----- Retirer sa signature (et première moitié de « Refaire ») ----- */
+
+export async function retirerMaSignature(entree: { jeton: string }): Promise<{ ok: true } | Echec> {
+  if (!schemaJeton.safeParse(entree.jeton).success) return { ok: false, erreur: MESSAGES.lien_invalide };
+  const r = await retirerSignature(creerDepotRetrait(), entree.jeton, new Date());
+  if (r.ok) return { ok: true };
+  const messages = {
+    lien_invalide: MESSAGES.lien_invalide,
+    pas_ouvert: MESSAGES.pas_ouvert,
+    signatures_closes: "Les signatures sont closes : votre signature ne peut plus être retirée.",
+    aucune_signature: "Votre signature est déjà retirée.",
+    echec: "Le retrait n'a pas pu être enregistré. Réessayez.",
+  } as const;
+  return { ok: false, erreur: messages[r.code] };
+}
+
+/* ----- Signer sur son téléphone : brouillon de l'étape 1, puis QR code vers le lien personnel ----- */
+
+export async function preparerTelephone(entree: {
+  jeton: string;
+  saisie: Record<string, string>;
+}): Promise<{ ok: true; lien: string; qr: string } | Echec> {
+  if (!schemaJeton.safeParse(entree.jeton).success) return { ok: false, erreur: MESSAGES.lien_invalide };
+  const invitation = await invitationDuJeton(entree.jeton);
+  if (!invitation) return { ok: false, erreur: MESSAGES.lien_invalide };
+
+  const supabase = creerClientAdmin();
+  const { data: maillons } = await supabase.from("maillons").select("libelle").eq("actif", true);
+  const saisie = schemaSaisie((maillons ?? []).map((m) => m.libelle)).safeParse(entree.saisie);
+  if (!saisie.success) return { ok: false, erreur: "Vérifiez vos informations, à l'étape 1." };
+
+  const { error } = await supabase.rpc("enregistrer_brouillon", {
+    p_invitation_id: invitation.id,
+    p_saisie: saisie.data,
+  });
+  if (error) {
+    return {
+      ok: false,
+      erreur: /signatures_fermees|date_limite_depassee/.test(error.message ?? "") ? MESSAGES.signatures_closes : MESSAGES.echec,
+    };
+  }
+
+  let site: string;
+  try {
+    site = lireSiteUrl();
+  } catch {
+    return { ok: false, erreur: "L'adresse du site n'est pas configurée. Prévenez la Task Force avec « Une question ? »." };
+  }
+  const lien = `${site}/s/${entree.jeton}?etape=2`;
+  const qr = await QRCode.toString(lien, { type: "svg", margin: 1, color: { dark: "#14212B", light: "#FFFFFF" } });
+  return { ok: true, lien, qr };
+}
+
+/* ----- Signature faite sur le téléphone : l'ordinateur vérifie toutes les 5 secondes ----- */
+
+export async function verifierSignature(entree: {
+  jeton: string;
+}): Promise<{ signature: SignatureEnregistree; trace: unknown; modifies: Champ[] } | null> {
+  if (!schemaJeton.safeParse(entree.jeton).success) return null;
+  const invitation = await invitationDuJeton(entree.jeton);
+  if (!invitation) return null;
+  const active = await lireSignatureActive(invitation.id);
+  return active ? { signature: active.signature, trace: active.trace, modifies: [] } : null;
+}
+
+/* ----- Fiche facultative : consentements (la photo passe par la route /s/[jeton]/photo) ----- */
+
+const schemaChoix = z.object({ recontact: z.boolean(), annuaire: z.boolean(), photo_communication: z.boolean() });
+
+export async function enregistrerFiche(entree: { jeton: string; choix: ChoixFiche }): Promise<{ ok: true } | Echec> {
+  if (!schemaJeton.safeParse(entree.jeton).success) return { ok: false, erreur: MESSAGES.lien_invalide };
+  const choix = schemaChoix.safeParse(entree.choix);
+  if (!choix.success) return { ok: false, erreur: "Choix invalides." };
+  const invitation = await invitationDuJeton(entree.jeton);
+  if (!invitation?.personneId) return { ok: false, erreur: MESSAGES.lien_invalide };
+
+  /* Sans photo, la photo ne peut pas être utilisée pour la communication */
+  const voulus: ChoixFiche = { ...choix.data, photo_communication: choix.data.photo_communication && Boolean(invitation.photoPath) };
+  const actuels = await lireChoix(invitation.personneId);
+  const changements = (Object.keys(voulus) as (keyof ChoixFiche)[]).filter((t) => voulus[t] !== actuels[t]);
+  if (!changements.length) return { ok: true };
+
+  /* Chaque changement ajoute une ligne, avec le texte exact présenté (jamais de modification) */
+  const { error } = await creerClientAdmin()
+    .from("consentements")
+    .insert(
+      changements.map((type) => ({
+        personne_id: invitation.personneId as string,
+        type,
+        accorde: voulus[type],
+        texte: TEXTES_CHOIX[type],
+        source: "fiche",
+      })),
+    );
+  if (error) return { ok: false, erreur: "Vos choix n'ont pas pu être enregistrés. Réessayez." };
+  return { ok: true };
 }

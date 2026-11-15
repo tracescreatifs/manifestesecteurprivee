@@ -2,7 +2,8 @@
 
 import { X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, useSyncExternalStore, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 const COURBE = [0.22, 1, 0.36, 1] as const;
 
@@ -49,7 +50,15 @@ export function Panneau({ ouvert, titre, onFermer, children, pied }: Props) {
 
   const transition = reduit ? { duration: 0 } : { duration: 0.26, ease: COURBE };
 
-  return (
+  /* Rendu dans un portail : un ancêtre en verre dépoli (backdrop-filter) ne déplace jamais la fenêtre */
+  const client = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
+  if (!client) return null;
+
+  return createPortal(
     <AnimatePresence>
       {ouvert ? (
         <motion.div
@@ -87,15 +96,16 @@ export function Panneau({ ouvert, titre, onFermer, children, pied }: Props) {
                 <X aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
               </button>
             </div>
-            <div className="grid flex-1 content-start gap-5 overflow-y-auto px-5 py-5">{children}</div>
+            <div className="grid min-h-0 flex-1 content-start gap-5 overflow-y-auto overscroll-contain px-5 py-5">{children}</div>
             {pied ? (
-              <div className="flex flex-wrap gap-2 border-t border-filet px-5 py-3 pb-[calc(12px+env(safe-area-inset-bottom))]">
+              <div className="flex shrink-0 flex-wrap gap-2 border-t border-filet px-5 py-3 pb-[calc(12px+env(safe-area-inset-bottom))]">
                 {pied}
               </div>
             ) : null}
           </motion.div>
         </motion.div>
       ) : null}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }

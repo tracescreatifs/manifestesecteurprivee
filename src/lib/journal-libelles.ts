@@ -29,6 +29,8 @@ export const LIBELLES_ACTIONS = {
   reglages_signature_modifies: "Réglages de la signature modifiés",
   consentement_modifie: "Texte de consentement modifié",
   signature_enregistree: "Signature enregistrée",
+  signature_retiree: "Signature retirée",
+  inscription_lien_ouvert: "Inscription par le lien ouvert",
 } as const;
 
 export type ActionJournal = keyof typeof LIBELLES_ACTIONS;

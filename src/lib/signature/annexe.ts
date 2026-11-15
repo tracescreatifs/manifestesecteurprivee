@@ -14,6 +14,8 @@ export type LigneAnnexeA4 = {
   maillon: string;
   trace: TraceSignature | null;
   signeLe: string;
+  /* Signature d'un autre signataire, non montrée avant la publication (D75) : la cellule affiche « Signé » */
+  masquee?: boolean;
 };
 
 export type OrdreAnnexe = "entreprise" | "maillon" | "nom" | "date";
@@ -41,4 +43,13 @@ export function paginerAnnexe<T extends LigneAnnexeA4>(lignes: T[], reglages: Re
   const pages: (T | null)[][] = [];
   for (let i = 0; i < toutes.length; i += reglages.parPage) pages.push(toutes.slice(i, i + reglages.parPage));
   return pages.length ? pages : [[]];
+}
+
+/*
+  Côté CEO, jusqu'à la publication, l'image des signatures des autres n'est pas envoyée au navigateur (D75) :
+  les liens circulent sur WhatsApp et peuvent être transférés. La signature du CEO lui-même reste visible.
+*/
+export function masquerAnnexe<T extends LigneAnnexeA4 & { moi: boolean }>(lignes: T[], publie: boolean): T[] {
+  if (publie) return lignes;
+  return lignes.map((l) => (l.moi ? l : { ...l, trace: null, masquee: true }));
 }

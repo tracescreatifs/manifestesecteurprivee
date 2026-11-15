@@ -70,7 +70,11 @@ function PageAnnexe({
               ) : null}
             </div>
             <div className="sg">
-              {l?.trace ? <SignatureSvg trace={l.trace} className="h-full" libelle={`Signature de ${l.prenom} ${l.nom}`} /> : null}
+              {l?.masquee ? (
+                <span className="ann-signe">Signé</span>
+              ) : l?.trace ? (
+                <SignatureSvg trace={l.trace} className="h-full" libelle={`Signature de ${l.prenom} ${l.nom}`} />
+              ) : null}
             </div>
           </Fragment>
         ))}
@@ -122,7 +126,23 @@ export function DocumentA4({ titre, sousTitre, blocs, brouillon, libelle, annexe
   const [mise, setMise] = useState<{ pour: Bloc[]; pages: number[][] } | null>(null);
   /* null : ajusté à la largeur disponible */
   const [zoom, setZoom] = useState<number | null>(null);
-  const zoomEffectif = zoom ?? 100;
+  /* Pourcentage réel de la page en mode ajusté (largeur affichée / 700 px) */
+  const pile = useRef<HTMLDivElement>(null);
+  const [ajuste, setAjuste] = useState(100);
+  const zoomEffectif = zoom ?? ajuste;
+
+  useLayoutEffect(() => {
+    const page = pile.current?.querySelector<HTMLElement>(".a4-wrap");
+    if (!page) return;
+    const mesurer = () => {
+      const largeur = page.getBoundingClientRect().width;
+      if (largeur) setAjuste(Math.round((largeur / LARGEUR_100) * 100));
+    };
+    mesurer();
+    const observateur = new ResizeObserver(mesurer);
+    observateur.observe(page);
+    return () => observateur.disconnect();
+  }, [zoom, mise]);
   const numeros = useMemo(() => numerosDesPoints(blocs), [blocs]);
   const pied = `${PIED}${brouillon ? " · Proposition" : ""}`;
 
@@ -226,20 +246,20 @@ export function DocumentA4({ titre, sousTitre, blocs, brouillon, libelle, annexe
           <button
             type="button"
             aria-label="Réduire"
-            onClick={() => setZoom(Math.max(ZOOM_MIN, zoomEffectif - ZOOM_PAS))}
-            disabled={zoomEffectif <= ZOOM_MIN && zoom !== null}
+            onClick={() => setZoom(Math.max(ZOOM_MIN, Math.ceil(zoomEffectif / ZOOM_PAS) * ZOOM_PAS - ZOOM_PAS))}
+            disabled={zoomEffectif <= ZOOM_MIN}
             className="min-h-11 min-w-11 border-r border-filet bg-surface text-[17px] text-texte-secondaire hover:text-encre disabled:opacity-40"
           >
             −
           </button>
           <span aria-live="polite" className="grid min-w-16 place-items-center border-r border-filet bg-surface px-2 text-[13px] tabular-nums">
-            {zoom === null ? "Ajusté" : `${zoom} %`}
+            {zoomEffectif} %
           </span>
           <button
             type="button"
             aria-label="Agrandir"
-            onClick={() => setZoom(Math.min(ZOOM_MAX, zoomEffectif + ZOOM_PAS))}
-            disabled={zoomEffectif >= ZOOM_MAX && zoom !== null}
+            onClick={() => setZoom(Math.min(ZOOM_MAX, Math.floor(zoomEffectif / ZOOM_PAS) * ZOOM_PAS + ZOOM_PAS))}
+            disabled={zoomEffectif >= ZOOM_MAX}
             className="min-h-11 min-w-11 bg-surface text-[17px] text-texte-secondaire hover:text-encre disabled:opacity-40"
           >
             +
@@ -248,6 +268,7 @@ export function DocumentA4({ titre, sousTitre, blocs, brouillon, libelle, annexe
       </div>
 
       <div
+        ref={pile}
         className="a4-stack"
         data-zoom={zoom === null ? undefined : ""}
         style={zoom === null ? undefined : ({ "--largeur-page": `${(LARGEUR_100 * zoom) / 100}px` } as CSSProperties)}

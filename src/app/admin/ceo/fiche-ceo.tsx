@@ -1,6 +1,6 @@
 "use client";
 
-import { BellRing, Link2, MessageCircle, Pencil, Trash2, Undo2 } from "lucide-react";
+import { BellRing, Link2, MessageCircle, Pencil, Trash2, Undo2, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { SignatureSvg } from "@/components/document/signature";
@@ -11,7 +11,7 @@ import { Panneau } from "@/components/ui/panneau";
 import { formaterDateHeure } from "@/lib/dates";
 import { formaterTelephone } from "@/lib/ceo/normaliser";
 import type { LigneCeo } from "@/lib/ceo/serveur";
-import type { OrigineInvitation } from "@/types/database";
+import type { OrigineInvitation, TypeConsentement } from "@/types/database";
 
 import { LIBELLES_STATUTS } from "./statuts";
 
@@ -20,6 +20,13 @@ const ORIGINES: Record<OrigineInvitation, string> = {
   lien_ouvert: "Lien ouvert",
   parrainage: "Parrainage d'un confrère",
 };
+
+const CHOIX: [TypeConsentement, string][] = [
+  ["signature_publique", "Publication de la signature"],
+  ["recontact", "Recontact"],
+  ["annuaire", "Annuaire"],
+  ["photo_communication", "Photo pour la communication"],
+];
 
 type Props = {
   ceo: LigneCeo | null;
@@ -65,7 +72,35 @@ export function FicheCeo({ ceo, onFermer, raisonEnvoi, occupe, onEnvoyer, onCopi
               </Ligne>
               {ceo.email ? <Ligne terme="Email">{ceo.email}</Ligne> : null}
               <Ligne terme="Origine">{ORIGINES[ceo.origine]}</Ligne>
+              {ceo.parrain ? <Ligne terme="Parrain">{ceo.parrain}</Ligne> : null}
+              {ceo.invitePar ? <Ligne terme="Invité par">{ceo.invitePar}</Ligne> : null}
             </dl>
+          </section>
+
+          <section className="grid gap-2">
+            <h4 className="text-[13px] font-medium text-texte-secondaire">Fiche</h4>
+            <div className="flex items-start gap-3">
+              <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-full bg-[#E6E0D3] text-texte-secondaire">
+                {ceo.photoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- lien signé du bucket privé, photo déjà réduite à 400 px
+                  <img src={ceo.photoUrl} alt={`Photo de ${nom}`} width={64} height={64} className="size-full object-cover" />
+                ) : (
+                  <UserRound aria-hidden="true" className="size-7" strokeWidth={1.75} />
+                )}
+              </div>
+              <ul className="grid gap-1 text-[13.5px]">
+                {CHOIX.map(([type, libelle]) => {
+                  const c = ceo.consentements.find((x) => x.type === type);
+                  return (
+                    <li key={type}>
+                      <span className="text-texte-secondaire">{libelle} : </span>
+                      {c?.accorde ? "Accepté" : "Non"}
+                      {c ? <span className="text-texte-secondaire"> (le {formaterDateHeure(c.le)})</span> : null}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           </section>
 
           <section className="grid gap-2">
@@ -90,7 +125,10 @@ export function FicheCeo({ ceo, onFermer, raisonEnvoi, occupe, onEnvoyer, onCopi
 
           {ceo.signature && ceo.signeLe ? (
             <section className="grid gap-2">
-              <h4 className="text-[13px] font-medium text-texte-secondaire">Signature</h4>
+              <h4 className="flex items-center gap-2 text-[13px] font-medium text-texte-secondaire">
+                Signature
+                {!ceo.signature.validee ? <Chip variante="argile">À valider</Chip> : null}
+              </h4>
               <div className="rounded-md bg-white px-3 py-2 shadow-[0_1px_2px_rgba(20,33,43,0.06),0_8px_24px_rgba(20,33,43,0.07)]">
                 <div className="h-20">
                   {ceo.signature.trace ? (

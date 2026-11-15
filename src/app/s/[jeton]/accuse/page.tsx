@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileDown } from "lucide-react";
 import Link from "next/link";
 
 import { SignatureSvg } from "@/components/document/signature";
@@ -7,10 +7,9 @@ import { classesBouton } from "@/components/ui/button";
 import { formaterDateHeureLongue } from "@/lib/dates";
 import { lireEspace } from "@/lib/signature/serveur";
 
-import { BoutonImprimer } from "./imprimer";
-
 /*
-  Accusé de signature, imprimable en A4 (@page). Tout est lu dans la signature enregistrée,
+  Aperçu de l'accusé de signature. Le fichier PDF (D74) est téléchargé par /s/[jeton]/accuse/pdf.
+  Tout est lu dans la signature enregistrée,
   figée au moment de la signature (D25) : référence, date et heure, version, informations imprimées,
   tracé et texte du consentement accepté. Rien n'est recalculé au moment du téléchargement.
 */
@@ -55,7 +54,6 @@ export default async function PageAccuse({ params }: { params: Promise<{ jeton: 
     );
   }
 
-  const titre = s.titre.replace(/\n/g, " ");
 
   return (
     <main data-ambiance="ceo" className="accuse grid min-h-dvh content-start gap-5 bg-papier px-4 py-6 text-encre min-[760px]:px-10 min-[760px]:py-10">
@@ -65,17 +63,24 @@ export default async function PageAccuse({ params }: { params: Promise<{ jeton: 
           <ArrowLeft aria-hidden="true" strokeWidth={1.75} />
           Retour au Manifeste
         </Link>
-        <BoutonImprimer />
+        <a className={classesBouton("principal")} href={`/s/${jeton}/accuse/pdf`} download={`Accuse-${s.reference}.pdf`}>
+          <FileDown aria-hidden="true" strokeWidth={1.75} />
+          Télécharger mon accusé
+        </a>
       </div>
-      <p className="sans-impression mx-auto w-full max-w-[700px] text-[13px] text-texte-secondaire">
-        Choisissez « Enregistrer au format PDF » dans la fenêtre d&apos;impression pour garder votre accusé.
-      </p>
 
       <div className="a4-wrap">
         <article className="a4-page" aria-label="Accusé de signature">
           <div className="a4-body">
             <div className="d-kicker">Accusé de signature</div>
-            <h1 className="d-title">{titre}</h1>
+            <h1 className="d-title">
+              {s.titre.split("\n").map((ligne, i) => (
+                <span key={i}>
+                  {i > 0 ? <br /> : null}
+                  {ligne}
+                </span>
+              ))}
+            </h1>
             <div className="d-sub">Version {s.version} du texte</div>
             <div className="d-rule" />
 

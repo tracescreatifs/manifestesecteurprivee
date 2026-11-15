@@ -2,7 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { Database, OrigineInvitation, StatutEnvoi, TraceSignature } from "@/types/database";
+import type { Database, OrigineInvitation, StatutEnvoi, TraceSignature, TypeConsentement } from "@/types/database";
 
 type Client = SupabaseClient<Database>;
 
@@ -25,8 +25,13 @@ export type LigneCeo = {
   derniereRelanceLe: string | null;
   relances: number;
   signeLe: string | null;
-  /* Signature active (lecture seule dans la fiche) */
-  signature: { reference: string; trace: TraceSignature | null } | null;
+  /* Signature active (lecture seule dans la fiche) ; validee faux : nouvel inscrit, « À valider » */
+  signature: { reference: string; trace: TraceSignature | null; validee: boolean } | null;
+  /* Parrain (parrainage) et « Qui vous a invité ? » (lien ouvert) */
+  parrain: string | null;
+  invitePar: string | null;
+  /* Consentements courants de la fiche */
+  consentements: { type: TypeConsentement; accorde: boolean; le: string }[];
   creeLe: string;
 };
 
@@ -56,6 +61,7 @@ export async function lireListeCeo(
       .from("invitations")
       .select(
         "id, jeton, origine, statut_envoi, envoye_le, ouvert_le, derniere_relance_le, relances, cree_le, " +
+          "invite_par_texte, parrain_invitation_id, personne_id, " +
           "personne:personnes(prenom, nom, fonction, telephone, email, photo_path), " +
           "entreprise:entreprises(nom, maillon:maillons(libelle))",
       )
@@ -79,6 +85,9 @@ export async function lireListeCeo(
     derniere_relance_le: string | null;
     relances: number;
     cree_le: string;
+    invite_par_texte: string | null;
+    parrain_invitation_id: string | null;
+    personne_id: string | null;
     personne: {
       prenom: string;
       nom: string;
@@ -100,13 +109,36 @@ export async function lireListeCeo(
   }
 
   /* Une seule signature active par invitation (garanti en base) */
-  const actives = new Map<string, { signeLe: string; reference: string; trace: TraceSignature | null }>();
+  const actives = new Map<string, { signeLe: string; reference: string; trace: TraceSignature | null; validee: boolean }>();
   (signatures ?? []).forEach(
     (s) =>
       s.invitation_id &&
       !actives.has(s.invitation_id) &&
-      actives.set(s.invitation_id, { signeLe: s.signe_le, reference: s.reference, trace: estTrace(s.trace) ? s.trace : null }),
+      actives.set(s.invitation_id, {
+        signeLe: s.signe_le,
+        reference: s.reference,
+        trace: estTrace(s.trace) ? s.trace : null,
+        validee: s.validee,
+      }),
   );
+
+  /* Nom du parrain : une autre invitation de la même liste */
+  const nomsParInvitation = new Map(
+    brutes.map((b) => [b.id, `${b.personne?.prenom ?? ""} ${b.personne?.nom ?? ""}`.trim() + (b.entreprise?.nom ? `, ${b.entreprise.nom}` : "")]),
+  );
+
+  /* Consentements courants (vue consentements_courants, lue avec la session de l'admin) */
+  const consentementsParPersonne = new Map<string, { type: TypeConsentement; accorde: boolean; le: string }[]>();
+  if (brutes.length) {
+    /* Toute la vue (une ligne par personne et par type) : pas de longue liste d'identifiants dans l'adresse */
+    const { data } = await supabase.from("consentements_courants").select("personne_id, type, accorde, cree_le");
+    (data ?? []).forEach((c) => {
+      if (!c.personne_id || !c.type) return;
+      const liste = consentementsParPersonne.get(c.personne_id) ?? [];
+      liste.push({ type: c.type, accorde: Boolean(c.accorde), le: c.cree_le ?? "" });
+      consentementsParPersonne.set(c.personne_id, liste);
+    });
+  }
 
   const lignes: LigneCeo[] = brutes.map((b) => {
     const active = actives.get(b.id) ?? null;
@@ -129,7 +161,10 @@ export async function lireListeCeo(
       derniereRelanceLe: b.derniere_relance_le,
       relances: b.relances,
       signeLe: signe,
-      signature: active ? { reference: active.reference, trace: active.trace } : null,
+      signature: active ? { reference: active.reference, trace: active.trace, validee: active.validee } : null,
+      parrain: b.parrain_invitation_id ? (nomsParInvitation.get(b.parrain_invitation_id) ?? null) : null,
+      invitePar: b.invite_par_texte,
+      consentements: b.personne_id ? (consentementsParPersonne.get(b.personne_id) ?? []) : [],
       creeLe: b.cree_le,
     };
   });

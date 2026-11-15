@@ -686,6 +686,13 @@ export type Database = {
         Update: Record<string, never>;
         Relationships: [];
       };
+      /* Migration 0005 : empreintes hachées et salées des inscriptions par le lien ouvert (serveur seulement) */
+      inscriptions_ouvertes: {
+        Row: { id: string; empreinte: string; cree_le: string };
+        Insert: { id?: string; empreinte: string; cree_le?: string };
+        Update: { id?: string; empreinte?: string; cree_le?: string };
+        Relationships: [];
+      };
     };
     Views: {
       consentements_courants: {
@@ -747,6 +754,28 @@ export type Database = {
       enregistrer_signature: {
         Args: { p_invitation_id: string; p_cle: string; p_signature: Json; p_verification: Json };
         Returns: Json;
+      };
+      /* Migration 0005, clé secrète seulement */
+      inscrire_par_lien_ouvert: {
+        Args: {
+          p_manifeste_id: string;
+          p_saisie: Json;
+          p_jeton: string;
+          p_code_parrainage: string;
+          p_code_parrain: string;
+          p_invite_par: string;
+          p_empreinte: string;
+          p_limite_par_heure: number;
+        };
+        Returns: Json;
+      };
+      retirer_signature: {
+        Args: { p_invitation_id: string };
+        Returns: Json;
+      };
+      enregistrer_brouillon: {
+        Args: { p_invitation_id: string; p_saisie: Json };
+        Returns: boolean;
       };
       /* Exécution révoquée pour anon et authenticated : SQL Editor uniquement */
       promouvoir_premier_admin: {
