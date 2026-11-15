@@ -3,6 +3,7 @@
 import { Copy, MessageCircle } from "lucide-react";
 import { useState } from "react";
 
+import { ApercuWhatsApp } from "@/components/apercu-whatsapp";
 import { Button, classesBouton } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { formaterTelephone } from "@/lib/ceo/normaliser";
@@ -76,8 +77,12 @@ export function FenetreWhatsApp({ ceo, relance, messageInitial, onFermer, onOuve
           className="min-h-52 w-full rounded-[10px] border border-filet-fort bg-surface p-3 text-[14.5px] focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none"
         />
       </div>
+      <div className="grid gap-2">
+        <p className="text-[13px] font-medium text-texte-secondaire">Aperçu dans WhatsApp</p>
+        <ApercuWhatsApp message={message} />
+      </div>
       <p className="text-[13px] text-texte-secondaire">
-        Le bouton ouvre WhatsApp avec ce message prêt : il ne reste qu&apos;à appuyer sur Envoyer.
+        *texte* pour le gras, _texte_ pour l&apos;italique. Le bouton ouvre WhatsApp avec ce message prêt : il ne reste qu&apos;à appuyer sur Envoyer.
       </p>
     </Modal>
   );

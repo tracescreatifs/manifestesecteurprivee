@@ -442,6 +442,8 @@ export type Database = {
           verifie_le: string | null;
           decision: DecisionVerification | null;
           decision_signature_id: string | null;
+          /* Clé anti-doublon d'une inscription par le lien ouvert (0008), null pour les autres */
+          cle_inscription: string | null;
           cree_le: string;
           modifie_le: string;
         };
@@ -468,6 +470,7 @@ export type Database = {
           verifie_le?: string | null;
           decision?: DecisionVerification | null;
           decision_signature_id?: string | null;
+          cle_inscription?: string | null;
           cree_le?: string;
           modifie_le?: string;
         };
@@ -494,6 +497,7 @@ export type Database = {
           verifie_le?: string | null;
           decision?: DecisionVerification | null;
           decision_signature_id?: string | null;
+          cle_inscription?: string | null;
           cree_le?: string;
           modifie_le?: string;
         };
@@ -781,7 +785,9 @@ export type Database = {
           p_invite_par: string;
           p_empreinte: string;
           p_limite_par_heure: number;
+          p_cle_inscription: string;
         };
+        /* { invitation_id, origine, jeton, renvoi } : renvoi vrai si la clé avait déjà servi (0008) */
         Returns: Json;
       };
       retirer_signature: {

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { Toast, useToast } from "@/components/ui/toast";
 import { formaterJour } from "@/lib/dates";
+import { messageLienAdmin } from "@/lib/ceo/message";
 
 import { couperAcces, genererLien, inviterAdmin, retablirAcces } from "./actions";
 
@@ -24,12 +25,8 @@ export type LigneAdmin = {
 
 type LienGenere = { lien: string; prenom: string; nom: string; type: "invite" | "recovery" };
 
-const PLATEFORME = "la plateforme du Manifeste du secteur privé sénégalais de l'eau et de l'assainissement";
-
 function messageWhatsApp({ lien, prenom, type }: LienGenere) {
-  return type === "invite"
-    ? `Bonjour ${prenom},\n\nVous êtes invité comme admin de ${PLATEFORME}. Ouvrez ce lien pour choisir votre mot de passe :\n${lien}\n\nCe lien ne fonctionne qu'une seule fois.`
-    : `Bonjour ${prenom},\n\nVoici votre lien pour choisir un nouveau mot de passe sur ${PLATEFORME} :\n${lien}\n\nCe lien ne fonctionne qu'une seule fois.`;
+  return messageLienAdmin(type === "invite" ? "invite" : "reinitialisation", prenom, lien);
 }
 
 export function OngletAdmins({ admins, moi }: { admins: LigneAdmin[]; moi: string }) {

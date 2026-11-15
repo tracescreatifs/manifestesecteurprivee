@@ -20,12 +20,15 @@ const LE_23 = new Date("2026-11-23T10:00:00Z");
 /* ----- Faux dépôts en mémoire, qui reprennent les règles des fonctions SQL ----- */
 
 function baseInscriptions() {
-  const invitations: { jeton: string; origine: string; parrain: string | null; codeParrainage: string }[] = [
-    { jeton: "JETONPARRAIN00000001", origine: "liste", parrain: null, codeParrainage: "ABCD2345" },
+  const invitations: { jeton: string; origine: string; parrain: string | null; codeParrainage: string; cle: string | null }[] = [
+    { jeton: "JETONPARRAIN00000001", origine: "liste", parrain: null, codeParrainage: "ABCD2345", cle: null },
   ];
   const empreintes: { empreinte: string; le: number }[] = [];
   const depot: DepotInscription = {
     async inscrire(e) {
+      /* Renvoi avec une clé déjà servie : même invitation, même jeton, rien n'est créé (0008) */
+      const deja = invitations.find((i) => i.cle === e.cle);
+      if (deja) return { ok: true, jeton: deja.jeton };
       const recentes = empreintes.filter((x) => x.empreinte === e.empreinte && LE_23.getTime() - x.le < 3600e3);
       if (recentes.length >= e.limiteParHeure) return { ok: false, code: "limite_atteinte" };
       empreintes.push({ empreinte: e.empreinte, le: LE_23.getTime() });
@@ -35,13 +38,17 @@ function baseInscriptions() {
         origine: parrain ? "parrainage" : "lien_ouvert",
         parrain: parrain?.jeton ?? null,
         codeParrainage: e.codeParrainage,
+        cle: e.cle,
       });
-      return { ok: true };
+      return { ok: true, jeton: e.jeton };
     },
   };
   let n = 0;
+  let c = 0;
+  /* Une clé neuve par envoi, comme un nouveau formulaire */
+  const cle = () => `cle-inscription-${String(++c).padStart(6, "0")}`;
   const generer = { jeton: () => `JETONNOUVEAU${String(++n).padStart(10, "0")}`, code: () => `CODE${String(n).padStart(4, "0")}` };
-  return { invitations, depot, generer };
+  return { invitations, depot, generer, cle };
 }
 
 function baseSignatures() {
@@ -100,21 +107,21 @@ function stockageMemoire() {
 
 describe("inscription par le lien ouvert et par parrainage", () => {
   it("crée un nouveau lien personnel, d'origine « lien ouvert »", async () => {
-    const { invitations, depot, generer } = baseInscriptions();
-    const r = await inscrire(depot, { saisie: SAISIE, invitePar: "Un ami", codeParrain: "", piege: "", empreinte: "e1" }, generer);
+    const { invitations, depot, generer, cle } = baseInscriptions();
+    const r = await inscrire(depot, { cle: cle(), saisie: SAISIE, invitePar: "Un ami", codeParrain: "", piege: "", empreinte: "e1" }, generer);
     expect(r).toEqual({ ok: true, jeton: "JETONNOUVEAU0000000001" });
     expect(invitations.at(-1)).toMatchObject({ origine: "lien_ouvert", parrain: null });
   });
 
   it("enregistre le parrain quand le code est valide (même en minuscules)", async () => {
-    const { invitations, depot, generer } = baseInscriptions();
-    await inscrire(depot, { saisie: SAISIE, invitePar: "", codeParrain: " abcd2345 ", piege: "", empreinte: "e1" }, generer);
+    const { invitations, depot, generer, cle } = baseInscriptions();
+    await inscrire(depot, { cle: cle(), saisie: SAISIE, invitePar: "", codeParrain: " abcd2345 ", piege: "", empreinte: "e1" }, generer);
     expect(invitations.at(-1)).toMatchObject({ origine: "parrainage", parrain: "JETONPARRAIN00000001" });
   });
 
   it("refuse un robot qui remplit le champ piège, sans rien créer", async () => {
-    const { invitations, depot, generer } = baseInscriptions();
-    expect(await inscrire(depot, { saisie: SAISIE, invitePar: "", codeParrain: "", piege: "http://x", empreinte: "e1" }, generer)).toEqual({
+    const { invitations, depot, generer, cle } = baseInscriptions();
+    expect(await inscrire(depot, { cle: cle(), saisie: SAISIE, invitePar: "", codeParrain: "", piege: "http://x", empreinte: "e1" }, generer)).toEqual({
       ok: false,
       code: "refuse",
     });
@@ -122,11 +129,33 @@ describe("inscription par le lien ouvert et par parrainage", () => {
   });
 
   it(`limite les inscriptions à ${LIMITE_PAR_HEURE} par heure et par adresse`, async () => {
-    const { depot, generer } = baseInscriptions();
+    const { depot, generer, cle } = baseInscriptions();
     const entree = { saisie: SAISIE, invitePar: "", codeParrain: "", piege: "", empreinte: "meme-adresse" };
-    for (let i = 0; i < LIMITE_PAR_HEURE; i++) expect((await inscrire(depot, entree, generer)).ok).toBe(true);
-    expect(await inscrire(depot, entree, generer)).toEqual({ ok: false, code: "limite_atteinte" });
-    expect((await inscrire(depot, { ...entree, empreinte: "autre-adresse" }, generer)).ok).toBe(true);
+    for (let i = 0; i < LIMITE_PAR_HEURE; i++) expect((await inscrire(depot, { ...entree, cle: cle() }, generer)).ok).toBe(true);
+    expect(await inscrire(depot, { ...entree, cle: cle() }, generer)).toEqual({ ok: false, code: "limite_atteinte" });
+    expect((await inscrire(depot, { ...entree, cle: cle(), empreinte: "autre-adresse" }, generer)).ok).toBe(true);
+  });
+
+  it("un renvoi avec la même clé (coupure réseau) renvoie la même invitation sans en créer une deuxième", async () => {
+    const { invitations, depot, generer, cle } = baseInscriptions();
+    const entree = { cle: cle(), saisie: SAISIE, invitePar: "", codeParrain: "", piege: "", empreinte: "e1" };
+    const premier = await inscrire(depot, entree, generer);
+    const renvoi = await inscrire(depot, entree, generer);
+    expect(premier).toEqual({ ok: true, jeton: "JETONNOUVEAU0000000001" });
+    expect(renvoi).toEqual(premier);
+    expect(invitations).toHaveLength(2);
+    /* Deux clés différentes : deux inscriptions, comme avant (le doublon éventuel part dans « À vérifier ») */
+    expect(await inscrire(depot, { ...entree, cle: cle() }, generer)).toEqual({ ok: true, jeton: "JETONNOUVEAU0000000003" });
+    expect(invitations).toHaveLength(3);
+  });
+
+  it("refuse une inscription sans clé anti-doublon valide, sans rien créer", async () => {
+    const { invitations, depot, generer } = baseInscriptions();
+    const entree = { saisie: SAISIE, invitePar: "", codeParrain: "", piege: "", empreinte: "e1" };
+    expect(await inscrire(depot, { ...entree, cle: "" }, generer)).toEqual({ ok: false, code: "cle_invalide" });
+    expect(await inscrire(depot, { ...entree, cle: "courte" }, generer)).toEqual({ ok: false, code: "cle_invalide" });
+    expect(await inscrire(depot, { ...entree, cle: "pas de*clé_valide!!" }, generer)).toEqual({ ok: false, code: "cle_invalide" });
+    expect(invitations).toHaveLength(1);
   });
 
   it("n'enregistre qu'une empreinte de l'adresse, différente chaque jour", () => {

@@ -1,12 +1,16 @@
 /*
   Inscription d'un CEO absent de la liste, par le lien ouvert (/rejoindre) ou par un lien de parrainage
   (/rejoindre?par=CODE). Fonctions pures, testées avec vitest ; l'écriture passe par la fonction SQL
-  inscrire_par_lien_ouvert (migration 0005), qui recontrôle tout dans une seule transaction.
+  inscrire_par_lien_ouvert (migrations 0005 et 0008), qui recontrôle tout dans une seule transaction.
+  Clé anti-doublon (0008) : un renvoi avec la même clé renvoie la même invitation et le même jeton, sans rien créer.
 */
 
 import { createHmac } from "node:crypto";
 
 import type { Saisie } from "./regles";
+
+/* Clé anti-doublon : 16 à 64 caractères (comme celle de la signature) */
+export const CLE_VALIDE = /^[A-Za-z0-9-]{16,64}$/;
 
 /* Limite d'inscriptions par adresse (empreinte), sur une heure glissante */
 export const LIMITE_PAR_HEURE = 5;
@@ -17,11 +21,13 @@ export type CodeInscription =
   | "lien_en_pause"
   | "limite_atteinte"
   | "refuse"
+  | "cle_invalide"
   | "echec";
 
 export type DepotInscription = {
-  /* Crée entreprise, personne et invitation ; renvoie le jeton du nouveau lien personnel */
+  /* Crée entreprise, personne et invitation ; renvoie le jeton du lien personnel (celui déjà créé si la clé a déjà servi) */
   inscrire(entree: {
+    cle: string;
     saisie: Saisie;
     jeton: string;
     codeParrainage: string;
@@ -29,7 +35,7 @@ export type DepotInscription = {
     invitePar: string;
     empreinte: string;
     limiteParHeure: number;
-  }): Promise<{ ok: true } | { ok: false; code: CodeInscription }>;
+  }): Promise<{ ok: true; jeton: string } | { ok: false; code: CodeInscription }>;
 };
 
 /*
@@ -51,6 +57,8 @@ export function adresseDuClient(entetes: { get(nom: string): string | null }): s
 export async function inscrire(
   depot: DepotInscription,
   entree: {
+    /* Clé anti-doublon tirée dans le navigateur, la même à chaque nouvel essai */
+    cle: string;
     saisie: Saisie;
     invitePar: string;
     codeParrain: string;
@@ -61,15 +69,16 @@ export async function inscrire(
   generer: { jeton: () => string; code: () => string },
 ): Promise<{ ok: true; jeton: string } | { ok: false; code: CodeInscription }> {
   if (entree.piege.trim()) return { ok: false, code: "refuse" };
-  const jeton = generer.jeton();
+  if (!CLE_VALIDE.test(entree.cle)) return { ok: false, code: "cle_invalide" };
   const r = await depot.inscrire({
+    cle: entree.cle,
     saisie: entree.saisie,
-    jeton,
+    jeton: generer.jeton(),
     codeParrainage: generer.code(),
     codeParrain: entree.codeParrain.trim(),
     invitePar: entree.invitePar.trim().slice(0, 160),
     empreinte: entree.empreinte,
     limiteParHeure: LIMITE_PAR_HEURE,
   });
-  return r.ok ? { ok: true, jeton } : r;
+  return r.ok ? { ok: true, jeton: r.jeton } : r;
 }

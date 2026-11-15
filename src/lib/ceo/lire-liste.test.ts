@@ -7,7 +7,7 @@ const MAILLONS = ["Études", "Production", "Transport et distribution", "Traitem
 
 /* Structure du fichier de cartographie : titre, lignes vides, puis en-tête en ligne 4 */
 const CARTOGRAPHIE: unknown[][] = [
-  ["Cartographie des entreprises du secteur privé de l'eau et de l'assainissement", null, null],
+  ["Cartographie des entreprises du secteur privé sénégalais de l'eau et de l'assainissement", null, null],
   ["Mise à jour : octobre 2026"],
   [],
   ["N°", "Nom entreprise", "Nom CEO", "Fonction", "Adresse", "Téléphone", "Email", "Maillon", "Statut", "Notes"],

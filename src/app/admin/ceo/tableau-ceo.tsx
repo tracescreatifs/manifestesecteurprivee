@@ -7,6 +7,7 @@ import {
   ListChecks,
   MessageCircle,
   Pencil,
+  Phone,
   QrCode,
   Search,
   Trash2,
@@ -387,7 +388,7 @@ export function TableauCeo({
       </div>
 
       <div className="overflow-hidden rounded-xl border border-filet bg-surface">
-        <div className="hidden grid-cols-[minmax(0,1.5fr)_minmax(0,1.3fr)_150px_minmax(0,1.2fr)_auto] gap-3.5 bg-sureleve px-4 py-3 text-[13px] font-medium text-texte-secondaire min-[820px]:grid">
+        <div className="hidden grid-cols-[minmax(0,1.5fr)_minmax(0,1.3fr)_150px_minmax(0,1.2fr)_auto] gap-3.5 bg-sureleve px-4 py-3 text-[13px] font-medium text-texte-secondaire min-[1200px]:grid">
           <div>CEO</div>
           <div>Entreprise</div>
           <div>Statut</div>
@@ -405,7 +406,7 @@ export function TableauCeo({
                   aria-label={`${nomComplet}, ${l.entreprise}. Entrée pour ouvrir la fiche`}
                   onClick={(e) => surClicLigne(e, l)}
                   onKeyDown={(e) => surToucheLigne(e, l)}
-                  className="cursor-pointer hover:bg-[#FAFAF9] focus-visible:bg-[#FAFAF9] focus-visible:outline-offset-[-2px] grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 border-t border-filet px-4 py-3 first:border-t-0 min-[820px]:grid-cols-[minmax(0,1.5fr)_minmax(0,1.3fr)_150px_minmax(0,1.2fr)_auto] min-[820px]:gap-3.5"
+                  className="cursor-pointer hover:bg-[#FAFAF9] focus-visible:bg-[#FAFAF9] focus-visible:outline-offset-[-2px] grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 border-t border-filet px-4 py-3 first:border-t-0 min-[1200px]:grid-cols-[minmax(0,1.5fr)_minmax(0,1.3fr)_150px_minmax(0,1.2fr)_auto] min-[1200px]:gap-3.5"
                 >
                   <div className="flex min-w-0 items-center gap-2.5">
                     <Avatar ligne={l} />
@@ -417,14 +418,20 @@ export function TableauCeo({
                       </div>
                     </div>
                   </div>
-                  <div className="col-span-2 row-start-2 min-w-0 min-[820px]:col-span-1 min-[820px]:row-start-auto">
+                  <div className="col-span-2 row-start-2 min-w-0 min-[1200px]:col-span-1 min-[1200px]:row-start-auto">
                     <div className="truncate">{l.entreprise}</div>
-                    <div className="truncate text-[13px] text-texte-secondaire">
-                      {l.maillon || "Maillon à préciser"}
-                      {l.telephone ? ` · ${formaterTelephone(l.telephone)}` : " · sans téléphone"}
+                    <div className="truncate text-[13px] text-texte-secondaire">{l.maillon || "Maillon à préciser"}</div>
+                    {/* Numéro entier, jamais tronqué : il passe à la ligne entre deux groupes de chiffres si la colonne est étroite */}
+                    <div className="flex items-start gap-1.5 text-[13px] text-texte-secondaire">
+                      <Phone aria-hidden="true" className="mt-px size-[18px] shrink-0" strokeWidth={1.75} />
+                      {l.telephone ? (
+                        <span className="min-w-0 tabular-nums">{formaterTelephone(l.telephone)}</span>
+                      ) : (
+                        <span className="min-w-0">Sans téléphone</span>
+                      )}
                     </div>
                   </div>
-                  <div className="col-start-1 row-start-3 flex min-w-0 flex-wrap items-center gap-x-2 min-[820px]:col-start-auto min-[820px]:row-start-auto">
+                  <div className="col-start-1 row-start-3 flex min-w-0 flex-wrap items-center gap-x-2 min-[1200px]:col-start-auto min-[1200px]:row-start-auto">
                     <Chip variante={STATUTS[l.statut].variante}>
                       <span className="size-[7px] rounded-full bg-current" />
                       {STATUTS[l.statut].libelle}
@@ -434,11 +441,11 @@ export function TableauCeo({
                     ) : l.verification === "rejete" ? (
                       <Chip variante="erreur">{l.decision === "refusee" ? "Refusée" : "Retirée par un admin"}</Chip>
                     ) : null}
-                    <span className="text-[12.5px] text-texte-secondaire min-[820px]:hidden">{derniereActivite(l)}</span>
+                    <span className="text-[12.5px] text-texte-secondaire min-[1200px]:hidden">{derniereActivite(l)}</span>
                   </div>
-                  <div className="hidden text-[13px] text-texte-secondaire min-[820px]:block">{derniereActivite(l)}</div>
+                  <div className="hidden text-[13px] text-texte-secondaire min-[1200px]:block">{derniereActivite(l)}</div>
                   {/* Téléphone : menu en haut à droite, action principale en bas à droite. Ordinateur : côte à côte. */}
-                  <div className="contents min-[820px]:flex min-[820px]:w-[190px] min-[820px]:items-start min-[820px]:justify-end min-[820px]:gap-1">
+                  <div className="contents min-[1200px]:flex min-[1200px]:w-[190px] min-[1200px]:items-start min-[1200px]:justify-end min-[1200px]:gap-1">
                     <div className="col-start-2 row-start-3 justify-self-end">{actionPrincipale(l)}</div>
                     <div className="col-start-2 row-start-1 justify-self-end">
                       <MenuActions libelle={`Plus d'actions pour ${nomComplet}`} elements={elementsMenu(l)} />

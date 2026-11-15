@@ -149,7 +149,19 @@ describe("comparaison, commentaires et messages", () => {
     expect(avertirIntegration("integre", "redaction")).toBe(false);
     expect(avertirIntegration("retenu", "gele")).toBe(false);
     expect(messageValidation("Ousmane", "https://exemple.sn/s/AbCdEfGhJkMnPqRsTuVw")).toBe(
-      "Bonjour Ousmane, votre signature du Manifeste du secteur privé sénégalais de l'eau et de l'assainissement est validée. Merci. Vous pouvez retrouver votre accusé et compléter votre fiche avec ce lien : https://exemple.sn/s/AbCdEfGhJkMnPqRsTuVw La Task Force du secteur privé sénégalais de l'eau et de l'assainissement",
+      [
+        "Bonjour Ousmane,",
+        "",
+        "Votre signature du *Manifeste du secteur privé sénégalais de l'eau et de l'assainissement* est validée. Merci.",
+        "",
+        "Vous pouvez retrouver votre accusé et compléter votre fiche avec ce lien :",
+        "https://exemple.sn/s/AbCdEfGhJkMnPqRsTuVw",
+        "",
+        "_La Task Force du secteur privé sénégalais de l'eau et de l'assainissement_",
+      ].join("\n"),
     );
+    /* Un prénom avec * ou _ ne casse pas la mise en forme ; le lien reste intact */
+    expect(messageValidation("*Ousmane_", "https://exemple.sn/s/a_b").startsWith("Bonjour \u2217Ousmane\u02CD,")).toBe(true);
+    expect(messageValidation("*Ousmane_", "https://exemple.sn/s/a_b")).toContain("\nhttps://exemple.sn/s/a_b\n");
   });
 });

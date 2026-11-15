@@ -7,8 +7,8 @@ import { gelerTexte } from "@/app/admin/texte/actions";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 
-/* Action suivante de la barre d'étapes en rédaction : geler la version courante */
-export function BoutonGel({ numero }: { numero: number }) {
+/* Action suivante de la barre d'étapes en rédaction : geler la version courante. aideId : texte d'aide de l'étape */
+export function BoutonGel({ numero, aideId }: { numero: number; aideId?: string }) {
   const [ouvert, setOuvert] = useState(false);
   const [confirme, setConfirme] = useState(false);
   const [erreur, setErreur] = useState<string>();
@@ -29,7 +29,7 @@ export function BoutonGel({ numero }: { numero: number }) {
 
   return (
     <>
-      <Button variante="principal" onClick={() => setOuvert(true)}>
+      <Button variante="principal" aria-describedby={aideId} onClick={() => setOuvert(true)}>
         <Lock aria-hidden="true" strokeWidth={1.75} />
         Geler le texte
       </Button>

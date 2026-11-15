@@ -1,6 +1,6 @@
 # État du projet
 
-Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 06, 15 novembre 2026.
+Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 06.1, 15 novembre 2026.
 
 ---
 
@@ -20,7 +20,8 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 | 05.2 | Espace CEO, partie 2 : lien ouvert (`/rejoindre`), parrainage, fiche et photo, refaire ou retirer sa signature, coupures réseau (signature gardée sur l'appareil), signature depuis le téléphone (QR code), accusé PDF et correctifs | `main` | 21 novembre 2026 | Validé |
 | 05.3 | Correctifs de l'espace CEO : fermeture des fenêtres du parcours, signature par QR code après une inscription par le lien ouvert | `main` | 21 novembre 2026 | Validé |
 | 07 | Vérification des signatures (« À vérifier ») et traitement des commentaires, avancé avant l'audit | `main` | 21 novembre 2026 | Validé |
-| 06 | Audit complet et vérifications d'avant mise en ligne (domaine, redirections, RLS, parcours sur téléphone et ordinateur), sur la plateforme complète ; message de validation avec le lien ; script de nettoyage des données de test | `main` | 22 novembre 2026 | En cours de validation |
+| 06 | Audit complet et vérifications d'avant mise en ligne (domaine, redirections, RLS, parcours sur téléphone et ordinateur), sur la plateforme complète ; message de validation avec le lien ; script de nettoyage des données de test | `main` | 22 novembre 2026 | Validé |
+| 06.1 | Finitions d'interface (marque, liste des CEO, barre d'étapes, en-tête CEO), messages WhatsApp mis en forme, clé anti-doublon de l'inscription par le lien ouvert | `main` | 22 novembre 2026 | En cours de validation |
 | 08 | Document final : PDF A4, clôture, publication, signataires sur place | branche `feat/...`, après le 23 novembre | 2 décembre 2026 | À faire |
 | 09 | Cahier de doléances | branche `feat/...`, après le 23 novembre | décembre 2026 | À faire |
 
@@ -74,6 +75,12 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 - Charte : bandeau de coupure réseau en encre, icônes et pastilles neutres, l'argile réservée à « à vérifier » et aux champs modifiés (D99).
 - Message « Prévenir sur WhatsApp » après la validation d'un nouvel inscrit : il contient le lien personnel (D93).
 - Script `supabase/seed/9000_nettoyage_donnees_test.sql` : aperçu d'abord, puis suppression des entreprises de test en une transaction, séquence des références remise à MSP-2026-0001 s'il ne reste aucune signature, journal intact (D96). Testé sur PostgreSQL 16 avec une entreprise réelle qui reste intacte. Tests vitest : 83.
+- Prompt 06.1, interface : marque commune (`src/components/marque.tsx`) avec le nom complet sur deux lignes, dans la barre latérale de l'admin (élargie à 240 px), en tête de page de l'admin sur téléphone et dans l'en-tête de l'espace CEO ; « Signature avant le … » (CalendarClock) à droite sur ordinateur, seulement avant la signature et la date limite (D103, D104).
+- Liste des CEO : maillon sur sa ligne, numéro entier sur la suivante (icône Phone, chiffres tabulaires) ou « Sans téléphone » ; colonnes du tableau à partir de 1200 px, lignes empilées en dessous (D104).
+- Barre d'étapes : sur ordinateur, bouton « Aide sur cette étape » et bulle dans un portail (survol, focus, toucher ; Échap et clic ailleurs), bouton d'action relié au texte par aria-describedby ; sur téléphone, l'aide sous l'action ; une seule ligne dès 820 px (D104).
+- Messages WhatsApp mis en forme (D101) : nouveau modèle d'origine, « *Petit rappel.* » sur sa ligne, message après validation en paragraphes, lien ouvert, lien personnel envoyé à soi-même, invitation d'un confrère, liens d'admin ; données insérées neutralisées (*, _, ~, `) ; aperçu fidèle en éléments React dans la fenêtre d'envoi, la file de relance, Réglages, Messages et après une validation. Seed `0002_modele_message_whatsapp.sql`, testé deux fois de suite.
+- Nom complet partout : textes des accords de la fiche complétés (D103) ; recherche dans `src/` jointe au rapport.
+- Inscription par le lien ouvert : clé anti-doublon (migration `0008_inscription_anti_doublon.sql`, D102), testée deux fois de suite sur PostgreSQL 16 avec la même clé (une seule invitation) et deux clés (deux invitations, comme avant). Tests vitest : 90.
 
 ---
 
@@ -90,8 +97,10 @@ Claude Code ne marque jamais une migration comme exécutée : Ziza le confirme, 
 | 0004 | `supabase/migrations/0004_signature.sql` | Numéro WhatsApp de la Task Force (`manifestes.whatsapp_task_force`), fonctions `enregistrer_signature` et `resultat_signature` (une transaction, clé secrète seulement) | Oui (15 novembre 2026) |
 | 0005 | `supabase/migrations/0005_espace_ceo.sql` | Bucket privé `accuses`, table `inscriptions_ouvertes` (empreintes), fonctions `inscrire_par_lien_ouvert`, `retirer_signature` et `enregistrer_brouillon` (clé secrète seulement) | Oui (15 novembre 2026) |
 | 0006 | `supabase/migrations/0006_verification.sql` | Décision de l'admin sur l'invitation, fonctions de vérification et de traitement des commentaires (admins actifs, journalisées), signature refusée après un rejet | Oui (15 novembre 2026) |
-| 0007 | `supabase/migrations/0007_audit.sql` | Correctifs de l'audit 06 : droits des fonctions et de la séquence, signatures et versions jamais supprimées, journal au nom de l'admin, verrou du dernier admin, clé anti-doublon obligatoire, document publié protégé, limites des buckets | Non |
+| 0007 | `supabase/migrations/0007_audit.sql` | Correctifs de l'audit 06 : droits des fonctions et de la séquence, signatures et versions jamais supprimées, journal au nom de l'admin, verrou du dernier admin, clé anti-doublon obligatoire, document publié protégé, limites des buckets | Oui (confirmée au prompt 06.1) |
 | seed 9000 | `supabase/seed/9000_nettoyage_donnees_test.sql` | Nettoyage des données de test avant l'envoi des liens (aperçu, puis `confirmer` à `true`). Exécuté par Ziza seulement, jamais par Claude Code | Non |
+| 0008 | `supabase/migrations/0008_inscription_anti_doublon.sql` | Clé anti-doublon de l'inscription par le lien ouvert (`invitations.cle_inscription`, unique), fonction `inscrire_par_lien_ouvert` avec la clé | Non |
+| seed 0002 | `supabase/seed/0002_modele_message_whatsapp.sql` | Modèle du message WhatsApp mis en forme, seulement si le modèle en base est encore l'ancien modèle d'origine (à exécuter après 0008) | Non |
 
 ---
 
@@ -133,7 +142,6 @@ Selon la partie 19 du cahier des charges.
 
 - « Mot de passe oublié » par email : le fournisseur email par défaut de Supabase n'envoie qu'aux membres du projet Supabase. Pour les autres admins, utiliser « Générer un lien de réinitialisation » (D16) tant qu'aucun SMTP n'est configuré sur le domaine définitif.
 
-- Inscription par le lien ouvert renvoyée après une coupure réseau : elle peut créer une deuxième invitation (sans deuxième signature). Une clé anti-doublon sur l'inscription demande une migration : à traiter dans un lot dédié.
 - Un admin connecté peut écrire directement dans les tables par l'API de Supabase (RLS « admin peut tout »), sans passer par les fonctions journalisées. À restreindre dans un lot dédié, après le 23 novembre.
 - Les jetons apparaissent dans les journaux d'accès de Vercel (adresse de la page) : accès réservé au compte Vercel.
 - La limite d'inscriptions par heure du lien ouvert repose sur l'adresse IP : un changement d'adresse la contourne (protection anti-spam, pas une barrière).

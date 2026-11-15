@@ -24,6 +24,7 @@ const MESSAGES: Record<CodeInscription, string> = {
   limite_atteinte:
     "Trop d'inscriptions ont été faites depuis cette connexion. Réessayez dans une heure, ou écrivez à la Task Force avec « Une question ? ».",
   refuse: "L'inscription n'a pas pu être enregistrée.",
+  cle_invalide: "L'inscription n'a pas pu être enregistrée. Rechargez la page, puis réessayez.",
   echec: "L'inscription n'a pas pu être enregistrée. Réessayez.",
 };
 
@@ -32,6 +33,8 @@ export type ResultatInscription =
   | { ok: false; erreur: string; champs?: Partial<Record<Champ, string>> };
 
 export async function inscrireCeo(entree: {
+  /* Clé anti-doublon tirée dans le navigateur, la même à chaque nouvel essai (D102) */
+  cle: string;
   saisie: Record<string, string>;
   invitePar: string;
   codeParrain: string;
@@ -62,6 +65,7 @@ export async function inscrireCeo(entree: {
   const r = await inscrire(
     creerDepotInscription(page.manifesteId),
     {
+      cle: String(entree.cle ?? ""),
       saisie: saisie.data,
       invitePar: String(entree.invitePar ?? ""),
       codeParrain: String(entree.codeParrain ?? ""),

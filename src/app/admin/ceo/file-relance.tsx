@@ -3,6 +3,7 @@
 import { ArrowRight, MessageCircle } from "lucide-react";
 import { useState } from "react";
 
+import { ApercuWhatsApp } from "@/components/apercu-whatsapp";
 import { Button, classesBouton } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { lienWhatsApp } from "@/lib/ceo/message";
@@ -85,7 +86,7 @@ export function FileRelance({ file, message, derniereAction, onFermer, onRelance
         </strong>
         <span className="text-[13.5px] text-texte-secondaire">{derniereAction(ceo)}</span>
       </div>
-      <div className="rounded-[10px] bg-sureleve p-3 text-[14px] whitespace-pre-wrap">{texte}</div>
+      <ApercuWhatsApp message={texte} />
       {fait ? (
         <p role="status" className="text-[13.5px] text-succes">
           Relance notée. Passez au suivant quand le message est envoyé.

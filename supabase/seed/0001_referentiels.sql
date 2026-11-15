@@ -29,6 +29,7 @@ select
   '2026-12-02 23:59:00+00',
   -- Texte de consentement par défaut (cahier des charges, partie 11)
   'J''accepte que mon nom, ma fonction, le nom de mon entreprise et ma signature figurent dans le Manifeste et dans sa diffusion publique.',
-  -- Modèle du message WhatsApp, repris exactement du prototype (1-admin.html, constante MODELE)
+  -- Modèle du message WhatsApp d'origine, repris exactement du prototype (1-admin.html, constante MODELE).
+  -- Remplacé par le modèle mis en forme du seed 0002, seulement s'il n'a pas été modifié par un admin.
   E'Bonjour {prenom},\n\nSuite au déjeuner du 22 octobre, voici le Manifeste du secteur privé sénégalais de l\'eau et de l\'assainissement, qui sera présenté à Abu Dhabi.\n\nVous pouvez le lire, le commenter et le signer en deux minutes, depuis votre téléphone ou votre ordinateur, avec ce lien personnel :\n{lien}\n\nMerci de signer avant le {date_limite} pour figurer dans l\'exemplaire imprimé pour Abu Dhabi. Une question ? Répondez simplement à ce message.\n\nLa Task Force du secteur privé sénégalais de l\'eau et de l\'assainissement'
 where not exists (select 1 from public.manifestes);

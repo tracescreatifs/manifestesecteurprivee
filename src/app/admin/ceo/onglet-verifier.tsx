@@ -4,6 +4,7 @@ import { Building2, Check, CheckCheck, Copy, MessageCircle, RotateCcw, ShieldChe
 import { useEffect, useState, useTransition, type ReactNode } from "react";
 
 import { SignatureSvg } from "@/components/document/signature";
+import { ApercuWhatsApp } from "@/components/apercu-whatsapp";
 import { Button, classesBouton } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Modal } from "@/components/ui/modal";
@@ -147,6 +148,12 @@ export function OngletVerifier({
           <Button variante="discret" className="min-h-10 px-3 text-[14px]" onClick={() => setValide(null)}>
             Fermer
           </Button>
+          {valide.telephone && siteUrl ? (
+            <div className="grid basis-full gap-1.5">
+              <p className="text-[13px] text-texte-secondaire">Aperçu dans WhatsApp</p>
+              <ApercuWhatsApp message={messageValidation(valide.prenom, lienPersonnel(siteUrl, valide.jeton))} fond="surface" />
+            </div>
+          ) : null}
         </div>
       ) : null}
 

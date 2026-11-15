@@ -4,6 +4,7 @@
   dans une seule transaction et journalisent la décision avec l'admin.
 */
 
+import { MANIFESTE_GRAS, neutraliserMiseEnForme, SIGNATURE_TASK_FORCE } from "@/lib/ceo/message";
 import { normaliserTelephone, normaliserTexte } from "@/lib/ceo/normaliser";
 import { CHAMPS, etatCampagne, type Champ } from "@/lib/signature/regles";
 import type { Bloc, DecisionVerification, EtatVerification, MotifVerification, StatutCommentaire, StatutManifeste } from "@/types/database";
@@ -129,9 +130,9 @@ export function comparerChamps(
   }));
 }
 
-/* Message après la validation d'un nouvel inscrit, avec son lien personnel (D93) */
+/* Message après la validation d'un nouvel inscrit, avec son lien personnel (D93), mis en forme pour WhatsApp (D101) */
 export function messageValidation(prenom: string, lien: string): string {
-  return `Bonjour ${prenom}, votre signature du Manifeste du secteur privé sénégalais de l'eau et de l'assainissement est validée. Merci. Vous pouvez retrouver votre accusé et compléter votre fiche avec ce lien : ${lien} La Task Force du secteur privé sénégalais de l'eau et de l'assainissement`;
+  return `Bonjour ${neutraliserMiseEnForme(prenom)},\n\nVotre signature du ${MANIFESTE_GRAS} est validée. Merci.\n\nVous pouvez retrouver votre accusé et compléter votre fiche avec ce lien :\n${lien}\n\n${SIGNATURE_TASK_FORCE}`;
 }
 
 /* ----- Commentaires ----- */

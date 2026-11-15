@@ -2,6 +2,7 @@ import { Check } from "lucide-react";
 
 import type { StatutManifeste } from "@/types/database";
 
+import { AideEtape } from "./aide-etape";
 import { BoutonGel } from "./bouton-gel";
 import { MenuAdmin } from "./menu-admin";
 
@@ -23,13 +24,18 @@ type Props = {
   admin: { prenom: string; nom: string; email: string };
 };
 
+/* Identifiant du texte d'aide de l'étape, relié au bouton d'action par aria-describedby */
+const AIDE_ID = "aide-etape";
+
 /*
   Barre d'étapes : collante en haut sur ordinateur, en verre dépoli.
   Elle propose toujours la seule action suivante. En rédaction : « Geler le texte ».
   Clore et Publier arriveront avec leurs prompts.
+  L'aide de l'étape : bouton d'information et bulle sur ordinateur (la barre tient sur une ligne),
+  petit texte sous l'action sur téléphone.
 */
 export function BarreEtapes({ statut, versionCourante, admin }: Props) {
-  const action = statut === "redaction" && versionCourante !== null ? <BoutonGel numero={versionCourante} /> : null;
+  const action = statut === "redaction" && versionCourante !== null ? <BoutonGel numero={versionCourante} aideId={AIDE_ID} /> : null;
   const indication =
     statut === "redaction"
       ? versionCourante === null
@@ -51,7 +57,7 @@ export function BarreEtapes({ statut, versionCourante, admin }: Props) {
             const etat = etatEtape(statut, i);
             return (
               <li key={libelle} className="flex items-center gap-1.5">
-                {i > 0 ? <span aria-hidden="true" className="h-px w-3 bg-filet-fort min-[820px]:w-7" /> : null}
+                {i > 0 ? <span aria-hidden="true" className="h-px w-3 bg-filet-fort min-[1080px]:w-7" /> : null}
                 <span
                   aria-current={etat === "courant" ? "step" : undefined}
                   className={
@@ -71,7 +77,8 @@ export function BarreEtapes({ statut, versionCourante, admin }: Props) {
                   >
                     {etat === "fait" ? <Check aria-hidden="true" className="size-3.5" strokeWidth={2} /> : i + 1}
                   </span>
-                  <span className={etat === "courant" ? "" : "sr-only min-[820px]:not-sr-only"}>
+                  {/* Libellés : l'étape courante sur téléphone, aucun de 820 à 1079 px (la barre tient sur une ligne), tous au-delà */}
+                  <span className={etat === "courant" ? "min-[820px]:sr-only min-[1080px]:not-sr-only" : "sr-only min-[1080px]:not-sr-only"}>
                     {libelle}
                     {etat === "fait" ? <span className="sr-only"> (terminée)</span> : null}
                   </span>
@@ -80,18 +87,32 @@ export function BarreEtapes({ statut, versionCourante, admin }: Props) {
             );
           })}
         </ol>
-        <div className="ml-auto flex shrink-0 items-center gap-3">
+        <div className="ml-auto flex shrink-0 items-center gap-2">
           {indication ? (
-            <span className="hidden max-w-[42ch] text-[13.5px] text-texte-secondaire min-[1080px]:inline">
-              {indication}
+            <span className="hidden min-[820px]:inline-grid">
+              <AideEtape texte={indication} idDescription={AIDE_ID} />
             </span>
           ) : null}
           {action ? <span className="hidden min-[820px]:inline-flex">{action}</span> : null}
           <MenuAdmin prenom={admin.prenom} nom={admin.nom} email={admin.email} />
         </div>
       </div>
-      {/* Sur téléphone, l'action suivante occupe sa propre ligne */}
-      {action ? <div className="grid pb-1 min-[820px]:hidden">{action}</div> : null}
+      {indication ? (
+        <span id={AIDE_ID} className="sr-only">
+          {indication}
+        </span>
+      ) : null}
+      {/* Sur téléphone, l'action suivante occupe sa propre ligne, avec l'aide juste dessous (lue une seule fois : par le texte masqué ci-dessus) */}
+      {action || indication ? (
+        <div className="grid gap-1.5 pb-1 min-[820px]:hidden">
+          {action}
+          {indication ? (
+            <p aria-hidden="true" className="text-[13px] text-texte-secondaire">
+              {indication}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -3,9 +3,9 @@
 import {
   BookOpen,
   Calendar,
+  CalendarClock,
   CheckCircle2,
   CircleSlash,
-  Droplets,
   FileCheck,
   FileDown,
   FileText,
@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { DocumentA4 } from "@/components/document/document-a4";
+import { Marque } from "@/components/marque";
 import { Button, classesBouton } from "@/components/ui/button";
 import { formaterDateHeure, formaterJourLong } from "@/lib/dates";
 import type { LigneAnnexeA4 } from "@/lib/signature/annexe";
@@ -448,23 +449,24 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
     </div>
   ) : null;
 
-  /* ----- En-tête fixe (ordinateur) ----- */
+  /* ----- En-tête : fixe sur ordinateur, en tête de page sur téléphone (sans la date, déjà dans la barre de signature) ----- */
   const entete = (
-    <header className="barre-fixe fixed inset-x-0 top-0 z-20 hidden h-16 items-center gap-3 border-b border-filet px-10 min-[760px]:flex">
-      <span className="grid size-8 place-items-center rounded-lg bg-eau text-white [&_svg]:size-[18px]">
-        <Droplets aria-hidden="true" strokeWidth={1.75} />
-      </span>
-      <div className="min-w-0 flex-1 font-titre text-[16px] leading-tight">
-        Manifeste du secteur privé sénégalais de l&apos;eau et de l&apos;assainissement
-        {version?.sousTitre ? <span className="block font-interface text-[12.5px] text-texte-secondaire">{version.sousTitre}</span> : null}
-      </div>
-      {ouvert && !signature && !refus ? (
-        <span className="inline-flex items-center gap-1.5 text-[13px] text-texte-secondaire [&_svg]:size-4">
-          <Calendar aria-hidden="true" strokeWidth={1.75} />
-          Signature avant le {dateLimite}
+    <>
+      <header className="barre-fixe fixed inset-x-0 top-0 z-20 hidden h-16 items-center gap-3 border-b border-filet px-10 min-[760px]:flex">
+        <span className="min-w-0 flex-1">
+          <Marque taille="compacte" />
         </span>
-      ) : null}
-    </header>
+        {ouvert && !signature && !refus ? (
+          <span className="inline-flex shrink-0 items-center gap-1.5 text-[13px] text-texte-secondaire [&_svg]:size-4">
+            <CalendarClock aria-hidden="true" strokeWidth={1.75} />
+            Signature avant le {dateLimite}
+          </span>
+        ) : null}
+      </header>
+      <header className="px-5 pt-4 min-[760px]:hidden">
+        <Marque taille="compacte" />
+      </header>
+    </>
   );
 
   /* ----- Écran principal ----- */
@@ -610,7 +612,6 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
       ) : null}
       <main className="mx-auto grid w-full max-w-[1160px] content-start gap-4 px-5 pt-6 pb-[104px] min-[760px]:grid-cols-[minmax(0,1fr)_340px] min-[760px]:items-start min-[760px]:gap-12 min-[760px]:px-10 min-[760px]:pt-24 min-[760px]:pb-16">
         <aside className="grid min-w-0 content-start gap-4 min-[760px]:sticky min-[760px]:top-24 min-[760px]:order-2">
-          <p className="text-[13px] text-texte-secondaire min-[760px]:hidden">Manifeste</p>
           {colonne}
         </aside>
         <div className="grid min-w-0 content-start gap-4 min-[760px]:order-1">

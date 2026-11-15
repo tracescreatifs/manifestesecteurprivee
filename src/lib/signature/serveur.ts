@@ -482,7 +482,7 @@ export async function lireSignatureActive(
 export function creerDepotInscription(manifesteId: string): DepotInscription {
   return {
     async inscrire(e) {
-      const { error } = await creerClientAdmin().rpc("inscrire_par_lien_ouvert", {
+      const { data, error } = await creerClientAdmin().rpc("inscrire_par_lien_ouvert", {
         p_manifeste_id: manifesteId,
         p_saisie: e.saisie as unknown as Json,
         p_jeton: e.jeton,
@@ -491,9 +491,13 @@ export function creerDepotInscription(manifesteId: string): DepotInscription {
         p_invite_par: e.invitePar,
         p_empreinte: e.empreinte,
         p_limite_par_heure: e.limiteParHeure,
+        p_cle_inscription: e.cle,
       });
-      if (!error) return { ok: true };
+      /* Le jeton renvoyé est celui de l'invitation enregistrée : le nouveau, ou celui d'un premier envoi avec la même clé */
+      const jeton = (data as { jeton?: unknown } | null)?.jeton;
+      if (!error) return typeof jeton === "string" ? { ok: true, jeton } : { ok: false, code: "echec" };
       const m = error.message ?? "";
+      if (m.includes("cle_invalide")) return { ok: false, code: "cle_invalide" };
       if (m.includes("limite_atteinte")) return { ok: false, code: "limite_atteinte" };
       if (m.includes("lien_en_pause")) return { ok: false, code: "lien_en_pause" };
       if (m.includes("pas_ouvert")) return { ok: false, code: "pas_ouvert" };

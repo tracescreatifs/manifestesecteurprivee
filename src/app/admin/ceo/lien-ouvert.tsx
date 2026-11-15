@@ -6,7 +6,7 @@ import { useEffect, useState, useTransition } from "react";
 
 import { Button, classesBouton } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
-import { lienPartageWhatsApp } from "@/lib/ceo/message";
+import { lienPartageWhatsApp, messageLienOuvert } from "@/lib/ceo/message";
 
 import { basculerLienOuvert } from "./actions";
 
@@ -16,9 +16,6 @@ type Props = {
   onFermer: () => void;
   onMessage: (texte: string, erreur?: boolean) => void;
 };
-
-const PARTAGE =
-  "Dirigeants d'entreprises sénégalaises de l'eau et de l'assainissement : lisez et signez le Manifeste qui sera présenté à Abu Dhabi. ";
 
 /* Lien ouvert : pour les CEO qui ne sont pas dans la liste, avec son QR code */
 export function LienOuvert({ adresse, actif, onFermer, onMessage }: Props) {
@@ -76,7 +73,7 @@ export function LienOuvert({ adresse, actif, onFermer, onMessage }: Props) {
             </a>
           ) : null}
           <a
-            href={lienPartageWhatsApp(`${PARTAGE}${adresse}`)}
+            href={lienPartageWhatsApp(messageLienOuvert(adresse))}
             target="_blank"
             rel="noopener noreferrer"
             className={classesBouton("principal")}

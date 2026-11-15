@@ -18,6 +18,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { SignatureSvg } from "@/components/document/signature";
 import { Button, classesBouton } from "@/components/ui/button";
+import { lienPartageWhatsApp, lienWhatsApp, messageInvitationConfrere, messageMonLien } from "@/lib/ceo/message";
 import { formaterDateHeure } from "@/lib/dates";
 import type { LigneAnnexeA4 } from "@/lib/signature/annexe";
 import { CHAMPS, champsModifies, type Champ, type Saisie, type SignatureEnregistree } from "@/lib/signature/regles";
@@ -113,6 +114,8 @@ export function ParcoursSignature(props: Props) {
   const dialogue = useRef<HTMLDialogElement>(null);
   const fermer = useRef(onFermer);
   const cle = useRef<string | null>(null);
+  /* Clé anti-doublon de l'inscription (/rejoindre) : tirée au premier envoi, gardée pour chaque nouvel essai */
+  const cleInscription = useRef<string | null>(null);
   const [etape, setEtape] = useState<Etape>(props.etapeInitiale);
   const [saisie, setSaisie] = useState<Saisie>(props.saisieInitiale);
   const [invitePar, setInvitePar] = useState(props.inscription?.parrain ?? "");
@@ -201,7 +204,14 @@ export function ParcoursSignature(props: Props) {
       setEnvoi(true);
       let parti = false;
       try {
-        const res = await inscrireCeo({ saisie: r.data, invitePar, codeParrain: props.inscription.codeParrain, piege });
+        if (!cleInscription.current) cleInscription.current = nouvelleCle();
+        const res = await inscrireCeo({
+          cle: cleInscription.current,
+          saisie: r.data,
+          invitePar,
+          codeParrain: props.inscription.codeParrain,
+          piege,
+        });
         if (res.ok) {
           /*
             Chargement complet du nouveau lien personnel, à l'étape 2 : la page repart avec le jeton créé
@@ -373,9 +383,7 @@ export function ParcoursSignature(props: Props) {
             {telephoneCeo ? (
               <a
                 className={classesBouton("secondaire")}
-                href={`https://wa.me/${telephoneCeo}?text=${encodeURIComponent(
-                  `Mon lien personnel pour le Manifeste du secteur privé sénégalais de l'eau et de l'assainissement : ${lienPerso}`,
-                )}`}
+                href={lienWhatsApp(telephoneCeo, messageMonLien(lienPerso))}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -751,7 +759,6 @@ export function ParcoursSignature(props: Props) {
 }
 
 export function InviterConfrere({ lien, onCopie }: { lien: string; onCopie: (message: string) => void }) {
-  const message = `Je viens de signer le Manifeste du secteur privé sénégalais de l'eau et de l'assainissement, qui sera présenté à Abu Dhabi. Vous pouvez le lire et le signer ici : ${lien}`;
   return (
     <>
       <p className="text-texte-secondaire">
@@ -760,7 +767,7 @@ export function InviterConfrere({ lien, onCopie }: { lien: string; onCopie: (mes
       </p>
       <a
         className={classesBouton("secondaire")}
-        href={`https://wa.me/?text=${encodeURIComponent(message)}`}
+        href={lienPartageWhatsApp(messageInvitationConfrere(lien))}
         target="_blank"
         rel="noopener noreferrer"
       >

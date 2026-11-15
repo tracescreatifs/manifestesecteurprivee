@@ -3,6 +3,7 @@
 import { RotateCcw, Save } from "lucide-react";
 import { useState, useTransition } from "react";
 
+import { ApercuWhatsApp } from "@/components/apercu-whatsapp";
 import { Button } from "@/components/ui/button";
 import { Toast, useToast } from "@/components/ui/toast";
 import { MODELE_ORIGINE, lienPersonnel, remplirModele } from "@/lib/ceo/message";
@@ -38,17 +39,30 @@ export function OngletMessages({ modele, dateLimite, siteUrl }: Props) {
       <p className="text-[13px] text-texte-secondaire">
         Variables : <code>{"{prenom}"}</code> (prénom du CEO), <code>{"{lien}"}</code> (son lien personnel, obligatoire)
         et <code>{"{date_limite}"}</code> (date limite de signature). Le message est signé par la Task Force du secteur
-        privé sénégalais de l&apos;eau et de l&apos;assainissement. Une relance ajoute « Petit rappel. » au début.
+        privé sénégalais de l&apos;eau et de l&apos;assainissement. Une relance ajoute « Petit rappel. », en gras, sur la première ligne.
       </p>
-      <label htmlFor="modele" className="text-[13px] font-medium text-texte-secondaire">
-        Modèle
-      </label>
-      <textarea
-        id="modele"
-        value={texte}
-        onChange={(e) => setTexte(e.target.value)}
-        className="min-h-56 w-full rounded-[10px] border border-filet-fort bg-surface p-3 text-[14.5px] focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none"
-      />
+      {/* Le modèle et son rendu dans WhatsApp : côte à côte sur ordinateur, l'un sous l'autre sur téléphone */}
+      <div className="grid gap-4 min-[1080px]:grid-cols-2">
+        <div className="grid content-start gap-2">
+          <label htmlFor="modele" className="text-[13px] font-medium text-texte-secondaire">
+            Modèle
+          </label>
+          <textarea
+            id="modele"
+            value={texte}
+            aria-describedby="modele-aide"
+            onChange={(e) => setTexte(e.target.value)}
+            className="min-h-72 w-full rounded-[10px] border border-filet-fort bg-surface p-3 text-[14.5px] focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none"
+          />
+          <p id="modele-aide" className="text-[13px] text-texte-secondaire">
+            *texte* pour le gras, _texte_ pour l&apos;italique
+          </p>
+        </div>
+        <div className="grid content-start gap-2">
+          <p className="text-[13px] font-medium text-texte-secondaire">Aperçu dans WhatsApp, avec un CEO fictif</p>
+          <ApercuWhatsApp message={apercu} etiquette="Exemple" />
+        </div>
+      </div>
       {erreur ? (
         <p role="alert" className="text-[13.5px] text-erreur">
           {erreur}
@@ -65,15 +79,6 @@ export function OngletMessages({ modele, dateLimite, siteUrl }: Props) {
         </Button>
       </div>
 
-      <div className="grid gap-2 border-t border-filet pt-3">
-        <p className="text-[13px] font-medium text-texte-secondaire">Aperçu, avec un CEO fictif</p>
-        <div className="relative rounded-[10px] bg-sureleve p-3 pt-8 text-[14px] whitespace-pre-wrap">
-          <span className="absolute top-2 left-3 rounded-md bg-[#ECECEA] px-2 py-0.5 text-[12px] font-medium text-encre">
-            Exemple
-          </span>
-          {apercu}
-        </div>
-      </div>
       <Toast message={message} />
     </section>
   );
