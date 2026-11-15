@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { genererCodeParrainage, genererJeton } from "@/lib/ceo/jetons";
+import { normaliserEmail } from "@/lib/ceo/lire-liste";
 import { normaliserTelephone, rapprocherMaillon } from "@/lib/ceo/normaliser";
 import { lireMaillons } from "@/lib/ceo/serveur";
 import { journaliser } from "@/lib/journal";
@@ -23,6 +24,8 @@ const schemaLigne = z.object({
   entreprise: z.string().trim().min(1, "Indiquez l'entreprise.").max(160, "Nom d'entreprise trop long."),
   maillon: z.string().trim().max(80),
   telephone: z.string().trim().max(40),
+  /* Facultatif, jamais demandé au CEO (D30, D62) */
+  email: z.string().trim().max(200).default(""),
 });
 
 type LigneSaisie = z.infer<typeof schemaLigne>;
@@ -36,6 +39,7 @@ async function preparer(lignes: LigneSaisie[]) {
 
   return lignes.map((l) => {
     const telephone = normaliserTelephone(l.telephone) ?? "";
+    const email = normaliserEmail(l.email);
     const maillon = l.maillon ? (rapprocherMaillon(l.maillon, libelles) ?? "") : "";
     const saisieListe = {
       prenom: l.prenom,
@@ -44,6 +48,7 @@ async function preparer(lignes: LigneSaisie[]) {
       entreprise: l.entreprise,
       maillon,
       telephone,
+      email,
     };
     return {
       prenom: l.prenom,
@@ -52,6 +57,7 @@ async function preparer(lignes: LigneSaisie[]) {
       entreprise: l.entreprise,
       maillon_id: idMaillon.get(maillon) ?? "",
       telephone,
+      email,
       saisie_liste: saisieListe,
     };
   });
@@ -85,7 +91,7 @@ const schemaImport = z.object({
 
 export async function importerListe(saisie: {
   fichier: string;
-  lignes: LigneSaisie[];
+  lignes: z.input<typeof schemaLigne>[];
 }): Promise<ResultatAction<{ nombre: number }>> {
   const acces = await exigerAdminActif();
   if (!acces.ok) return acces;
@@ -113,7 +119,7 @@ export async function importerListe(saisie: {
 
 /* ----- Ajout et modification d'un CEO ----- */
 
-export async function ajouterCeo(saisie: LigneSaisie): Promise<ResultatAction> {
+export async function ajouterCeo(saisie: z.input<typeof schemaLigne>): Promise<ResultatAction> {
   const acces = await exigerAdminActif();
   if (!acces.ok) return acces;
 
@@ -121,6 +127,9 @@ export async function ajouterCeo(saisie: LigneSaisie): Promise<ResultatAction> {
   if (!donnees.success) return { ok: false, erreur: donnees.error.issues[0]?.message ?? "Formulaire incomplet." };
   if (donnees.data.telephone && !normaliserTelephone(donnees.data.telephone)) {
     return { ok: false, erreur: "Numéro WhatsApp illisible : indiquez le numéro complet, avec l'indicatif si besoin." };
+  }
+  if (donnees.data.email && !normaliserEmail(donnees.data.email)) {
+    return { ok: false, erreur: "Adresse email invalide : corrigez-la ou laissez le champ vide." };
   }
 
   const resultat = await creerCeo([donnees.data]);
@@ -139,7 +148,7 @@ export async function ajouterCeo(saisie: LigneSaisie): Promise<ResultatAction> {
 
 const schemaId = z.object({ invitationId: z.uuid("CEO introuvable.") });
 
-export async function modifierCeo(saisie: LigneSaisie & { invitationId: string }): Promise<ResultatAction> {
+export async function modifierCeo(saisie: z.input<typeof schemaLigne> & { invitationId: string }): Promise<ResultatAction> {
   const acces = await exigerAdminActif();
   if (!acces.ok) return acces;
 
@@ -149,6 +158,9 @@ export async function modifierCeo(saisie: LigneSaisie & { invitationId: string }
   if (!donnees.success) return { ok: false, erreur: donnees.error.issues[0]?.message ?? "Formulaire incomplet." };
   if (donnees.data.telephone && !normaliserTelephone(donnees.data.telephone)) {
     return { ok: false, erreur: "Numéro WhatsApp illisible : indiquez le numéro complet, avec l'indicatif si besoin." };
+  }
+  if (donnees.data.email && !normaliserEmail(donnees.data.email)) {
+    return { ok: false, erreur: "Adresse email invalide : corrigez-la ou laissez le champ vide." };
   }
 
   const [ligne] = await preparer([donnees.data]);

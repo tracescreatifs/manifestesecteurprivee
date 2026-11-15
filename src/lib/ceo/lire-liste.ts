@@ -25,12 +25,22 @@ export type LigneListe = {
   maillon: string;
   /* Format E.164, ou chaîne vide */
   telephone: string;
+  /* Email en minuscules, ou chaîne vide (jamais demandé au CEO : D30) */
+  email: string;
   /* Téléphone tel qu'écrit dans le fichier, s'il n'a pas pu être lu */
   telephoneIllisible: string;
   signalements: Signalement[];
 };
 
-export type ColonnesReconnues = Partial<Record<"entreprise" | "prenom" | "nom" | "fonction" | "maillon" | "telephone", string>>;
+export type ColonnesReconnues = Partial<
+  Record<"entreprise" | "prenom" | "nom" | "fonction" | "maillon" | "telephone" | "email", string>
+>;
+
+/* Email plausible (une seule arobase, un domaine avec un point), en minuscules ; sinon chaîne vide */
+export function normaliserEmail(valeur: string): string {
+  const email = valeur.trim().toLowerCase().replace(/^mailto:/, "");
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 200 ? email : "";
+}
 
 export type ResultatListe =
   | { ok: true; lignes: LigneListe[]; colonnes: ColonnesReconnues; ligneEntete: number }
@@ -129,6 +139,7 @@ export function analyserGrille(grille: unknown[][], maillons: string[]): Resulta
   const cFonction = trouver((t) => /\b(fonction|poste)\b/.test(t));
   const cMaillon = trouver((t) => /\bmaillon\b/.test(t));
   const cTelephone = trouver((t) => /\b(telephone|tel|whatsapp|mobile|portable)\b/.test(t));
+  const cEmail = trouver((t) => /^(adresse )?(e-?mail|courriel|mail)\b/.test(t) || /\b(e-?mail|courriel)\b/.test(t));
 
   const titre = (i: number) => (i >= 0 ? cellules[iEntete][i] : undefined);
   const colonnes: ColonnesReconnues = {
@@ -138,6 +149,7 @@ export function analyserGrille(grille: unknown[][], maillons: string[]): Resulta
     fonction: titre(cFonction),
     maillon: titre(cMaillon),
     telephone: titre(cTelephone),
+    email: titre(cEmail),
   };
 
   const lire = (r: string[], i: number) => (i >= 0 ? (r[i] ?? "").replace(/\s+/g, " ").trim() : "");
@@ -170,6 +182,7 @@ export function analyserGrille(grille: unknown[][], maillons: string[]): Resulta
       maillon,
       telephone,
       telephoneIllisible: telephone ? "" : telBrut,
+      email: normaliserEmail(lire(r, cEmail)),
       signalements,
     });
   });

@@ -22,7 +22,7 @@ type Props = {
   onEnregistre: (message: string) => void;
 };
 
-const VIDE = { prenom: "", nom: "", fonction: "", entreprise: "", maillon: "", telephone: "" };
+const VIDE = { prenom: "", nom: "", fonction: "", entreprise: "", maillon: "", telephone: "", email: "" };
 
 /* Ajouter ou modifier un CEO, avec le même contrôle de doublon que l'import (D21) */
 export function FormulaireCeo({ ouvert, onFermer, ceo, lignes, maillons, onEnregistre }: Props) {
@@ -37,6 +37,7 @@ export function FormulaireCeo({ ouvert, onFermer, ceo, lignes, maillons, onEnreg
         entreprise: ceo.entreprise,
         maillon: ceo.maillon,
         telephone: ceo.telephone,
+        email: ceo.email,
       }
     : VIDE;
 
@@ -67,6 +68,7 @@ export function FormulaireCeo({ ouvert, onFermer, ceo, lignes, maillons, onEnreg
       entreprise: String(f.get("entreprise") ?? "").trim(),
       maillon: String(f.get("maillon") ?? ""),
       telephone: String(f.get("telephone") ?? "").trim(),
+      email: String(f.get("email") ?? "").trim(),
     };
     if (!saisie.entreprise) return setErreur("Indiquez l'entreprise.");
     if (!saisie.prenom && !saisie.nom) return setErreur("Indiquez au moins le nom du dirigeant.");
@@ -121,6 +123,9 @@ export function FormulaireCeo({ ouvert, onFermer, ceo, lignes, maillons, onEnreg
           </Field>
           <Field id="c-tel" libelle="Téléphone WhatsApp" aide="Un numéro à 9 chiffres reçoit l'indicatif +221.">
             <Input id="c-tel" name="telephone" defaultValue={initial.telephone} inputMode="tel" placeholder="+221 77 123 45 67" autoComplete="off" />
+          </Field>
+          <Field id="c-email" libelle="Email (facultatif)" aide="Jamais demandé au CEO." className="min-[520px]:col-span-2">
+            <Input id="c-email" name="email" type="email" inputMode="email" defaultValue={initial.email} autoComplete="off" />
           </Field>
         </div>
 

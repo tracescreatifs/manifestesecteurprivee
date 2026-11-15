@@ -33,6 +33,7 @@ const NOMS_COLONNES: Record<keyof ColonnesReconnues, string> = {
   fonction: "Fonction",
   maillon: "Maillon",
   telephone: "Téléphone",
+  email: "Email",
 };
 
 /*
@@ -125,6 +126,7 @@ export function ImportListe({ ouvert, onFermer, maillons, existants, onImporte }
           entreprise: l.entreprise,
           maillon: l.maillon,
           telephone: l.telephone,
+          email: l.email,
         })),
       });
       if (!r.ok) return setErreur(r.erreur);
@@ -254,6 +256,7 @@ export function ImportListe({ ouvert, onFermer, maillons, existants, onImporte }
                     </span>
                     <span className="text-[13.5px] text-texte-secondaire tabular-nums">
                       {l.telephone ? formaterTelephone(l.telephone) : l.telephoneIllisible ? `Numéro illisible : ${l.telephoneIllisible}` : ""}
+                      {l.email ? `${l.telephone || l.telephoneIllisible ? " · " : ""}${l.email}` : ""}
                     </span>
                     {l.signalements.length ? (
                       <span className="flex flex-wrap gap-1.5">

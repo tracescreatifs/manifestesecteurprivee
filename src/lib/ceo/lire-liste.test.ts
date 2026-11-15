@@ -31,6 +31,7 @@ describe("lecture de la liste des CEO", () => {
       fonction: "Fonction",
       maillon: "Maillon",
       telephone: "Téléphone",
+      email: "Email",
     });
   });
 
@@ -55,6 +56,10 @@ describe("lecture de la liste des CEO", () => {
 
   it("normalise les téléphones au format international", () => {
     expect(r.lignes.map((l) => l.telephone)).toEqual(["+221770000101", "+221770000102", "", "+221760000106"]);
+  });
+
+  it("importe l'email quand la colonne existe, en minuscules", () => {
+    expect(r.lignes.map((l) => l.email)).toEqual(["a@exemple.sn", "", "", ""]);
   });
 
   it("signale les lignes à compléter", () => {
@@ -114,6 +119,19 @@ describe("tableau collé et CSV", () => {
       fonction: "Gérante",
       telephone: "+33612345678",
     });
+  });
+});
+
+describe("colonne email", () => {
+  it("reconnaît les titres E-mail, Courriel et Mail, et ignore une valeur invalide", () => {
+    for (const titre of ["E-mail", "Courriel", "Mail", "Adresse email"]) {
+      const r = analyserGrille(
+        [["Entreprise", "Nom", titre], ["Kane Forages", "Mamadou KANE", " M.Kane@Exemple.SN "], ["Autre", "Awa FAYE", "pas un email"]],
+        MAILLONS,
+      );
+      expect(r.ok && r.colonnes.email).toBe(titre);
+      expect(r.ok && r.lignes.map((l) => l.email)).toEqual(["m.kane@exemple.sn", ""]);
+    }
   });
 });
 

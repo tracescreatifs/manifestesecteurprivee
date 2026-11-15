@@ -6,7 +6,6 @@ import {
   Link2,
   ListChecks,
   MessageCircle,
-  MoreHorizontal,
   Pencil,
   QrCode,
   Search,
@@ -15,11 +14,13 @@ import {
   Upload,
   UserPlus,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, useTransition, type ReactNode } from "react";
+import { useMemo, useState, useTransition, type KeyboardEvent, type MouseEvent } from "react";
 
 import { SignatureSvg } from "@/components/document/signature";
+import { BoutonAvecRaison } from "@/components/ui/bouton-raison";
 import { Button, classesBouton } from "@/components/ui/button";
-import { Chip, type VarianteChip } from "@/components/ui/chip";
+import { Chip } from "@/components/ui/chip";
+import { MenuActions, type ElementMenu } from "@/components/ui/menu-actions";
 import { Modal } from "@/components/ui/modal";
 import { Toast, useToast } from "@/components/ui/toast";
 import { formaterDateHeure } from "@/lib/dates";
@@ -30,10 +31,12 @@ import type { StatutEnvoi, StatutManifeste } from "@/types/database";
 
 import { annulerEnvoi, enregistrerEnvoi, retirerCeo } from "./actions";
 import { FenetreWhatsApp } from "./fenetre-whatsapp";
+import { FicheCeo } from "./fiche-ceo";
 import { FileRelance } from "./file-relance";
 import { FormulaireCeo } from "./formulaire-ceo";
 import { ImportListe } from "./import-liste";
 import { LienOuvert } from "./lien-ouvert";
+import { LIBELLES_STATUTS as STATUTS } from "./statuts";
 
 type Props = {
   lignes: LigneCeo[];
@@ -44,13 +47,6 @@ type Props = {
   modele: string;
   dateLimite: string;
   lienOuvertActif: boolean;
-};
-
-const STATUTS: Record<StatutEnvoi, { libelle: string; variante: VarianteChip }> = {
-  a_envoyer: { libelle: "À envoyer", variante: "neutre" },
-  envoye: { libelle: "Envoyé", variante: "neutre" },
-  ouvert: { libelle: "Ouvert, non signé", variante: "ouvert" },
-  signe: { libelle: "Signé", variante: "eau" },
 };
 
 const FILTRES: { cle: "tous" | StatutEnvoi; libelle: string }[] = [
@@ -105,30 +101,16 @@ export function TableauCeo({
   const [filtre, setFiltre] = useState<"tous" | StatutEnvoi>("tous");
   const [maillon, setMaillon] = useState("");
   const [recherche, setRecherche] = useState("");
-  const [menu, setMenu] = useState<string | null>(null);
+  /* Fiche ouverte : identifiant de l'invitation (la ligne est relue à chaque mise à jour) */
+  const [fiche, setFiche] = useState<string | null>(null);
   const [envoi, setEnvoi] = useState<{ ceo: LigneCeo; relance: boolean } | null>(null);
   const [fileOuverte, setFileOuverte] = useState(false);
   const [formulaire, setFormulaire] = useState<{ ceo: LigneCeo | null } | null>(null);
   const [aRetirer, setARetirer] = useState<LigneCeo | null>(null);
   const [importOuvert, setImportOuvert] = useState(false);
   const [lienOuvertVisible, setLienOuvertVisible] = useState(false);
-  const zoneMenu = useRef<HTMLDivElement | null>(null);
 
   const gele = statutManifeste === "gele";
-
-  useEffect(() => {
-    if (!menu) return;
-    const fermer = (e: MouseEvent) => {
-      if (!zoneMenu.current?.contains(e.target as Node)) setMenu(null);
-    };
-    const touche = (e: KeyboardEvent) => e.key === "Escape" && setMenu(null);
-    document.addEventListener("mousedown", fermer);
-    document.addEventListener("keydown", touche);
-    return () => {
-      document.removeEventListener("mousedown", fermer);
-      document.removeEventListener("keydown", touche);
-    };
-  }, [menu]);
 
   const compte = useMemo(() => {
     const c: Record<StatutEnvoi, number> = { a_envoyer: 0, envoye: 0, ouvert: 0, signe: 0 };
@@ -167,7 +149,6 @@ export function TableauCeo({
     });
 
   const copierLien = async (ceo: LigneCeo) => {
-    setMenu(null);
     if (!siteUrl) return afficher("Adresse du site non configurée (NEXT_PUBLIC_SITE_URL).", true);
     try {
       await navigator.clipboard.writeText(lienPersonnel(siteUrl, ceo.jeton));
@@ -178,7 +159,6 @@ export function TableauCeo({
   };
 
   const nonEnvoye = (ceo: LigneCeo) => {
-    setMenu(null);
     demarrer(async () => {
       const r = await annulerEnvoi({ invitationId: ceo.invitationId });
       afficher(r.ok ? "Marqué comme non envoyé" : r.erreur, !r.ok);
@@ -191,6 +171,7 @@ export function TableauCeo({
     demarrer(async () => {
       const r = await retirerCeo({ invitationId: ceo.invitationId });
       setARetirer(null);
+      if (r.ok) setFiche(null);
       afficher(r.ok ? "Retiré de la liste" : r.erreur, !r.ok);
     });
   };
@@ -198,36 +179,52 @@ export function TableauCeo({
   const pct = (n: number) => `${((n / Math.max(1, total)) * 100).toFixed(1)}%`;
   const fige = statutManifeste === "clos" || statutManifeste === "publie";
 
+  /* Raison pour laquelle l'envoi est impossible ; undefined : aucune action d'envoi (signé, signatures closes) */
+  const raisonEnvoi = (l: LigneCeo): string | null | undefined => {
+    if (l.statut === "signe" || fige) return undefined;
+    if (!gele) return "Gelez le texte avant d'envoyer les liens";
+    if (!siteUrl) return "Adresse du site non configurée (NEXT_PUBLIC_SITE_URL)";
+    if (!l.telephone) return "Ajoutez un numéro WhatsApp";
+    return null;
+  };
+
   /* Action principale d'une ligne */
   const actionPrincipale = (l: LigneCeo) => {
-    if (l.statut === "signe" || fige) return null;
+    const raison = raisonEnvoi(l);
+    if (raison === undefined) return null;
     const relance = l.statut === "envoye" || l.statut === "ouvert";
-    const raison = !gele
-      ? "Gelez le texte avant d'envoyer les liens"
-      : !siteUrl
-        ? "Adresse du site non configurée"
-        : !l.telephone
-          ? "Ajoutez un numéro WhatsApp"
-          : null;
     return (
-      <span className="grid justify-items-end gap-0.5">
-        <Button
-          onClick={() => setEnvoi({ ceo: l, relance })}
-          disabled={Boolean(raison) || enCours}
-          title={raison ?? undefined}
-          className="px-3 text-[14px]"
-        >
-          {relance ? (
-            <BellRing aria-hidden="true" strokeWidth={1.75} />
-          ) : (
-            <MessageCircle aria-hidden="true" strokeWidth={1.75} />
-          )}
-          {relance ? "Relancer" : "Envoyer"}
-        </Button>
-        {raison && gele ? <span className="text-[12px] text-texte-secondaire">{raison}</span> : null}
-      </span>
+      <BoutonAvecRaison raison={raison} onClick={() => setEnvoi({ ceo: l, relance })} occupe={enCours} className="px-3 text-[14px]">
+        {relance ? <BellRing aria-hidden="true" strokeWidth={1.75} /> : <MessageCircle aria-hidden="true" strokeWidth={1.75} />}
+        {relance ? "Relancer" : "Envoyer"}
+      </BoutonAvecRaison>
     );
   };
+
+  /* Menu d'une ligne */
+  const elementsMenu = (l: LigneCeo): ElementMenu[] => [
+    { genre: "action", libelle: "Copier le lien personnel", icone: Link2, onSelect: () => void copierLien(l) },
+    { genre: "action", libelle: "Modifier", icone: Pencil, onSelect: () => setFormulaire({ ceo: l }) },
+    ...(l.statut === "envoye"
+      ? [{ genre: "action" as const, libelle: "Marquer comme non envoyé", icone: Undo2, onSelect: () => nonEnvoye(l) }]
+      : []),
+    l.statut === "signe"
+      ? { genre: "note" as const, texte: "Ce CEO a signé : il ne peut pas être retiré de la liste." }
+      : { genre: "action" as const, libelle: "Retirer de la liste", icone: Trash2, danger: true, onSelect: () => setARetirer(l) },
+  ];
+
+  /* Un clic sur la ligne (hors boutons et liens) ou Entrée ouvre la fiche */
+  const surClicLigne = (e: MouseEvent<HTMLLIElement>, l: LigneCeo) => {
+    if ((e.target as HTMLElement).closest("button, a, input, select, textarea")) return;
+    setFiche(l.invitationId);
+  };
+  const surToucheLigne = (e: KeyboardEvent<HTMLLIElement>, l: LigneCeo) => {
+    if (e.key === "Enter" && e.target === e.currentTarget) {
+      e.preventDefault();
+      setFiche(l.invitationId);
+    }
+  };
+  const ceoFiche = fiche ? (lignes.find((l) => l.invitationId === fiche) ?? null) : null;
 
   return (
     <>
@@ -387,16 +384,20 @@ export function TableauCeo({
         {visibles.length ? (
           <ul>
             {visibles.map((l) => {
-              const signe = l.statut === "signe";
+              const nomComplet = `${l.prenom} ${l.nom}`.trim() || "Dirigeant à préciser";
               return (
                 <li
                   key={l.invitationId}
-                  className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 border-t border-filet px-4 py-3 first:border-t-0 min-[820px]:grid-cols-[minmax(0,1.5fr)_minmax(0,1.3fr)_150px_minmax(0,1.2fr)_auto] min-[820px]:gap-3.5"
+                  tabIndex={0}
+                  aria-label={`${nomComplet}, ${l.entreprise}. Entrée pour ouvrir la fiche`}
+                  onClick={(e) => surClicLigne(e, l)}
+                  onKeyDown={(e) => surToucheLigne(e, l)}
+                  className="cursor-pointer hover:bg-[#FAFAF9] focus-visible:bg-[#FAFAF9] focus-visible:outline-offset-[-2px] grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 border-t border-filet px-4 py-3 first:border-t-0 min-[820px]:grid-cols-[minmax(0,1.5fr)_minmax(0,1.3fr)_150px_minmax(0,1.2fr)_auto] min-[820px]:gap-3.5"
                 >
                   <div className="flex min-w-0 items-center gap-2.5">
                     <Avatar ligne={l} />
                     <div className="min-w-0">
-                      <div className="truncate font-semibold">{`${l.prenom} ${l.nom}`.trim() || "Dirigeant à préciser"}</div>
+                      <div className="truncate font-semibold">{nomComplet}</div>
                       <div className="truncate text-[13px] text-texte-secondaire">{l.fonction || " "}</div>
                     </div>
                   </div>
@@ -418,58 +419,8 @@ export function TableauCeo({
                   {/* Téléphone : menu en haut à droite, action principale en bas à droite. Ordinateur : côte à côte. */}
                   <div className="contents min-[820px]:flex min-[820px]:w-[190px] min-[820px]:items-start min-[820px]:justify-end min-[820px]:gap-1">
                     <div className="col-start-2 row-start-3 justify-self-end">{actionPrincipale(l)}</div>
-                    <div
-                      className="relative col-start-2 row-start-1 justify-self-end"
-                      ref={menu === l.invitationId ? zoneMenu : undefined}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setMenu(menu === l.invitationId ? null : l.invitationId)}
-                        aria-label={`Plus d'actions pour ${l.prenom} ${l.nom}`}
-                        aria-expanded={menu === l.invitationId}
-                        className="grid size-11 place-items-center rounded-[10px] text-texte-secondaire hover:bg-[rgba(20,33,43,0.06)] hover:text-encre"
-                      >
-                        <MoreHorizontal aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
-                      </button>
-                      {menu === l.invitationId ? (
-                        <div
-                          role="menu"
-                          className="absolute top-12 right-0 z-20 grid w-[240px] gap-0.5 rounded-[10px] border border-filet bg-surface p-1.5 shadow-[0_10px_30px_rgba(20,33,43,0.15)]"
-                        >
-                          <ElementMenu icone={Link2} onClick={() => copierLien(l)}>
-                            Copier le lien personnel
-                          </ElementMenu>
-                          <ElementMenu
-                            icone={Pencil}
-                            onClick={() => {
-                              setMenu(null);
-                              setFormulaire({ ceo: l });
-                            }}
-                          >
-                            Modifier
-                          </ElementMenu>
-                          {l.statut === "envoye" ? (
-                            <ElementMenu icone={Undo2} onClick={() => nonEnvoye(l)}>
-                              Marquer comme non envoyé
-                            </ElementMenu>
-                          ) : null}
-                          {signe ? (
-                            <p className="px-2.5 py-2 text-[13px] text-texte-secondaire">
-                              Ce CEO a signé : il ne peut pas être retiré de la liste.
-                            </p>
-                          ) : (
-                            <ElementMenu
-                              icone={Trash2}
-                              onClick={() => {
-                                setMenu(null);
-                                setARetirer(l);
-                              }}
-                            >
-                              Retirer de la liste
-                            </ElementMenu>
-                          )}
-                        </div>
-                      ) : null}
+                    <div className="col-start-2 row-start-1 justify-self-end">
+                      <MenuActions libelle={`Plus d'actions pour ${nomComplet}`} elements={elementsMenu(l)} />
                     </div>
                   </div>
                 </li>
@@ -572,29 +523,19 @@ export function TableauCeo({
         ) : null}
       </Modal>
 
+      <FicheCeo
+        ceo={ceoFiche}
+        onFermer={() => setFiche(null)}
+        raisonEnvoi={ceoFiche ? raisonEnvoi(ceoFiche) : undefined}
+        occupe={enCours}
+        onEnvoyer={(relance) => ceoFiche && setEnvoi({ ceo: ceoFiche, relance })}
+        onCopier={() => ceoFiche && void copierLien(ceoFiche)}
+        onModifier={() => ceoFiche && setFormulaire({ ceo: ceoFiche })}
+        onNonEnvoye={() => ceoFiche && nonEnvoye(ceoFiche)}
+        onRetirer={() => ceoFiche && setARetirer(ceoFiche)}
+      />
+
       <Toast message={toast} />
     </>
-  );
-}
-
-function ElementMenu({
-  icone: Icone,
-  onClick,
-  children,
-}: {
-  icone: typeof Link2;
-  onClick: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      role="menuitem"
-      onClick={onClick}
-      className="flex min-h-11 items-center gap-2.5 rounded-md px-2.5 text-left text-[14px] hover:bg-sureleve"
-    >
-      <Icone aria-hidden="true" className="size-[18px] shrink-0" strokeWidth={1.75} />
-      {children}
-    </button>
   );
 }

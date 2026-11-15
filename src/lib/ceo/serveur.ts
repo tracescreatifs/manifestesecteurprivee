@@ -17,6 +17,7 @@ export type LigneCeo = {
   entreprise: string;
   maillon: string;
   telephone: string;
+  email: string;
   photoUrl: string | null;
   statut: StatutEnvoi;
   envoyeLe: string | null;
@@ -53,7 +54,7 @@ export async function lireListeCeo(
       .from("invitations")
       .select(
         "id, jeton, origine, statut_envoi, envoye_le, ouvert_le, derniere_relance_le, relances, cree_le, " +
-          "personne:personnes(prenom, nom, fonction, telephone, photo_path), " +
+          "personne:personnes(prenom, nom, fonction, telephone, email, photo_path), " +
           "entreprise:entreprises(nom, maillon:maillons(libelle))",
       )
       .eq("manifeste_id", manifesteId)
@@ -76,7 +77,14 @@ export async function lireListeCeo(
     derniere_relance_le: string | null;
     relances: number;
     cree_le: string;
-    personne: { prenom: string; nom: string; fonction: string | null; telephone: string | null; photo_path: string | null } | null;
+    personne: {
+      prenom: string;
+      nom: string;
+      fonction: string | null;
+      telephone: string | null;
+      email: string | null;
+      photo_path: string | null;
+    } | null;
     entreprise: { nom: string; maillon: { libelle: string } | null } | null;
   };
   const brutes = (invitations ?? []) as unknown as Brute[];
@@ -104,6 +112,7 @@ export async function lireListeCeo(
       entreprise: b.entreprise?.nom ?? "",
       maillon: b.entreprise?.maillon?.libelle ?? "",
       telephone: b.personne?.telephone ?? "",
+      email: b.personne?.email ?? "",
       photoUrl: b.personne?.photo_path ? (photos.get(b.personne.photo_path) ?? null) : null,
       statut: signe ? "signe" : b.statut_envoi,
       envoyeLe: b.envoye_le,
