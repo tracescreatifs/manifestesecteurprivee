@@ -7,6 +7,7 @@ import { lireSiteUrl } from "@/lib/env";
 import { journaliser } from "@/lib/journal";
 import { exigerAdminActif, type ResultatAction } from "@/lib/session-admin";
 import { creerClientAdmin } from "@/lib/supabase/admin";
+import { creerClientServeur } from "@/lib/supabase/server";
 
 /* Blocage dans Supabase Auth pour un accès coupé : environ 100 ans */
 const DUREE_BLOCAGE = "876000h";
@@ -211,5 +212,49 @@ export async function retablirAcces(saisie: { userId: string }): Promise<Resulta
     details: { email: cible.email },
   });
   revalidatePath("/admin/reglages");
+  return { ok: true };
+}
+
+/* ----- Réglages du Manifeste : lien du Google Doc ----- */
+
+const schemaGoogleDoc = z.object({
+  url: z
+    .string()
+    .trim()
+    .max(500, "Lien trop long.")
+    .refine((v) => v === "" || /^https:\/\/[^\s]+$/i.test(v), "Indiquez un lien complet qui commence par https://")
+    .pipe(z.union([z.literal(""), z.url("Indiquez un lien valide.")])),
+});
+
+export async function enregistrerGoogleDoc(saisie: { url: string }): Promise<ResultatAction> {
+  const acces = await exigerAdminActif();
+  if (!acces.ok) return acces;
+
+  const donnees = schemaGoogleDoc.safeParse(saisie);
+  if (!donnees.success) return { ok: false, erreur: donnees.error.issues[0]?.message ?? "Lien invalide." };
+  const url = donnees.data.url || null;
+
+  const supabase = await creerClientServeur();
+  const { data: manifeste } = await supabase
+    .from("manifestes")
+    .select("id, google_doc_url")
+    .order("cree_le", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (!manifeste) return { ok: false, erreur: "Le Manifeste n'existe pas encore en base." };
+  if (manifeste.google_doc_url === url) return { ok: true };
+
+  const { error } = await supabase.from("manifestes").update({ google_doc_url: url }).eq("id", manifeste.id);
+  if (error) return { ok: false, erreur: "Le lien n'a pas pu être enregistré. Réessayez." };
+
+  await journaliser({
+    acteurType: "admin",
+    acteurId: acces.admin.user_id,
+    action: "google_doc_modifie",
+    cibleType: "manifeste",
+    cibleId: manifeste.id,
+    details: { url },
+  });
+  revalidatePath("/admin", "layout");
   return { ok: true };
 }

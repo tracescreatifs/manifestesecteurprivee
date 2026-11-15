@@ -1,4 +1,4 @@
-import { History, ShieldCheck } from "lucide-react";
+import { FileText, History, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
 
 import { Tabs } from "@/components/ui/tabs";
@@ -7,12 +7,14 @@ import { creerClientServeur } from "@/lib/supabase/server";
 
 import { OngletAdmins, type LigneAdmin } from "./onglet-admins";
 import { OngletJournal } from "./onglet-journal";
+import { OngletManifeste } from "./onglet-manifeste";
 
 export const metadata: Metadata = { title: "Réglages" };
 
-/* Les onglets Manifeste et Messages arriveront avec les prompts qui s'en servent */
+/* L'onglet Messages arrivera avec l'envoi des liens */
 const ONGLETS = [
-  { cle: "admins", libelle: "Admins", href: "/admin/reglages", icone: ShieldCheck },
+  { cle: "manifeste", libelle: "Manifeste", href: "/admin/reglages", icone: FileText },
+  { cle: "admins", libelle: "Admins", href: "/admin/reglages?onglet=admins", icone: ShieldCheck },
   { cle: "journal", libelle: "Journal", href: "/admin/reglages?onglet=journal", icone: History },
 ];
 
@@ -23,7 +25,7 @@ export default async function PageReglages({
 }) {
   const moi = await exigerSessionAdmin();
   const { onglet, page } = await searchParams;
-  const actif = onglet === "journal" ? "journal" : "admins";
+  const actif = onglet === "journal" || onglet === "admins" ? onglet : "manifeste";
 
   return (
     <>
@@ -34,8 +36,10 @@ export default async function PageReglages({
       <div className="grid max-w-[840px] gap-4">
         {actif === "journal" ? (
           <OngletJournal page={Number(typeof page === "string" ? page : 1)} />
-        ) : (
+        ) : actif === "admins" ? (
           <ListeAdmins moi={moi.user_id} />
+        ) : (
+          <ReglagesManifeste />
         )}
       </div>
     </>
@@ -67,4 +71,23 @@ async function ListeAdmins({ moi }: { moi: string }) {
   }));
 
   return <OngletAdmins admins={admins} moi={moi} />;
+}
+
+async function ReglagesManifeste() {
+  const supabase = await creerClientServeur();
+  const { data: manifeste } = await supabase
+    .from("manifestes")
+    .select("google_doc_url")
+    .order("cree_le", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (!manifeste) {
+    return (
+      <p role="alert" className="text-erreur">
+        Le Manifeste n&apos;existe pas encore en base : exécutez supabase/seed/0001_referentiels.sql.
+      </p>
+    );
+  }
+  return <OngletManifeste googleDocUrl={manifeste.google_doc_url ?? ""} />;
 }

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-/* La rubrique Texte deviendra la page d'arrivée au prompt 03 */
+/* Page d'arrivée de l'espace admin : la rubrique Texte */
 export default function AccueilAdmin() {
-  redirect("/admin/reglages");
+  redirect("/admin/texte");
 }

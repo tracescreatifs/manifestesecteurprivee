@@ -81,3 +81,142 @@
     transition: none !important;
   }
 }
+
+/*
+  Page A4 du document (reprise exacte du prototype 1-admin.html).
+  Unités relatives à la largeur de la page : 1cqw = 1 % de la largeur (2,1 mm sur A4).
+  Le document suit sa propre charte : Georgia ou Gelasio, Calibri ou Carlito, vert, or et gris.
+*/
+@layer components {
+  .a4-stack {
+    display: grid;
+    gap: 22px;
+    overflow-x: auto;
+    padding: 2px 2px 8px;
+  }
+  .a4-wrap {
+    container-type: inline-size;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .a4-stack[data-zoom="125"] .a4-wrap {
+    width: 875px;
+    max-width: none;
+  }
+  .a4-stack[data-zoom="150"] .a4-wrap {
+    width: 1050px;
+    max-width: none;
+  }
+  .a4-page {
+    position: relative;
+    background: #fff;
+    aspect-ratio: 210 / 297;
+    width: 100%;
+    padding: 6.7cqw 10.5cqw 5.2cqw;
+    display: flex;
+    flex-direction: column;
+    border-radius: 2px;
+    box-shadow:
+      0 1px 2px rgba(20, 33, 43, 0.08),
+      0 10px 30px rgba(20, 33, 43, 0.08);
+    color: var(--color-doc-texte);
+    font-family: var(--font-doc-sans);
+    font-size: 1.6cqw;
+    line-height: 1.38;
+  }
+  .a4-body {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .a4-flow {
+    display: block;
+  }
+  .a4-foot {
+    display: flex;
+    justify-content: space-between;
+    gap: 2cqw;
+    font-size: 1.15cqw;
+    color: var(--color-doc-gris);
+    padding-top: 1.6cqw;
+  }
+  .d-kicker {
+    text-align: center;
+    font-size: 1.25cqw;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-doc-or);
+    font-weight: 700;
+    margin-bottom: 1.6cqw;
+  }
+  .d-title {
+    font-family: var(--font-doc-serif);
+    color: var(--color-doc-vert);
+    font-size: 3.55cqw;
+    line-height: 1.18;
+    text-align: center;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: 0;
+  }
+  .d-sub {
+    text-align: center;
+    color: var(--color-doc-gris);
+    font-size: 1.4cqw;
+    margin-top: 1.4cqw;
+  }
+  .d-rule {
+    height: 0;
+    border-top: 0.22cqw solid var(--color-doc-or);
+    margin: 2.2cqw 0 2.6cqw;
+  }
+  .a4-blk {
+    position: relative;
+    margin: 0 0 1.15cqw;
+  }
+  .a4-blk.h {
+    font-size: 1.3cqw;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-doc-or);
+    font-weight: 700;
+    margin: 2.4cqw 0 1cqw;
+  }
+  .a4-blk.li {
+    display: grid;
+    grid-template-columns: 2.6cqw 1fr;
+    margin-bottom: 0.8cqw;
+  }
+  .a4-blk .num {
+    font-weight: 700;
+    color: var(--color-doc-vert);
+  }
+  .a4-blk.accroche {
+    font-family: var(--font-doc-serif);
+    font-style: italic;
+    color: var(--color-doc-vert);
+    font-size: 2.25cqw;
+    text-align: center;
+    margin: 2.6cqw 0 1.2cqw;
+  }
+  .a4-blk.mention {
+    font-size: 1.2cqw;
+    color: var(--color-doc-gris);
+    text-align: center;
+  }
+  .a4-blk .txt {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  .a4-blk .txt strong {
+    font-weight: 700;
+    color: #14201b;
+  }
+  .a4-blk.h .txt strong {
+    color: inherit;
+  }
+}

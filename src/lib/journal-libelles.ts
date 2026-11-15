@@ -9,6 +9,12 @@ export const LIBELLES_ACTIONS = {
   acces_retabli: "Accès rétabli",
   mot_de_passe_defini: "Mot de passe défini",
   premier_admin_promu: "Premier admin créé",
+  version_importee: "Version importée",
+  correction_mineure_importee: "Correction mineure importée",
+  version_restauree: "Version restaurée",
+  texte_gele: "Texte gelé",
+  retour_redaction: "Retour en rédaction",
+  google_doc_modifie: "Lien du Google Doc modifié",
 } as const;
 
 export type ActionJournal = keyof typeof LIBELLES_ACTIONS;

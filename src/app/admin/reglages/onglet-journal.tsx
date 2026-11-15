@@ -49,6 +49,10 @@ export async function OngletJournal({ page }: { page: number }) {
       const email = (details as { email?: string } | null)?.email;
       return email ?? "";
     }
+    if (type === "version") {
+      const numero = (details as { numero?: number } | null)?.numero;
+      return numero ? `version ${numero}` : "";
+    }
     return "";
   };
 

@@ -18,10 +18,19 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
   const supabase = await creerClientServeur();
   const { data: manifeste } = await supabase
     .from("manifestes")
-    .select("statut")
+    .select("id, statut")
     .order("cree_le", { ascending: true })
     .limit(1)
     .maybeSingle();
+  const { data: courante } = manifeste
+    ? await supabase
+        .from("manifeste_versions")
+        .select("numero")
+        .eq("manifeste_id", manifeste.id)
+        .order("numero", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    : { data: null };
 
   return (
     <div data-ambiance="admin" className="min-h-dvh min-[820px]:grid min-[820px]:grid-cols-[228px_minmax(0,1fr)]">
@@ -43,6 +52,7 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
       <section className="min-w-0 px-4 pt-4 pb-24 min-[820px]:px-8 min-[820px]:pt-6">
         <BarreEtapes
           statut={manifeste?.statut ?? "redaction"}
+          versionCourante={courante?.numero ?? null}
           admin={{ prenom: admin.prenom, nom: admin.nom, email: admin.email }}
         />
         {children}

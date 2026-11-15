@@ -1,6 +1,6 @@
 # État du projet
 
-Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 02, 14 novembre 2026.
+Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 03, 15 novembre 2026.
 
 ---
 
@@ -12,8 +12,8 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 | --- | --- | --- | --- | --- |
 | 00 | Initialisation : rangement du dépôt, lecture du cahier des charges, fichiers mémoire | `main` | 14 novembre 2026 | Validé |
 | 01 | Décisions du prompt 00 ; socle : Next.js, configuration, charte et polices, clients Supabase, page minimale | `main` | 14 novembre 2026 | Validé |
-| 02 | Base de données, connexion et gestion des admins, journal, tâche planifiée de maintien en éveil | `main` | 16 novembre 2026 | En cours de validation |
-| 03 | Texte : import Word, versions, comparaison, page A4, gel et corrections mineures | `main` | 17 novembre 2026 | À faire |
+| 02 | Base de données, connexion et gestion des admins, journal, tâche planifiée de maintien en éveil | `main` | 16 novembre 2026 | Validé |
+| 03 | Texte : import Word, versions, comparaison, page A4, gel et corrections mineures | `main` | 17 novembre 2026 | En cours de validation |
 | 04 | Liste des CEO : import Excel ou CSV, liens personnels, envoi et relance WhatsApp, lien ouvert et QR code, export des signatures | `main` | 19 novembre 2026 | À faire |
 | 05 | Espace CEO : lecture, signature en 3 étapes, moment de l'annexe, accusé, fiche, confidentialité, coupures réseau, signature depuis le téléphone, refus des signatures après la date limite | `main` | 21 novembre 2026 | À faire |
 | 06 | Audit complet et vérifications d'avant mise en ligne (domaine, redirections, RLS, parcours sur téléphone et ordinateur) | `main` | 22 novembre 2026 | À faire |
@@ -37,6 +37,12 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 - Coquille de l'espace admin : barre latérale, barre basse en verre dépoli sur téléphone, barre d'étapes lue depuis `manifestes.statut`, menu du compte avec « Se déconnecter ».
 - Réglages, onglet Admins : inviter (lien à copier ou à envoyer sur WhatsApp), générer un nouveau lien ou un lien de réinitialisation, couper ou rétablir l'accès (blocage dans Supabase Auth), dernier admin actif protégé dans l'interface et en base. Onglet Journal paginé (50 lignes), en français, à l'heure de Dakar.
 - Tâche planifiée de maintien en éveil : `/api/cron/maintien` (401 sans `CRON_SECRET`), déclarée dans `vercel.json` (`0 6 */6 * *`).
+- Prompt 03, aucune migration : la structure de 0001 suffit (versions, bucket `imports`, colonnes du gel).
+- Lecture du Word côté serveur (`src/lib/texte/lire-docx.ts`, `fflate` et `@xmldom/xmldom`) : styles reconnus par identifiant et par nom, en français et en anglais ; gras seul conservé, texte échappé ; avertissements bloquants, attention et info. Tests vitest sur le modèle Word (`npm run test`, 16 tests).
+- Alignement des versions par plus longue sous-séquence commune, identifiants stables, résumé automatique, différence mot à mot (`src/lib/texte/comparer.ts`).
+- Rubrique Texte (`/admin/texte`, page d'arrivée de l'admin) : version courante en A4, Google Doc, dépôt du fichier, liste des versions, restauration ; état vide expliqué. Écran « Vérifier l'import » (`/admin/texte/verifier`) et comparaison de deux versions (`/admin/texte/comparer`).
+- Composant A4 partagé (`src/components/document/document-a4.tsx`) : rendu et pagination du prototype, zoom, aucun intertitre seul en bas de page.
+- Gel du texte depuis la barre d'étapes, corrections mineures (case obligatoire), retour en rédaction tant qu'aucun lien n'est parti (D42). Réglages, onglet Manifeste : lien du Google Doc. Nouveaux libellés du journal.
 
 ---
 
@@ -46,8 +52,8 @@ Claude Code ne marque jamais une migration comme exécutée : Ziza le confirme, 
 
 | N° | Fichier | Objet | Exécutée par Ziza |
 | --- | --- | --- | --- |
-| 0001 | `supabase/migrations/0001_fondations.sql` | Structure complète du Manifeste (hors doléances) : types, tables, vue, triggers, fonctions, RLS, buckets privés | Non |
-| seed 0001 | `supabase/seed/0001_referentiels.sql` | Pays (SN), 5 maillons, ligne du Manifeste (titre, date limite, consentement, modèle WhatsApp) | Non |
+| 0001 | `supabase/migrations/0001_fondations.sql` | Structure complète du Manifeste (hors doléances) : types, tables, vue, triggers, fonctions, RLS, buckets privés | Oui (15 novembre 2026) |
+| seed 0001 | `supabase/seed/0001_referentiels.sql` | Pays (SN), 5 maillons, ligne du Manifeste (titre, date limite, consentement, modèle WhatsApp) | Oui (15 novembre 2026) |
 
 ---
 
@@ -84,5 +90,7 @@ Selon la partie 19 du cahier des charges.
 ---
 
 ## Problèmes ouverts
+
+- Fichiers importés puis abandonnés sans cliquer sur « Annuler » : ils restent dans le bucket `imports` (quelques dizaines de Ko chacun). Un nettoyage pourra être ajouté si besoin.
 
 - « Mot de passe oublié » par email : le fournisseur email par défaut de Supabase n'envoie qu'aux membres du projet Supabase. Pour les autres admins, utiliser « Générer un lien de réinitialisation » (D16) tant qu'aucun SMTP n'est configuré sur le domaine définitif.
