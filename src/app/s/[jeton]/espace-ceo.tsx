@@ -27,6 +27,7 @@ import { Button, classesBouton } from "@/components/ui/button";
 import { formaterDateHeure, formaterJourLong } from "@/lib/dates";
 import type { LigneAnnexeA4 } from "@/lib/signature/annexe";
 import { garderEnAttente, INTERVALLE_RENVOI, lireEnAttente, oublierEnAttente, type EnvoiEnAttente } from "@/lib/signature/attente";
+import { debutParcours } from "@/lib/signature/parcours";
 import { schemaSaisie } from "@/lib/signature/saisie";
 import type { CommentaireCeo, EspaceCeo } from "@/lib/signature/serveur";
 import { numerosDesPoints } from "@/lib/texte/comparer";
@@ -82,12 +83,17 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
   const [erreurCommentaire, setErreurCommentaire] = useState<string>();
   const [envoiCommentaire, setEnvoiCommentaire] = useState(false);
   const [commentaires, setCommentaires] = useState<CommentaireCeo[]>(espace.commentaires);
-  const [parcours, setParcours] = useState(reprendreSignature && ouvert && !espace.signature);
+  const debut = debutParcours({
+    jeton,
+    reprendre: reprendreSignature,
+    saisieComplete,
+    etat: espace.etat,
+    signe: espace.signature !== null,
+  });
+  const [parcours, setParcours] = useState(debut.ouvert);
   /* Chaque nouvelle signature (après un retrait) repart d'un parcours neuf, avec une nouvelle clé */
   const [numeroParcours, setNumeroParcours] = useState(0);
-  const [etapeInitiale, setEtapeInitiale] = useState<"infos" | "signature">(
-    reprendreSignature && saisieComplete ? "signature" : "infos",
-  );
+  const [etapeInitiale, setEtapeInitiale] = useState<"infos" | "signature">(debut.etape);
   const [signeeLocale, setSigneeLocale] = useState<Signee | null>(null);
   const [annonce, setAnnonce] = useState<string | null>(null);
   const [fiche, setFiche] = useState(false);
@@ -636,7 +642,6 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
           </div>
         }
       >
-        <h3 className="font-titre text-xl font-normal">Votre commentaire</h3>
         {blocCommente ? (
           <p className="rounded-lg bg-[#F6F2E8] px-3 py-2 text-[14px] text-texte-secondaire italic">
             « {extrait(texteBrut(blocCommente.html))} »
@@ -674,7 +679,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
 
       <Feuille
         ouverte={confirmation !== null}
-        titre={confirmation === "refaire" ? "Refaire votre signature" : "Retirer votre signature"}
+        titre={confirmation === "refaire" ? "Refaire votre signature ?" : "Retirer votre signature ?"}
         onFermer={() => {
           setConfirmation(null);
           setRetrait({ occupe: false });
@@ -695,9 +700,6 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
           </div>
         }
       >
-        <h3 className="font-titre text-xl font-normal">
-          {confirmation === "refaire" ? "Refaire votre signature ?" : "Retirer votre signature ?"}
-        </h3>
         <p className="text-texte-secondaire">
           {confirmation === "refaire"
             ? "Votre signature actuelle est retirée, puis vous signez de nouveau. Vous recevrez une nouvelle référence et un nouvel accusé."

@@ -1,6 +1,6 @@
 # État du projet
 
-Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 05.2, 15 novembre 2026.
+Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 05.3, 15 novembre 2026.
 
 ---
 
@@ -17,7 +17,8 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 | 04 | Liste des CEO : import Excel ou CSV, liens personnels, envoi et relance WhatsApp, lien ouvert et QR code, export des signatures | `main` | 19 novembre 2026 | Validé |
 | 04.1 | Correctifs CEO : menu des lignes visible, fiche du CEO, raison des boutons désactivés, import de l'email | `main` | 19 novembre 2026 | Validé |
 | 05 | Espace CEO, partie 1 : lecture, commentaires, signature en 3 étapes, annexe, moment de l'annexe, accusé, confidentialité, refus des signatures après la date limite | `main` | 21 novembre 2026 | Validé |
-| 05.2 | Espace CEO, partie 2 : lien ouvert (`/rejoindre`), parrainage, fiche et photo, refaire ou retirer sa signature, coupures réseau (signature gardée sur l'appareil), signature depuis le téléphone (QR code), accusé PDF et correctifs | `main` | 21 novembre 2026 | En cours de validation |
+| 05.2 | Espace CEO, partie 2 : lien ouvert (`/rejoindre`), parrainage, fiche et photo, refaire ou retirer sa signature, coupures réseau (signature gardée sur l'appareil), signature depuis le téléphone (QR code), accusé PDF et correctifs | `main` | 21 novembre 2026 | Validé |
+| 05.3 | Correctifs de l'espace CEO : fermeture des fenêtres du parcours, signature par QR code après une inscription par le lien ouvert | `main` | 21 novembre 2026 | En cours de validation |
 | 06 | Audit complet et vérifications d'avant mise en ligne (domaine, redirections, RLS, parcours sur téléphone et ordinateur) | `main` | 22 novembre 2026 | À faire |
 | 07 | Vérification, commentaires | branche | 25 novembre 2026 | À faire |
 | 08 | Document final : PDF A4, clôture, publication, signataires sur place | branche | 2 décembre 2026 | À faire |
@@ -63,6 +64,7 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 - Accusé PDF produit côté serveur, rangé dans le bucket `accuses`, téléchargé par `/s/[jeton]/accuse/pdf`, y compris pour une signature antérieure (D74).
 - Lien ouvert et parrainage (`/rejoindre`, D78, D79), fiche (photo et consentements, D80), inviter un confrère, retirer et refaire (D81), signature gardée sur l'appareil en cas de coupure (D82), signature sur le téléphone par QR code (D83).
 - Admin : origine, parrain, « À valider », photo et consentements dans la fiche (D85). Tests vitest : 67.
+- Prompt 05.3, aucune migration : bouton « Fermer » en haut à droite et Échap sur toutes les fenêtres du parcours CEO, avec la confirmation « Quitter sans signer ? » quand des informations ou une signature seraient perdues (D87) ; après une inscription par /rejoindre, chargement complet du nouveau lien personnel à l'étape 2, avec « Signer sur mon téléphone » (D88). Tests vitest : 71.
 
 ---
 
@@ -77,7 +79,7 @@ Claude Code ne marque jamais une migration comme exécutée : Ziza le confirme, 
 | 0002 | `supabase/migrations/0002_ceo.sql` | Fonctions d'import, de modification et de retrait des CEO, chacune en une seule transaction | Oui (15 novembre 2026) |
 | 0003 | `supabase/migrations/0003_ceo_email.sql` | Email des CEO enregistré à l'import et à la modification (fonctions de 0002 remplacées) | Oui (15 novembre 2026) |
 | 0004 | `supabase/migrations/0004_signature.sql` | Numéro WhatsApp de la Task Force (`manifestes.whatsapp_task_force`), fonctions `enregistrer_signature` et `resultat_signature` (une transaction, clé secrète seulement) | Oui (15 novembre 2026) |
-| 0005 | `supabase/migrations/0005_espace_ceo.sql` | Bucket privé `accuses`, table `inscriptions_ouvertes` (empreintes), fonctions `inscrire_par_lien_ouvert`, `retirer_signature` et `enregistrer_brouillon` (clé secrète seulement) | Non |
+| 0005 | `supabase/migrations/0005_espace_ceo.sql` | Bucket privé `accuses`, table `inscriptions_ouvertes` (empreintes), fonctions `inscrire_par_lien_ouvert`, `retirer_signature` et `enregistrer_brouillon` (clé secrète seulement) | Oui (15 novembre 2026) |
 
 ---
 

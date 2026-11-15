@@ -1,7 +1,7 @@
 "use client";
 
-import { MessageCircle, Shield, Wifi, WifiOff } from "lucide-react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { MessageCircle, Shield, Wifi, WifiOff, X } from "lucide-react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -42,8 +42,22 @@ export async function copier(texte: string): Promise<boolean> {
 
 /*
   Fenêtre centrée verticalement, sur téléphone comme sur ordinateur : 85 % de la hauteur de l'écran au plus,
-  contenu qui défile, boutons du bas toujours visibles.
+  contenu qui défile, boutons du bas toujours visibles. Titre et bouton « Fermer » en haut ; Échap ferme aussi.
 */
+
+/* Bouton de fermeture commun aux fenêtres de l'espace CEO */
+export function BoutonFermer({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label="Fermer"
+      className="grid size-11 shrink-0 place-items-center rounded-[10px] text-texte-secondaire hover:bg-[rgba(20,33,43,0.06)] hover:text-encre [&_svg]:size-[18px]"
+    >
+      <X aria-hidden="true" strokeWidth={1.75} />
+    </button>
+  );
+}
 export function Feuille({
   ouverte,
   titre,
@@ -59,6 +73,7 @@ export function Feuille({
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const fermer = useRef(onFermer);
+  const idTitre = useId();
   useEffect(() => {
     fermer.current = onFermer;
   }, [onFermer]);
@@ -73,7 +88,7 @@ export function Feuille({
   return (
     <dialog
       ref={ref}
-      aria-label={titre}
+      aria-labelledby={idTitre}
       onClose={(e) => {
         /* L'événement d'une fenêtre imbriquée remonte dans React : seule la fermeture de celle-ci compte */
         if (e.target === e.currentTarget) fermer.current();
@@ -87,7 +102,13 @@ export function Feuille({
     >
       {ouverte ? (
         <div className="flex max-h-[inherit] flex-col" style={{ maxHeight: "min(85vh, 85dvh)" }}>
-          <div className="grid min-h-0 flex-1 content-start gap-3 overflow-y-auto overscroll-contain px-5 pt-5 pb-4 min-[760px]:px-6 min-[760px]:pt-6">
+          <div className="flex shrink-0 items-center justify-between gap-3 pt-3 pr-3 pl-5 min-[760px]:pl-6">
+            <h3 id={idTitre} className="min-w-0 font-titre text-xl font-normal">
+              {titre}
+            </h3>
+            <BoutonFermer onClick={() => fermer.current()} />
+          </div>
+          <div className="grid min-h-0 flex-1 content-start gap-3 overflow-y-auto overscroll-contain px-5 pt-2 pb-4 min-[760px]:px-6">
             {children}
           </div>
           {pied ? <div className="grid shrink-0 gap-2 border-t border-filet px-5 py-3 min-[760px]:px-6">{pied}</div> : null}
@@ -181,7 +202,6 @@ export function LiensPied({ whatsapp, confidentialite = true }: { whatsapp: stri
             onFermer={() => setOuverte(false)}
             pied={<Button onClick={() => setOuverte(false)}>Fermer</Button>}
           >
-            <h3 className="font-titre text-xl font-normal">Confidentialité</h3>
             <div className="grid gap-3 text-[15px]">
               <TexteConfidentialite />
             </div>

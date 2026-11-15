@@ -14,7 +14,6 @@ import {
   UserPlus,
   UserRound,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { SignatureSvg } from "@/components/document/signature";
@@ -22,12 +21,13 @@ import { Button, classesBouton } from "@/components/ui/button";
 import { formaterDateHeure } from "@/lib/dates";
 import type { LigneAnnexeA4 } from "@/lib/signature/annexe";
 import { CHAMPS, champsModifies, type Champ, type Saisie, type SignatureEnregistree } from "@/lib/signature/regles";
+import { lienApresInscription, signerSurTelephonePossible } from "@/lib/signature/parcours";
 import { schemaSaisie, schemaTrace } from "@/lib/signature/saisie";
 import type { TraceSignature } from "@/types/database";
 
 import { inscrireCeo } from "../../rejoindre/actions";
 import { preparerTelephone, signerManifeste, verifierSignature } from "./actions";
-import { BarreReseau, copier, Feuille } from "./commun";
+import { BarreReseau, BoutonFermer, copier, Feuille } from "./commun";
 import { MomentAnnexe } from "./moment-annexe";
 import { PaveSignature } from "./pave-signature";
 
@@ -110,7 +110,6 @@ function erreursDe(issues: { path: PropertyKey[]; message: string }[]): Partial<
 
 export function ParcoursSignature(props: Props) {
   const { ouvert, onFermer, saisieListe, maillons, version, signee } = props;
-  const router = useRouter();
   const dialogue = useRef<HTMLDialogElement>(null);
   const fermer = useRef(onFermer);
   const cle = useRef<string | null>(null);
@@ -128,6 +127,9 @@ export function ParcoursSignature(props: Props) {
   /* Signer sur son téléphone (ordinateur) : QR code, puis vérification toutes les 5 secondes */
   const [telephone, setTelephone] = useState<{ lien: string; qr: string } | null>(null);
   const [qrOuvert, setQrOuvert] = useState(false);
+  /* Informations déjà connues du serveur (liste, saisie précédente ou brouillon) : les quitter ne perd rien */
+  const brouillon = useRef<Saisie>(props.saisieInitiale);
+  const [quitter, setQuitter] = useState(false);
   const titre = useRef<HTMLHeadingElement>(null);
   const onSignee = useRef(props.onSignee);
 
@@ -197,10 +199,17 @@ export function ParcoursSignature(props: Props) {
     /* Lien ouvert : la fiche est créée maintenant, puis la suite se fait sur le lien personnel (D17) */
     if (props.inscription) {
       setEnvoi(true);
+      let parti = false;
       try {
         const res = await inscrireCeo({ saisie: r.data, invitePar, codeParrain: props.inscription.codeParrain, piege });
         if (res.ok) {
-          router.push(`/s/${res.jeton}?etape=2`);
+          /*
+            Chargement complet du nouveau lien personnel, à l'étape 2 : la page repart avec le jeton créé
+            (« Signer sur mon téléphone », QR code, commentaires, accusé, coupure réseau), et le bouton reste
+            désactivé jusqu'au départ, pour ne jamais inscrire deux fois. /rejoindre ne reste pas dans l'historique.
+          */
+          parti = true;
+          window.location.replace(new URL(lienApresInscription(res.jeton), window.location.origin).href);
           return;
         }
         if (res.champs) setErreurs(res.champs);
@@ -208,7 +217,7 @@ export function ParcoursSignature(props: Props) {
       } catch {
         setErreur("La connexion a échoué. Vérifiez votre connexion Internet, puis réessayez.");
       } finally {
-        setEnvoi(false);
+        if (!parti) setEnvoi(false);
       }
       return;
     }
@@ -233,6 +242,7 @@ export function ParcoursSignature(props: Props) {
     try {
       const r = await preparerTelephone({ jeton, saisie });
       if (!r.ok) return setErreurTrace(r.erreur);
+      brouillon.current = saisie;
       setTelephone({ lien: r.lien, qr: r.qr });
       setQrOuvert(true);
     } catch {
@@ -268,8 +278,34 @@ export function ParcoursSignature(props: Props) {
 
   const retour = () => {
     if (etape === "confirmer") setEtape("signature");
-    else if (etape === "signature") setEtape("infos");
+    else setEtape("infos");
+  };
+
+  /* Fermeture : confirmation si des informations ont été saisies ou une signature tracée (sauf le brouillon du serveur) */
+  const aPerdre = () =>
+    !signee &&
+    (trace !== null ||
+      champsModifies(brouillon.current, saisie).length > 0 ||
+      (props.inscription !== null && invitePar.trim() !== (props.inscription.parrain ?? "").trim()));
+
+  const demanderFermeture = () => {
+    if (envoi) return;
+    if (aPerdre()) setQuitter(true);
     else onFermer();
+  };
+
+  /* « Quitter » : les informations non enregistrées sont abandonnées, le parcours repart de zéro */
+  const quitterSansSigner = () => {
+    setQuitter(false);
+    setSaisie(brouillon.current);
+    setInvitePar(props.inscription?.parrain ?? "");
+    setTrace(null);
+    setConsentement(false);
+    setErreurs({});
+    setErreur(undefined);
+    setErreurTrace(undefined);
+    setEtape(props.etapeInitiale);
+    onFermer();
   };
 
   const numero = signee ? 0 : etape === "infos" ? 1 : etape === "signature" ? 2 : 3;
@@ -519,7 +555,7 @@ export function ParcoursSignature(props: Props) {
             {erreurTrace}
           </p>
         ) : null}
-        {jeton ? (
+        {signerSurTelephonePossible(jeton) ? (
           <div className="hidden items-start gap-2.5 rounded-[10px] bg-[#EDE8DE] px-4 py-3 text-[14px] min-[760px]:flex [&>svg]:mt-0.5 [&>svg]:size-[18px] [&>svg]:shrink-0">
             <Smartphone aria-hidden="true" strokeWidth={1.75} />
             <div className="grid gap-2">
@@ -614,8 +650,10 @@ export function ParcoursSignature(props: Props) {
       ref={dialogue}
       aria-label={numero ? `Signature, étape ${numero} sur 3` : "Merci"}
       onCancel={(e) => {
-        /* Échap pendant l'enregistrement : on attend la réponse du serveur */
-        if (envoi && e.target === e.currentTarget) e.preventDefault();
+        /* Échap : même règle que le bouton « Fermer » (confirmation, et rien pendant l'enregistrement) */
+        if (e.target !== e.currentTarget) return;
+        e.preventDefault();
+        demanderFermeture();
       }}
       onClose={(e) => {
         /* L'événement d'une fenêtre imbriquée remonte dans React : seule la fermeture de celle-ci compte */
@@ -630,24 +668,27 @@ export function ParcoursSignature(props: Props) {
       {ouvert ? (
         <div className="flex h-full max-h-dvh flex-col min-[760px]:max-h-[85vh]">
           <BarreReseau etat={props.barreReseau} />
-          {numero ? (
-            <div className="flex shrink-0 items-center gap-2 border-b border-filet bg-surface px-4 py-3">
+          <div className="flex shrink-0 items-center gap-2 border-b border-filet bg-surface px-4 py-3 min-[760px]:pr-3">
+            {numero > 1 ? (
               <button
                 type="button"
                 onClick={retour}
-                aria-label={etape === "infos" ? "Fermer" : "Étape précédente"}
+                aria-label="Étape précédente"
                 className="grid size-11 place-items-center rounded-[10px] text-texte-secondaire hover:bg-[rgba(20,33,43,0.06)] [&_svg]:size-[18px]"
               >
                 <ArrowLeft aria-hidden="true" strokeWidth={1.75} />
               </button>
-              <span className="flex-1 font-medium">Étape {numero} sur 3</span>
+            ) : null}
+            <span className="flex-1 pl-1 font-medium">{numero ? `Étape ${numero} sur 3` : "Signature enregistrée"}</span>
+            {numero ? (
               <span className="flex gap-[5px]" aria-hidden="true">
                 {[1, 2, 3].map((i) => (
                   <span key={i} className={`h-1 w-5 rounded-[2px] ${i <= numero ? "bg-eau" : "bg-filet-fort"}`} />
                 ))}
               </span>
-            </div>
-          ) : null}
+            ) : null}
+            <BoutonFermer onClick={demanderFermeture} />
+          </div>
           <div className="grid min-h-0 flex-1 content-start gap-4 overflow-y-auto overscroll-contain px-5 py-6 min-[760px]:px-8 min-[760px]:py-7">
             {corps}
           </div>
@@ -668,12 +709,27 @@ export function ParcoursSignature(props: Props) {
       ) : null}
 
       <Feuille
+        ouverte={quitter}
+        titre="Quitter sans signer ?"
+        onFermer={() => setQuitter(false)}
+        pied={
+          <div className="grid grid-cols-2 gap-2">
+            <Button onClick={quitterSansSigner}>Quitter</Button>
+            <Button variante="principal" onClick={() => setQuitter(false)}>
+              Continuer la signature
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-texte-secondaire">Vos informations ne seront pas enregistrées.</p>
+      </Feuille>
+
+      <Feuille
         ouverte={qrOuvert}
         titre="Signer sur votre téléphone"
         onFermer={() => setQrOuvert(false)}
         pied={<Button onClick={() => setQrOuvert(false)}>Fermer</Button>}
       >
-        <h3 className="font-titre text-xl font-normal">Signer sur votre téléphone</h3>
         <p className="text-texte-secondaire">
           Scannez ce code avec l&apos;appareil photo de votre téléphone. Vous arrivez directement à la signature.
         </p>
