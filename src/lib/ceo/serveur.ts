@@ -25,6 +25,8 @@ export type LigneCeo = {
   derniereRelanceLe: string | null;
   relances: number;
   signeLe: string | null;
+  /* Signature active (lecture seule dans la fiche) */
+  signature: { reference: string; trace: TraceSignature | null } | null;
   creeLe: string;
 };
 
@@ -61,7 +63,7 @@ export async function lireListeCeo(
       .order("cree_le", { ascending: true }),
     supabase
       .from("signatures")
-      .select("invitation_id, signe_le, validee, prenom, nom, entreprise_nom, trace")
+      .select("invitation_id, signe_le, validee, prenom, nom, entreprise_nom, trace, reference")
       .eq("manifeste_id", manifesteId)
       .is("retiree_le", null)
       .order("signe_le", { ascending: false }),
@@ -97,11 +99,18 @@ export async function lireListeCeo(
     (data ?? []).forEach((d) => d.path && d.signedUrl && photos.set(d.path, d.signedUrl));
   }
 
-  const signeLe = new Map<string, string>();
-  (signatures ?? []).forEach((s) => s.invitation_id && !signeLe.has(s.invitation_id) && signeLe.set(s.invitation_id, s.signe_le));
+  /* Une seule signature active par invitation (garanti en base) */
+  const actives = new Map<string, { signeLe: string; reference: string; trace: TraceSignature | null }>();
+  (signatures ?? []).forEach(
+    (s) =>
+      s.invitation_id &&
+      !actives.has(s.invitation_id) &&
+      actives.set(s.invitation_id, { signeLe: s.signe_le, reference: s.reference, trace: estTrace(s.trace) ? s.trace : null }),
+  );
 
   const lignes: LigneCeo[] = brutes.map((b) => {
-    const signe = signeLe.get(b.id) ?? null;
+    const active = actives.get(b.id) ?? null;
+    const signe = active?.signeLe ?? null;
     return {
       invitationId: b.id,
       jeton: b.jeton,
@@ -120,6 +129,7 @@ export async function lireListeCeo(
       derniereRelanceLe: b.derniere_relance_le,
       relances: b.relances,
       signeLe: signe,
+      signature: active ? { reference: active.reference, trace: active.trace } : null,
       creeLe: b.cree_le,
     };
   });

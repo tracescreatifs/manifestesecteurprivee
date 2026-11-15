@@ -82,7 +82,7 @@ async function ReglagesManifeste() {
   const supabase = await creerClientServeur();
   const { data: manifeste } = await supabase
     .from("manifestes")
-    .select("google_doc_url")
+    .select("id, google_doc_url, date_limite, auto_validation, whatsapp_task_force, texte_consentement")
     .order("cree_le", { ascending: true })
     .limit(1)
     .maybeSingle();
@@ -94,7 +94,22 @@ async function ReglagesManifeste() {
       </p>
     );
   }
-  return <OngletManifeste googleDocUrl={manifeste.google_doc_url ?? ""} />;
+  /* Le texte de consentement ne change plus dès qu'une signature existe (même retirée) */
+  const { count } = await supabase
+    .from("signatures")
+    .select("id", { count: "exact", head: true })
+    .eq("manifeste_id", manifeste.id);
+
+  return (
+    <OngletManifeste
+      googleDocUrl={manifeste.google_doc_url ?? ""}
+      dateLimite={manifeste.date_limite}
+      autoValidation={manifeste.auto_validation}
+      whatsapp={manifeste.whatsapp_task_force}
+      texteConsentement={manifeste.texte_consentement}
+      consentementVerrouille={(count ?? 0) > 0}
+    />
+  );
 }
 
 async function ReglagesMessages() {

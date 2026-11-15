@@ -3,6 +3,7 @@
 import { BellRing, Link2, MessageCircle, Pencil, Trash2, Undo2 } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { SignatureSvg } from "@/components/document/signature";
 import { BoutonAvecRaison } from "@/components/ui/bouton-raison";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
@@ -86,6 +87,26 @@ export function FicheCeo({ ceo, onFermer, raisonEnvoi, occupe, onEnvoyer, onCopi
               {ceo.signeLe ? <Ligne terme="Signé le">{formaterDateHeure(ceo.signeLe)}</Ligne> : null}
             </dl>
           </section>
+
+          {ceo.signature && ceo.signeLe ? (
+            <section className="grid gap-2">
+              <h4 className="text-[13px] font-medium text-texte-secondaire">Signature</h4>
+              <div className="rounded-md bg-white px-3 py-2 shadow-[0_1px_2px_rgba(20,33,43,0.06),0_8px_24px_rgba(20,33,43,0.07)]">
+                <div className="h-20">
+                  {ceo.signature.trace ? (
+                    <SignatureSvg trace={ceo.signature.trace} className="h-full" libelle={`Signature de ${nom}`} />
+                  ) : (
+                    <p className="text-[13px] text-texte-secondaire">Tracé indisponible.</p>
+                  )}
+                </div>
+              </div>
+              <dl className="grid grid-cols-[110px_minmax(0,1fr)] gap-x-3 gap-y-2 text-[14.5px]">
+                <Ligne terme="Référence">
+                  <span className="tabular-nums">{ceo.signature.reference}</span>
+                </Ligne>
+              </dl>
+            </section>
+          ) : null}
 
           <section className="grid gap-2">
             <h4 className="text-[13px] font-medium text-texte-secondaire">Actions</h4>

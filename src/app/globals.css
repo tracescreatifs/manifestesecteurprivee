@@ -217,3 +217,239 @@
     color: inherit;
   }
 }
+
+/*
+  Annexe des signataires (reprise du prototype) : sur la page qui suit la dernière page de texte.
+  Colonnes : N°, Entreprise, Maillon, Nom et fonction du signataire, Signature (en grand).
+*/
+@layer components {
+  .ann-title {
+    font-family: var(--font-doc-serif);
+    color: var(--color-doc-vert);
+    font-size: 2.9cqw;
+    margin-bottom: 2.4cqw;
+  }
+  .ann-table {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 5% 24% 17% 26% 28%;
+    border-top: 0.15cqw solid var(--color-doc-vert);
+  }
+  .ann-table > div {
+    border-bottom: 1px solid var(--color-doc-filet);
+    border-right: 1px solid var(--color-doc-filet);
+    padding: 0.8cqw 1cqw;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    font-size: 1.35cqw;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+  .ann-table > div:nth-child(5n + 1) {
+    border-left: 1px solid var(--color-doc-filet);
+  }
+  .ann-table .th {
+    font-size: 1.05cqw;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-doc-gris);
+    font-weight: 700;
+    align-items: flex-end;
+  }
+  .ann-table .no {
+    color: var(--color-doc-gris);
+    align-items: flex-start;
+  }
+  .ann-table .nf {
+    display: block;
+    padding-top: 1.4cqw;
+  }
+  .ann-table .nf strong {
+    display: block;
+    font-weight: 700;
+  }
+  .ann-table .nf span {
+    color: var(--color-doc-gris);
+    font-size: 1.2cqw;
+  }
+  .ann-table .sg {
+    padding: 0.4cqw 0.8cqw;
+  }
+  .ann-table .ghost {
+    border-color: transparent !important;
+  }
+}
+
+/*
+  Espace CEO (prototype 2-ceo.html) : lecture à la charte du document,
+  barres fixes en verre dépoli, et le moment où la signature se trace à l'encre.
+*/
+@layer components {
+  .lecture {
+    background: #fff;
+    border-radius: 6px;
+    padding: 28px 20px;
+    box-shadow:
+      0 1px 2px rgba(20, 33, 43, 0.06),
+      0 8px 24px rgba(20, 33, 43, 0.07);
+    font-family: var(--font-doc-sans);
+    color: var(--color-doc-texte);
+  }
+  .lecture .l-titre {
+    font-family: var(--font-doc-serif);
+    color: var(--color-doc-vert);
+    font-size: 23px;
+    line-height: 1.2;
+    text-align: center;
+    text-wrap: balance;
+  }
+  .lecture .l-sous {
+    text-align: center;
+    color: var(--color-doc-gris);
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .lecture .l-filet {
+    border-top: 2px solid var(--color-doc-or);
+    margin: 16px 0 14px;
+  }
+  .rb {
+    margin: 0 -8px 4px;
+    border-radius: 8px;
+  }
+  .rb > .rb-texte {
+    display: block;
+    padding: 6px 8px;
+    border-radius: 8px;
+    font-size: 16px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+  }
+  .rb[data-commentable] > .rb-texte {
+    cursor: pointer;
+  }
+  .rb.sel {
+    background: #f5f0e3;
+  }
+  .rb strong {
+    font-weight: 700;
+    color: #14201b;
+  }
+  .rb.h > .rb-texte {
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-doc-or);
+    font-weight: 700;
+    margin-top: 14px;
+  }
+  .rb.h strong {
+    color: inherit;
+  }
+  .rb.li > .rb-texte {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+  }
+  .rb.li .num {
+    font-weight: 700;
+    color: var(--color-doc-vert);
+  }
+  .rb.accroche > .rb-texte {
+    font-family: var(--font-doc-serif);
+    font-style: italic;
+    color: var(--color-doc-vert);
+    font-size: 19px;
+    text-align: center;
+    margin-top: 14px;
+  }
+  .rb.mention > .rb-texte {
+    font-size: 12.5px;
+    color: var(--color-doc-gris);
+    text-align: center;
+  }
+  .rb .rb-action {
+    padding: 0 8px 8px;
+  }
+  @media (min-width: 760px) {
+    .lecture {
+      padding: 48px 56px;
+    }
+    .lecture .l-titre {
+      font-size: 30px;
+    }
+    .lecture .l-sous {
+      font-size: 14px;
+    }
+    .rb > .rb-texte {
+      font-size: 16.5px;
+    }
+    .rb[data-commentable]:not(.sel):hover {
+      background: #faf6ec;
+    }
+    .rb.accroche > .rb-texte {
+      font-size: 22px;
+    }
+  }
+
+  /* Verre dépoli : seulement sur les barres fixes */
+  .barre-fixe {
+    background: rgba(255, 255, 255, 0.9);
+  }
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .barre-fixe {
+      background: rgba(255, 255, 255, 0.66);
+      -webkit-backdrop-filter: saturate(1.6) blur(16px);
+      backdrop-filter: saturate(1.6) blur(16px);
+    }
+  }
+
+  /* Le moment : la ligne du CEO s'inscrit entre ses voisins, puis sa signature se trace à l'encre */
+  .ligne-inscrite {
+    display: grid;
+    animation: inscrire 0.7s var(--courbe) 0.1s both;
+  }
+  .ligne-inscrite > * {
+    min-height: 0;
+    overflow: hidden;
+  }
+  .trace-encre path {
+    stroke-dasharray: var(--longueur, 2000);
+    stroke-dashoffset: var(--longueur, 2000);
+    animation: encre 1s var(--courbe) forwards;
+  }
+}
+
+@keyframes inscrire {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+  to {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+}
+
+@keyframes encre {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Animations réduites : la ligne est en place et la signature entière, tout de suite */
+@media (prefers-reduced-motion: reduce) {
+  .trace-encre path {
+    stroke-dashoffset: 0 !important;
+  }
+}
+
+/* Impression (accusé de signature) : seule la feuille est imprimée */
+@media print {
+  .sans-impression {
+    display: none !important;
+  }
+}

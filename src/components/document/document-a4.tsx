@@ -1,8 +1,10 @@
 "use client";
 
 import { FileText } from "lucide-react";
-import { useCallback, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { Fragment, useCallback, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
+import { SignatureSvg } from "@/components/document/signature";
+import { paginerAnnexe, REGLAGES_ANNEXE, type LigneAnnexeA4, type ReglagesAnnexe } from "@/lib/signature/annexe";
 import { htmlSur } from "@/lib/texte/html";
 import { numerosDesPoints } from "@/lib/texte/comparer";
 import type { Bloc } from "@/types/database";
@@ -13,7 +15,7 @@ import type { Bloc } from "@/types/database";
   - Pagination : le texte est mesuré dans un conteneur caché de 800 px de large,
     puis réparti page par page ; un intertitre n'est jamais laissé seul en bas de page.
   Composant partagé : rubrique Texte (admin), espace CEO et document final.
-  Ce composant ne rend que les pages de texte (l'annexe viendra avec les signatures).
+  Avec la prop annexe, l'annexe des signataires commence sur la page qui suit la dernière page de texte.
 */
 
 const PIED = "Manifeste du secteur privé sénégalais de l'eau et de l'assainissement";
@@ -28,7 +30,57 @@ type Props = {
   brouillon: boolean;
   /* Texte affiché avant le nombre de pages, par exemple « Version 3 » */
   libelle?: string;
+  /* Annexe des signataires : ordre, lignes par page et lignes vides réglables (par défaut : entreprise, 10, 0) */
+  annexe?: { lignes: LigneAnnexeA4[] } & Partial<ReglagesAnnexe>;
 };
+
+const COLONNES = ["N°", "Entreprise", "Maillon", "Nom et fonction du signataire", "Signature"];
+
+function PageAnnexe({
+  lignes,
+  premierNumero,
+  parPage,
+}: {
+  lignes: (LigneAnnexeA4 | null)[];
+  premierNumero: number;
+  parPage: number;
+}) {
+  return (
+    <>
+      <div className="ann-title">Annexe · Les signataires</div>
+      <div className="ann-table" style={{ gridTemplateRows: `auto repeat(${parPage}, 1fr)` }}>
+        {COLONNES.map((c) => (
+          <div key={c} className="th">
+            {c}
+          </div>
+        ))}
+        {lignes.map((l, k) => (
+          <Fragment key={l?.cle ?? `vide-${k}`}>
+            <div className="no">{premierNumero + k}</div>
+            <div>{l?.entreprise}</div>
+            <div>{l?.maillon}</div>
+            <div className="nf">
+              {l ? (
+                <>
+                  <strong>
+                    {l.prenom} {l.nom}
+                  </strong>
+                  <span>{l.fonction}</span>
+                </>
+              ) : null}
+            </div>
+            <div className="sg">
+              {l?.trace ? <SignatureSvg trace={l.trace} className="h-full" libelle={`Signature de ${l.prenom} ${l.nom}`} /> : null}
+            </div>
+          </Fragment>
+        ))}
+        {Array.from({ length: (parPage - lignes.length) * 5 }, (_, k) => (
+          <div key={`g${k}`} className="ghost" aria-hidden="true" />
+        ))}
+      </div>
+    </>
+  );
+}
 
 /* Zoom : « Ajusté » (largeur de l'écran, 700 px au plus), ou de 50 % à 200 % par paliers de 25 % */
 const ZOOM_MIN = 50;
@@ -64,7 +116,7 @@ function BlocA4({ bloc, numero }: { bloc: Bloc; numero: number | null }) {
   );
 }
 
-export function DocumentA4({ titre, sousTitre, blocs, brouillon, libelle }: Props) {
+export function DocumentA4({ titre, sousTitre, blocs, brouillon, libelle, annexe }: Props) {
   const mesure = useRef<HTMLDivElement>(null);
   /* Pagination, liée aux blocs pour lesquels elle a été calculée */
   const [mise, setMise] = useState<{ pour: Bloc[]; pages: number[][] } | null>(null);
@@ -124,7 +176,18 @@ export function DocumentA4({ titre, sousTitre, blocs, brouillon, libelle }: Prop
 
   /* Tant que la nouvelle mesure n'est pas faite, l'ancienne pagination n'est pas réutilisée */
   const pages = mise && mise.pour === blocs ? mise.pages : null;
-  const total = pages?.length ?? 0;
+  const reglages: ReglagesAnnexe = {
+    ordre: annexe?.ordre ?? REGLAGES_ANNEXE.ordre,
+    parPage: annexe?.parPage ?? REGLAGES_ANNEXE.parPage,
+    lignesVides: annexe?.lignesVides ?? REGLAGES_ANNEXE.lignesVides,
+  };
+  const lignesAnnexe = annexe?.lignes;
+  const pagesAnnexe = useMemo(
+    () => (lignesAnnexe ? paginerAnnexe(lignesAnnexe, { ordre: reglages.ordre, parPage: reglages.parPage, lignesVides: reglages.lignesVides }) : []),
+    [lignesAnnexe, reglages.ordre, reglages.parPage, reglages.lignesVides],
+  );
+  const pagesTexte = pages?.length ?? 0;
+  const total = pagesTexte + pagesAnnexe.length;
 
   return (
     <div className="grid min-w-0 gap-2">
@@ -136,9 +199,12 @@ export function DocumentA4({ titre, sousTitre, blocs, brouillon, libelle }: Prop
             {pages ? (
               <>
                 <strong className="font-semibold text-encre">
-                  {total} page{total > 1 ? "s" : ""} A4
+                  {pagesTexte} page{pagesTexte > 1 ? "s" : ""} A4
                 </strong>{" "}
-                de texte. L&apos;annexe des signataires commencera page {total + 1}.
+                de texte.{" "}
+                {annexe
+                  ? `L'annexe des signataires commence page ${pagesTexte + 1}.`
+                  : `L'annexe des signataires commencera page ${pagesTexte + 1}.`}
               </>
             ) : (
               "mise en page en cours"
@@ -212,6 +278,23 @@ export function DocumentA4({ titre, sousTitre, blocs, brouillon, libelle }: Prop
             <div className="a4-page" aria-hidden="true" />
           </div>
         )}
+        {pages
+          ? pagesAnnexe.map((lignes, p) => (
+              <div className="a4-wrap" key={`annexe-${p}`}>
+                <div className="a4-page" role="region" aria-label={`Page ${pagesTexte + p + 1} sur ${total}, annexe des signataires`}>
+                  <div className="a4-body">
+                    <PageAnnexe lignes={lignes} premierNumero={p * reglages.parPage + 1} parPage={reglages.parPage} />
+                  </div>
+                  <div className="a4-foot">
+                    <span>{pied}</span>
+                    <span>
+                      {pagesTexte + p + 1} / {total}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))
+          : null}
       </div>
 
       {/* Conteneur de mesure, invisible : une page de 800 px de large */}

@@ -26,6 +26,9 @@ export const LIBELLES_ACTIONS = {
   lien_ouvert_pause: "Lien ouvert mis en pause",
   signatures_exportees: "Signatures exportées",
   modele_message_modifie: "Message WhatsApp modifié",
+  reglages_signature_modifies: "Réglages de la signature modifiés",
+  consentement_modifie: "Texte de consentement modifié",
+  signature_enregistree: "Signature enregistrée",
 } as const;
 
 export type ActionJournal = keyof typeof LIBELLES_ACTIONS;

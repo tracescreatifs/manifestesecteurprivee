@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { normaliserTelephone } from "@/lib/ceo/normaliser";
 import { lireSiteUrl } from "@/lib/env";
 import { journaliser } from "@/lib/journal";
 import { exigerAdminActif, type ResultatAction } from "@/lib/session-admin";
@@ -297,6 +298,118 @@ export async function enregistrerModeleMessage(saisie: { modele: string }): Prom
     acteurType: "admin",
     acteurId: acces.admin.user_id,
     action: "modele_message_modifie",
+    cibleType: "manifeste",
+    cibleId: manifeste.id,
+  });
+  revalidatePath("/admin", "layout");
+  return { ok: true };
+}
+
+/* ----- Réglages de la signature : date limite, validation automatique, numéro WhatsApp de la Task Force ----- */
+
+const schemaReglagesSignature = z.object({
+  /* Saisie « AAAA-MM-JJTHH:MM » à l'heure de Dakar, qui est aussi l'heure UTC */
+  dateLimite: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/, "Indiquez la date et l'heure limites.")
+    .transform((v) => new Date(`${v}:00Z`))
+    .refine((d) => !Number.isNaN(d.getTime()), "Indiquez une date valide."),
+  autoValidation: z.boolean(),
+  whatsapp: z
+    .string()
+    .trim()
+    .refine((t) => t === "" || normaliserTelephone(t) !== null, "Indiquez un numéro au format international, par exemple +221 77 000 00 00.")
+    .transform((t) => (t === "" ? null : normaliserTelephone(t))),
+});
+
+export async function enregistrerReglagesSignature(saisie: {
+  dateLimite: string;
+  autoValidation: boolean;
+  whatsapp: string;
+}): Promise<ResultatAction> {
+  const acces = await exigerAdminActif();
+  if (!acces.ok) return acces;
+
+  const donnees = schemaReglagesSignature.safeParse(saisie);
+  if (!donnees.success) return { ok: false, erreur: donnees.error.issues[0]?.message ?? "Réglages invalides." };
+  const { dateLimite, autoValidation, whatsapp } = donnees.data;
+
+  const supabase = await creerClientServeur();
+  const { data: manifeste } = await supabase
+    .from("manifestes")
+    .select("id, date_limite, auto_validation, whatsapp_task_force")
+    .order("cree_le", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (!manifeste) return { ok: false, erreur: "Le Manifeste n'existe pas encore en base." };
+
+  const changements: { date_limite?: string; auto_validation?: boolean; whatsapp_task_force?: string | null } = {};
+  if (new Date(manifeste.date_limite).getTime() !== dateLimite.getTime()) changements.date_limite = dateLimite.toISOString();
+  if (manifeste.auto_validation !== autoValidation) changements.auto_validation = autoValidation;
+  if ((manifeste.whatsapp_task_force ?? null) !== whatsapp) changements.whatsapp_task_force = whatsapp;
+  if (!Object.keys(changements).length) return { ok: true };
+
+  const { error } = await supabase.from("manifestes").update(changements).eq("id", manifeste.id);
+  if (error) return { ok: false, erreur: "Les réglages n'ont pas pu être enregistrés. Réessayez." };
+
+  await journaliser({
+    acteurType: "admin",
+    acteurId: acces.admin.user_id,
+    action: "reglages_signature_modifies",
+    cibleType: "manifeste",
+    cibleId: manifeste.id,
+    details: changements,
+  });
+  revalidatePath("/admin", "layout");
+  return { ok: true };
+}
+
+/* ----- Texte de consentement : modifiable seulement tant qu'aucune signature n'existe ----- */
+
+const schemaConsentement = z.object({
+  texte: z
+    .string()
+    .trim()
+    .min(20, "Le texte de consentement est trop court.")
+    .max(600, "Le texte de consentement est trop long (600 caractères au plus)."),
+});
+
+export async function enregistrerConsentement(saisie: { texte: string }): Promise<ResultatAction> {
+  const acces = await exigerAdminActif();
+  if (!acces.ok) return acces;
+
+  const donnees = schemaConsentement.safeParse(saisie);
+  if (!donnees.success) return { ok: false, erreur: donnees.error.issues[0]?.message ?? "Texte invalide." };
+
+  const supabase = await creerClientServeur();
+  const { data: manifeste } = await supabase
+    .from("manifestes")
+    .select("id, texte_consentement")
+    .order("cree_le", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (!manifeste) return { ok: false, erreur: "Le Manifeste n'existe pas encore en base." };
+  if (manifeste.texte_consentement === donnees.data.texte) return { ok: true };
+
+  /* Toutes les signatures, même retirées : chacune garde le texte qu'elle a accepté */
+  const { count } = await supabase
+    .from("signatures")
+    .select("id", { count: "exact", head: true })
+    .eq("manifeste_id", manifeste.id);
+  if ((count ?? 0) > 0) {
+    return { ok: false, erreur: "Des CEO ont déjà signé : le texte de consentement ne peut plus changer." };
+  }
+
+  const { error } = await supabase
+    .from("manifestes")
+    .update({ texte_consentement: donnees.data.texte })
+    .eq("id", manifeste.id);
+  if (error) return { ok: false, erreur: "Le texte n'a pas pu être enregistré. Réessayez." };
+
+  await journaliser({
+    acteurType: "admin",
+    acteurId: acces.admin.user_id,
+    action: "consentement_modifie",
     cibleType: "manifeste",
     cibleId: manifeste.id,
   });

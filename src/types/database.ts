@@ -298,6 +298,7 @@ export type Database = {
           clos_le: string | null;
           publie_le: string | null;
           pdf_final_path: string | null;
+          whatsapp_task_force: string | null;
           cree_le: string;
           modifie_le: string;
         };
@@ -317,6 +318,7 @@ export type Database = {
           clos_le?: string | null;
           publie_le?: string | null;
           pdf_final_path?: string | null;
+          whatsapp_task_force?: string | null;
           cree_le?: string;
           modifie_le?: string;
         };
@@ -336,6 +338,7 @@ export type Database = {
           clos_le?: string | null;
           publie_le?: string | null;
           pdf_final_path?: string | null;
+          whatsapp_task_force?: string | null;
           cree_le?: string;
           modifie_le?: string;
         };
@@ -735,6 +738,15 @@ export type Database = {
       retirer_ceo: {
         Args: { p_invitation_id: string };
         Returns: undefined;
+      };
+      /* Migration 0004 : signature d'un CEO, exécutable seulement par le serveur (clé secrète) */
+      resultat_signature: {
+        Args: { p_signature_id: string; p_deja: boolean };
+        Returns: Json;
+      };
+      enregistrer_signature: {
+        Args: { p_invitation_id: string; p_cle: string; p_signature: Json; p_verification: Json };
+        Returns: Json;
       };
       /* Exécution révoquée pour anon et authenticated : SQL Editor uniquement */
       promouvoir_premier_admin: {

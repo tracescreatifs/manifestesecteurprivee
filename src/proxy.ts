@@ -60,8 +60,9 @@ export const config = {
   matcher: [
     /*
       Toutes les routes, sauf les fichiers de Next.js, les images,
-      robots.txt et la tâche planifiée (qui n'a pas de session).
+      robots.txt, la tâche planifiée (qui n'a pas de session)
+      et l'espace CEO /s/[jeton] (sans compte : le jeton est validé par le serveur).
     */
-    "/((?!_next/static|_next/image|favicon.ico|robots.txt|api/cron|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|api/cron|s/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };
