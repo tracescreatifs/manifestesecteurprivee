@@ -15,6 +15,17 @@ export const LIBELLES_ACTIONS = {
   texte_gele: "Texte gelé",
   retour_redaction: "Retour en rédaction",
   google_doc_modifie: "Lien du Google Doc modifié",
+  ceo_importes: "Liste des CEO importée",
+  ceo_ajoute: "CEO ajouté",
+  ceo_modifie: "CEO modifié",
+  ceo_retire: "CEO retiré de la liste",
+  lien_envoye: "Lien envoyé sur WhatsApp",
+  relance_envoyee: "Relance WhatsApp",
+  envoi_annule: "Envoi marqué comme non fait",
+  lien_ouvert_active: "Lien ouvert activé",
+  lien_ouvert_pause: "Lien ouvert mis en pause",
+  signatures_exportees: "Signatures exportées",
+  modele_message_modifie: "Message WhatsApp modifié",
 } as const;
 
 export type ActionJournal = keyof typeof LIBELLES_ACTIONS;

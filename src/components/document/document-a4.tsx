@@ -1,7 +1,7 @@
 "use client";
 
 import { FileText } from "lucide-react";
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
 import { htmlSur } from "@/lib/texte/html";
 import { numerosDesPoints } from "@/lib/texte/comparer";
@@ -30,7 +30,11 @@ type Props = {
   libelle?: string;
 };
 
-type Zoom = "100" | "125" | "150";
+/* Zoom : « Ajusté » (largeur de l'écran, 700 px au plus), ou de 50 % à 200 % par paliers de 25 % */
+const ZOOM_MIN = 50;
+const ZOOM_MAX = 200;
+const ZOOM_PAS = 25;
+const LARGEUR_100 = 700;
 
 function Entete({ titre, sousTitre, brouillon }: { titre: string; sousTitre: string; brouillon: boolean }) {
   const lignes = titre.split("\n");
@@ -64,7 +68,9 @@ export function DocumentA4({ titre, sousTitre, blocs, brouillon, libelle }: Prop
   const mesure = useRef<HTMLDivElement>(null);
   /* Pagination, liée aux blocs pour lesquels elle a été calculée */
   const [mise, setMise] = useState<{ pour: Bloc[]; pages: number[][] } | null>(null);
-  const [zoom, setZoom] = useState<Zoom>("100");
+  /* null : ajusté à la largeur disponible */
+  const [zoom, setZoom] = useState<number | null>(null);
+  const zoomEffectif = zoom ?? 100;
   const numeros = useMemo(() => numerosDesPoints(blocs), [blocs]);
   const pied = `${PIED}${brouillon ? " · Proposition" : ""}`;
 
@@ -139,25 +145,47 @@ export function DocumentA4({ titre, sousTitre, blocs, brouillon, libelle }: Prop
             )}
           </span>
         </p>
-        <div role="group" aria-label="Zoom" className="inline-flex overflow-hidden rounded-[10px] border border-filet-fort">
-          {(["100", "125", "150"] as Zoom[]).map((z) => (
-            <button
-              key={z}
-              type="button"
-              aria-pressed={zoom === z}
-              onClick={() => setZoom(z)}
-              className={
-                "min-h-11 border-r border-filet px-3 text-[13px] last:border-r-0 " +
-                (zoom === z ? "bg-encre text-white" : "bg-surface text-texte-secondaire hover:text-encre")
-              }
-            >
-              {z === "100" ? "Ajusté" : `${z} %`}
-            </button>
-          ))}
+        <div role="group" aria-label="Zoom" className="inline-flex items-stretch overflow-hidden rounded-[10px] border border-filet-fort">
+          <button
+            type="button"
+            aria-pressed={zoom === null}
+            onClick={() => setZoom(null)}
+            className={
+              "min-h-11 border-r border-filet px-3 text-[13px] " +
+              (zoom === null ? "bg-encre text-white" : "bg-surface text-texte-secondaire hover:text-encre")
+            }
+          >
+            Ajusté
+          </button>
+          <button
+            type="button"
+            aria-label="Réduire"
+            onClick={() => setZoom(Math.max(ZOOM_MIN, zoomEffectif - ZOOM_PAS))}
+            disabled={zoomEffectif <= ZOOM_MIN && zoom !== null}
+            className="min-h-11 min-w-11 border-r border-filet bg-surface text-[17px] text-texte-secondaire hover:text-encre disabled:opacity-40"
+          >
+            −
+          </button>
+          <span aria-live="polite" className="grid min-w-16 place-items-center border-r border-filet bg-surface px-2 text-[13px] tabular-nums">
+            {zoom === null ? "Ajusté" : `${zoom} %`}
+          </span>
+          <button
+            type="button"
+            aria-label="Agrandir"
+            onClick={() => setZoom(Math.min(ZOOM_MAX, zoomEffectif + ZOOM_PAS))}
+            disabled={zoomEffectif >= ZOOM_MAX && zoom !== null}
+            className="min-h-11 min-w-11 bg-surface text-[17px] text-texte-secondaire hover:text-encre disabled:opacity-40"
+          >
+            +
+          </button>
         </div>
       </div>
 
-      <div className="a4-stack" data-zoom={zoom}>
+      <div
+        className="a4-stack"
+        data-zoom={zoom === null ? undefined : ""}
+        style={zoom === null ? undefined : ({ "--largeur-page": `${(LARGEUR_100 * zoom) / 100}px` } as CSSProperties)}
+      >
         {pages ? (
           pages.map((indices, p) => (
             <div className="a4-wrap" key={p}>

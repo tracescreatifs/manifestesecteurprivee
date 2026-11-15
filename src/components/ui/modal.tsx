@@ -12,13 +12,15 @@ type Props = {
   onFermer: () => void;
   children: ReactNode;
   pied?: ReactNode;
+  /* Fenêtre large (820 px), pour les aperçus et les tableaux */
+  large?: boolean;
 };
 
 /*
   Fenêtre modale : hauteur maximale de 85 % de l'écran, défilement interne,
   fermeture par Échap, par la croix ou par un clic sur le fond.
 */
-export function Modal({ ouvert, titre, onFermer, children, pied }: Props) {
+export function Modal({ ouvert, titre, onFermer, children, pied, large = false }: Props) {
   const idTitre = useId();
   const boite = useRef<HTMLDivElement>(null);
   const reduit = useReducedMotion();
@@ -68,7 +70,7 @@ export function Modal({ ouvert, titre, onFermer, children, pied }: Props) {
             aria-modal="true"
             aria-labelledby={idTitre}
             tabIndex={-1}
-            className="flex max-h-[85vh] w-full max-w-[560px] flex-col overflow-hidden rounded-2xl bg-surface shadow-[0_24px_60px_rgba(20,33,43,0.25)] focus:outline-none"
+            className={`flex max-h-[85vh] w-full ${large ? "max-w-[820px]" : "max-w-[560px]"} flex-col overflow-hidden rounded-2xl bg-surface shadow-[0_24px_60px_rgba(20,33,43,0.25)] focus:outline-none`}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}

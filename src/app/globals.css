@@ -100,12 +100,9 @@
     max-width: 700px;
     margin: 0 auto;
   }
-  .a4-stack[data-zoom="125"] .a4-wrap {
-    width: 875px;
-    max-width: none;
-  }
-  .a4-stack[data-zoom="150"] .a4-wrap {
-    width: 1050px;
+  /* Zoom choisi : largeur fixe de la page (700 px à 100 %), défilement horizontal si besoin */
+  .a4-stack[data-zoom] .a4-wrap {
+    width: var(--largeur-page);
     max-width: none;
   }
   .a4-page {

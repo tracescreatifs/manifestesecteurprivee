@@ -1,6 +1,6 @@
 # État du projet
 
-Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 03, 15 novembre 2026.
+Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 04, 15 novembre 2026.
 
 ---
 
@@ -13,8 +13,8 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 | 00 | Initialisation : rangement du dépôt, lecture du cahier des charges, fichiers mémoire | `main` | 14 novembre 2026 | Validé |
 | 01 | Décisions du prompt 00 ; socle : Next.js, configuration, charte et polices, clients Supabase, page minimale | `main` | 14 novembre 2026 | Validé |
 | 02 | Base de données, connexion et gestion des admins, journal, tâche planifiée de maintien en éveil | `main` | 16 novembre 2026 | Validé |
-| 03 | Texte : import Word, versions, comparaison, page A4, gel et corrections mineures | `main` | 17 novembre 2026 | En cours de validation |
-| 04 | Liste des CEO : import Excel ou CSV, liens personnels, envoi et relance WhatsApp, lien ouvert et QR code, export des signatures | `main` | 19 novembre 2026 | À faire |
+| 03 | Texte : import Word, versions, comparaison, page A4, gel et corrections mineures | `main` | 17 novembre 2026 | Validé |
+| 04 | Liste des CEO : import Excel ou CSV, liens personnels, envoi et relance WhatsApp, lien ouvert et QR code, export des signatures | `main` | 19 novembre 2026 | En cours de validation |
 | 05 | Espace CEO : lecture, signature en 3 étapes, moment de l'annexe, accusé, fiche, confidentialité, coupures réseau, signature depuis le téléphone, refus des signatures après la date limite | `main` | 21 novembre 2026 | À faire |
 | 06 | Audit complet et vérifications d'avant mise en ligne (domaine, redirections, RLS, parcours sur téléphone et ordinateur) | `main` | 22 novembre 2026 | À faire |
 | 07 | Vérification, commentaires | branche | 25 novembre 2026 | À faire |
@@ -43,6 +43,12 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 - Rubrique Texte (`/admin/texte`, page d'arrivée de l'admin) : version courante en A4, Google Doc, dépôt du fichier, liste des versions, restauration ; état vide expliqué. Écran « Vérifier l'import » (`/admin/texte/verifier`) et comparaison de deux versions (`/admin/texte/comparer`).
 - Composant A4 partagé (`src/components/document/document-a4.tsx`) : rendu et pagination du prototype, zoom, aucun intertitre seul en bas de page.
 - Gel du texte depuis la barre d'étapes, corrections mineures (case obligatoire), retour en rédaction tant qu'aucun lien n'est parti (D42). Réglages, onglet Manifeste : lien du Google Doc. Nouveaux libellés du journal.
+- Prompt 04, migration `0002_ceo.sql` : fonctions `importer_ceo`, `modifier_ceo`, `retirer_ceo` et `trouver_ou_creer_entreprise` (une transaction par opération, D53). Testée deux fois de suite sur PostgreSQL 16.
+- Rubrique CEO (`/admin/ceo`, onglet « Liste et suivi ») : compteur et barre d'avancement, extrait d'annexe, filtres par statut et par maillon, recherche, ligne compacte sur téléphone, menu (copier le lien, modifier, marquer comme non envoyé, retirer).
+- Import de la liste (.xlsx, CSV, tableau collé) : en-tête détecté sous les lignes de titre, colonnes reconnues par leur titre, nom complet séparé, maillon rapproché, téléphone au format international, doublons signalés et décochés (D21). Jetons de 22 caractères, codes de parrainage de 8 caractères.
+- Envoi et relance sur WhatsApp (fenêtre avec message modifiable, D54), file « Relancer un par un », lien ouvert avec QR code téléchargeable et interrupteur, export des signatures en .zip (CSV, JSON, SVG).
+- Réglages, onglet Messages (modèle WhatsApp, aperçu « Exemple », retour au modèle d'origine). Zoom de la page A4 de 50 % à 200 %. Icône du site et image d'aperçu de partage (Open Graph).
+- Tests vitest : 35 (lecture du Word, comparaison, lecture de la liste, messages).
 
 ---
 
@@ -54,6 +60,7 @@ Claude Code ne marque jamais une migration comme exécutée : Ziza le confirme, 
 | --- | --- | --- | --- |
 | 0001 | `supabase/migrations/0001_fondations.sql` | Structure complète du Manifeste (hors doléances) : types, tables, vue, triggers, fonctions, RLS, buckets privés | Oui (15 novembre 2026) |
 | seed 0001 | `supabase/seed/0001_referentiels.sql` | Pays (SN), 5 maillons, ligne du Manifeste (titre, date limite, consentement, modèle WhatsApp) | Oui (15 novembre 2026) |
+| 0002 | `supabase/migrations/0002_ceo.sql` | Fonctions d'import, de modification et de retrait des CEO, chacune en une seule transaction | Non |
 
 ---
 

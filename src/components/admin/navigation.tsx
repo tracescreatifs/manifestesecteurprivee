@@ -1,12 +1,13 @@
 "use client";
 
-import { FileText, Settings, type LucideIcon } from "lucide-react";
+import { FileText, Settings, Users, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-/* Rubriques de l'espace admin. CEO, Doléances et Document A4 arriveront avec leurs prompts. */
+/* Rubriques de l'espace admin. Doléances et Document A4 arriveront avec leurs prompts. */
 const RUBRIQUES: { href: string; libelle: string; court: string; icone: LucideIcon }[] = [
   { href: "/admin/texte", libelle: "Texte", court: "Texte", icone: FileText },
+  { href: "/admin/ceo", libelle: "CEO", court: "CEO", icone: Users },
   { href: "/admin/reglages", libelle: "Réglages", court: "Réglages", icone: Settings },
 ];
 

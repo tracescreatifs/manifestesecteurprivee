@@ -49,6 +49,18 @@ export async function OngletJournal({ page }: { page: number }) {
       const email = (details as { email?: string } | null)?.email;
       return email ?? "";
     }
+    if (type === "ceo") {
+      const d = details as { nom?: string; entreprise?: string } | null;
+      return [d?.nom, d?.entreprise].filter(Boolean).join(", ");
+    }
+    if (!type) {
+      const d = details as { nombre?: number; fichier?: string } | null;
+      if (typeof d?.nombre === "number") return `${d.nombre} CEO${d.fichier ? `, depuis ${d.fichier}` : ""}`;
+    }
+    if (type === "manifeste") {
+      const d = details as { nombre?: number } | null;
+      if (typeof d?.nombre === "number") return `${d.nombre} signature${d.nombre > 1 ? "s" : ""}`;
+    }
     if (type === "version") {
       const numero = (details as { numero?: number } | null)?.numero;
       return numero ? `version ${numero}` : "";

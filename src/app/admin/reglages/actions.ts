@@ -258,3 +258,48 @@ export async function enregistrerGoogleDoc(saisie: { url: string }): Promise<Res
   revalidatePath("/admin", "layout");
   return { ok: true };
 }
+
+/* ----- Réglages : modèle du message WhatsApp ----- */
+
+const schemaModele = z.object({
+  modele: z
+    .string()
+    .trim()
+    .min(20, "Le message est trop court.")
+    .max(2000, "Le message est trop long (2 000 caractères au plus).")
+    .refine((m) => m.includes("{lien}"), "Le message doit contenir {lien} : c'est là que s'insère le lien personnel."),
+});
+
+export async function enregistrerModeleMessage(saisie: { modele: string }): Promise<ResultatAction> {
+  const acces = await exigerAdminActif();
+  if (!acces.ok) return acces;
+
+  const donnees = schemaModele.safeParse(saisie);
+  if (!donnees.success) return { ok: false, erreur: donnees.error.issues[0]?.message ?? "Message invalide." };
+
+  const supabase = await creerClientServeur();
+  const { data: manifeste } = await supabase
+    .from("manifestes")
+    .select("id, modele_message_whatsapp")
+    .order("cree_le", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (!manifeste) return { ok: false, erreur: "Le Manifeste n'existe pas encore en base." };
+  if (manifeste.modele_message_whatsapp === donnees.data.modele) return { ok: true };
+
+  const { error } = await supabase
+    .from("manifestes")
+    .update({ modele_message_whatsapp: donnees.data.modele })
+    .eq("id", manifeste.id);
+  if (error) return { ok: false, erreur: "Le message n'a pas pu être enregistré. Réessayez." };
+
+  await journaliser({
+    acteurType: "admin",
+    acteurId: acces.admin.user_id,
+    action: "modele_message_modifie",
+    cibleType: "manifeste",
+    cibleId: manifeste.id,
+  });
+  revalidatePath("/admin", "layout");
+  return { ok: true };
+}

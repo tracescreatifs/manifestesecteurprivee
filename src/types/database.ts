@@ -719,6 +719,23 @@ export type Database = {
         Args: Record<string, never>;
         Returns: string;
       };
+      /* Migration 0002 : liste des CEO, chaque appel en une seule transaction */
+      trouver_ou_creer_entreprise: {
+        Args: { p_nom: string; p_maillon_id: string | null };
+        Returns: string;
+      };
+      importer_ceo: {
+        Args: { p_manifeste_id: string; p_lignes: Json };
+        Returns: number;
+      };
+      modifier_ceo: {
+        Args: { p_invitation_id: string; p_ligne: Json };
+        Returns: undefined;
+      };
+      retirer_ceo: {
+        Args: { p_invitation_id: string };
+        Returns: undefined;
+      };
       /* Exécution révoquée pour anon et authenticated : SQL Editor uniquement */
       promouvoir_premier_admin: {
         Args: { p_email: string; p_prenom?: string; p_nom?: string };
