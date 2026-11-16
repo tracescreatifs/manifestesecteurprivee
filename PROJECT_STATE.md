@@ -1,6 +1,6 @@
 # État du projet
 
-Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 06.1, 15 novembre 2026.
+Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 06.2, 16 novembre 2026.
 
 ---
 
@@ -21,9 +21,21 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 | 05.3 | Correctifs de l'espace CEO : fermeture des fenêtres du parcours, signature par QR code après une inscription par le lien ouvert | `main` | 21 novembre 2026 | Validé |
 | 07 | Vérification des signatures (« À vérifier ») et traitement des commentaires, avancé avant l'audit | `main` | 21 novembre 2026 | Validé |
 | 06 | Audit complet et vérifications d'avant mise en ligne (domaine, redirections, RLS, parcours sur téléphone et ordinateur), sur la plateforme complète ; message de validation avec le lien ; script de nettoyage des données de test | `main` | 22 novembre 2026 | Validé |
-| 06.1 | Finitions d'interface (marque, liste des CEO, barre d'étapes, en-tête CEO), messages WhatsApp mis en forme, clé anti-doublon de l'inscription par le lien ouvert | `main` | 22 novembre 2026 | En cours de validation |
-| 08 | Document final : PDF A4, clôture, publication, signataires sur place | branche `feat/...`, après le 23 novembre | 2 décembre 2026 | À faire |
-| 09 | Cahier de doléances | branche `feat/...`, après le 23 novembre | décembre 2026 | À faire |
+| 06.1 | Finitions d'interface (marque, liste des CEO, barre d'étapes, en-tête CEO), messages WhatsApp mis en forme, clé anti-doublon de l'inscription par le lien ouvert | `main` | 22 novembre 2026 | Validé |
+| 06.2 | Date limite en heure de Dakar et d'Abu Dhabi, message du lien ouvert au nom de la Task Force, rubrique CEO sans chevauchement | `main` | 22 novembre 2026 | En cours de validation |
+| À numéroter | Doléances privées (priorité nouvelle, D108) : le CEO dépose une doléance depuis son lien, qu'il ait signé ou non ; lue par les admins seuls | `main` | 22 novembre 2026 | À faire |
+| 08 | Document final : PDF A4, clôture, publication, signataires sur place. Besoin ajouté (D105) : **télécharger les pages de l'annexe seules, en un clic, juste après la clôture** (le texte est imprimé à l'avance, seule l'annexe est imprimée sur place à Abu Dhabi le 9 décembre avant 9 h) | branche `feat/...`, après le 23 novembre | 8 décembre 2026 | À faire |
+| 09 | Cahier de doléances, partie publique : publication anonyme après validation et soutiens, après la clôture | branche `feat/...`, après le 23 novembre | décembre 2026 | À faire |
+
+### Calendrier (décision de Ziza, D105 ; prime sur la partie 2 du cahier des charges)
+
+| Date | Étape |
+| --- | --- |
+| Vendredi 20 novembre 2026 | Gel du texte |
+| Lundi 23 novembre 2026 | Envoi des liens aux CEO |
+| Mardi 8 décembre 2026 à minuit, heure de Dakar (9 décembre à 4 h à Abu Dhabi) | Clôture des signatures (`date_limite` = `2026-12-09T00:00:00Z`, à saisir par Ziza dans Réglages, onglet Manifeste) |
+| Mercredi 9 décembre 2026, avant 9 h à Abu Dhabi | Impression de l'annexe sur place (les pages du texte sont imprimées à l'avance) |
+| Mercredi 9 décembre 2026 | Remise du Manifeste (conférence du 8 au 10 décembre à Abu Dhabi) |
 
 ---
 
@@ -81,6 +93,7 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 - Messages WhatsApp mis en forme (D101) : nouveau modèle d'origine, « *Petit rappel.* » sur sa ligne, message après validation en paragraphes, lien ouvert, lien personnel envoyé à soi-même, invitation d'un confrère, liens d'admin ; données insérées neutralisées (*, _, ~, `) ; aperçu fidèle en éléments React dans la fenêtre d'envoi, la file de relance, Réglages, Messages et après une validation. Seed `0002_modele_message_whatsapp.sql`, testé deux fois de suite.
 - Nom complet partout : textes des accords de la fiche complétés (D103) ; recherche dans `src/` jointe au rapport.
 - Inscription par le lien ouvert : clé anti-doublon (migration `0008_inscription_anti_doublon.sql`, D102), testée deux fois de suite sur PostgreSQL 16 avec la même clé (une seule invitation) et deux clés (deux invitations, comme avant). Tests vitest : 90.
+- Prompt 06.2 : date limite affichée en heure de Dakar et d'Abu Dhabi, par une seule fonction (`formaterDateLimiteComplete` dans `src/lib/ceo/message.ts`, forme longue et forme courte), dans les messages, l'en-tête et la colonne de l'espace CEO, « Refaire » et « Retirer », Réglages (aperçu en direct sous le champ) ; message de partage du lien ouvert au nom de la Task Force, avec aperçu ; compteur et extrait de l'annexe de la rubrique CEO l'un sous l'autre sous 1200 px (D105 à D107). Aucune migration. Tests vitest : 91.
 
 ---
 

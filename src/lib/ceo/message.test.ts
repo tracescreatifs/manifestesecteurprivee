@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   MODELE_ORIGINE,
   formaterDateLimite,
+  formaterDateLimiteComplete,
   lienWhatsApp,
   messageInvitationConfrere,
   messageLienAdmin,
@@ -32,8 +33,34 @@ const rendu = (message: string) =>
     .join("\n");
 
 describe("message WhatsApp", () => {
-  it("affiche la date limite à l'heure de Dakar", () => {
-    expect(formaterDateLimite("2026-12-02T23:59:00Z")).toBe("2 décembre à 23 h 59");
+  it("affiche la date limite en heure de Dakar et en heure d'Abu Dhabi (D105)", () => {
+    /* La valeur du calendrier : clôture le 8 décembre à minuit, heure de Dakar */
+    expect(formaterDateLimite("2026-12-09T00:00:00Z")).toBe("8 décembre à minuit, heure de Dakar (9 décembre à 4 h à Abu Dhabi)");
+    expect(formaterDateLimiteComplete("2026-12-09T00:00:00Z")).toEqual({
+      longue: "8 décembre à minuit, heure de Dakar (9 décembre à 4 h à Abu Dhabi)",
+      dakar: "8 décembre à minuit, heure de Dakar",
+      abuDhabi: "9 décembre à 4 h à Abu Dhabi",
+    });
+    /* Heure pleine, même jour : le jour n'est pas répété */
+    expect(formaterDateLimite("2026-12-08T18:00:00Z")).toBe("8 décembre à 18 h, heure de Dakar (22 h à Abu Dhabi)");
+    /* Minutes, jour différent */
+    expect(formaterDateLimite("2026-12-02T23:59:00Z")).toBe("2 décembre à 23 h 59, heure de Dakar (3 décembre à 3 h 59 à Abu Dhabi)");
+    /* Minutes à un chiffre, même jour */
+    expect(formaterDateLimite("2026-12-08T09:05:00Z")).toBe("8 décembre à 9 h 05, heure de Dakar (13 h 05 à Abu Dhabi)");
+    /* Minuit à Abu Dhabi : rattaché au jour qui se termine, donc le même jour qu'à Dakar */
+    expect(formaterDateLimite("2026-12-08T20:00:00Z")).toBe("8 décembre à 20 h, heure de Dakar (minuit à Abu Dhabi)");
+    /* Jamais « 0 h » */
+    expect(formaterDateLimite("2026-12-09T00:00:00Z")).not.toMatch(/\b0 h/);
+  });
+
+  it("garde un gras WhatsApp valide autour de la date limite", () => {
+    const message = remplirModele(MODELE_ORIGINE, { ...valeurs, dateLimite: formaterDateLimite("2026-12-09T00:00:00Z") });
+    expect(message).toContain(
+      "*Merci de signer avant le 8 décembre à minuit, heure de Dakar (9 décembre à 4 h à Abu Dhabi)* pour figurer dans l'exemplaire imprimé pour Abu Dhabi.",
+    );
+    expect(rendu(message).split("\n")[7]).toBe(
+      "[Merci de signer avant le 8 décembre à minuit, heure de Dakar (9 décembre à 4 h à Abu Dhabi)] pour figurer dans l'exemplaire imprimé pour Abu Dhabi.",
+    );
   });
 
   it("garde le modèle d'origine du prompt 06.1, sauts de ligne compris", () => {
@@ -100,9 +127,30 @@ describe("message WhatsApp", () => {
   });
 
   it("met en forme les autres messages préremplis", () => {
-    expect(messageLienOuvert("https://exemple.sn/rejoindre")).toBe(
-      "Dirigeants d'entreprises sénégalaises de l'eau et de l'assainissement : lisez et signez le *Manifeste* qui sera présenté à Abu Dhabi.\n\nhttps://exemple.sn/rejoindre",
+    const lienOuvert = messageLienOuvert("https://exemple.sn/rejoindre", formaterDateLimite("2026-12-09T00:00:00Z"));
+    expect(lienOuvert).toBe(
+      [
+        "Vous dirigez une entreprise sénégalaise de l'eau et de l'assainissement ? Lisez et signez le *Manifeste du secteur privé sénégalais de l'eau et de l'assainissement*, qui sera présenté à Abu Dhabi.",
+        "",
+        "https://exemple.sn/rejoindre",
+        "",
+        "*Merci de signer avant le 8 décembre à minuit, heure de Dakar (9 décembre à 4 h à Abu Dhabi).*",
+        "",
+        "_La Task Force du secteur privé sénégalais de l'eau et de l'assainissement_",
+      ].join("\n"),
     );
+    expect(rendu(lienOuvert).split("\n")).toEqual([
+      "Vous dirigez une entreprise sénégalaise de l'eau et de l'assainissement ? Lisez et signez le [Manifeste du secteur privé sénégalais de l'eau et de l'assainissement], qui sera présenté à Abu Dhabi.",
+      "",
+      "<https://exemple.sn/rejoindre>",
+      "",
+      "[Merci de signer avant le 8 décembre à minuit, heure de Dakar (9 décembre à 4 h à Abu Dhabi).]",
+      "",
+      "(La Task Force du secteur privé sénégalais de l'eau et de l'assainissement)",
+    ]);
+    /* Une date piégée ne casse pas la mise en forme */
+    expect(messageLienOuvert("https://exemple.sn/r_a_", "8 *déc* _x_")).toContain("*Merci de signer avant le 8 \u2217déc\u2217 \u02CDx\u02CD.*");
+    expect(messageLienOuvert("https://exemple.sn/r_a_", "8 décembre")).toContain("\nhttps://exemple.sn/r_a_\n");
     expect(messageMonLien(LIEN)).toBe(
       `Mon lien personnel pour le *Manifeste du secteur privé sénégalais de l'eau et de l'assainissement* :\n${LIEN}`,
     );

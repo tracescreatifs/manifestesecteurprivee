@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Toast, useToast } from "@/components/ui/toast";
+import { formaterDateLimite } from "@/lib/ceo/message";
 import { formaterTelephone } from "@/lib/ceo/normaliser";
 
 import { enregistrerConsentement, enregistrerGoogleDoc, enregistrerReglagesSignature } from "./actions";
@@ -24,6 +25,13 @@ type Props = {
 /* Valeur d'un champ datetime-local : l'heure de Dakar est l'heure UTC */
 const versSaisieDate = (iso: string) => new Date(iso).toISOString().slice(0, 16);
 
+/* Saisie en cours, relue comme le serveur la lira (heure de Dakar = UTC), en forme longue (D105) ; null si incomplète */
+function apercuDate(saisie: string): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(saisie)) return null;
+  const date = new Date(`${saisie}:00Z`);
+  return Number.isNaN(date.getTime()) ? null : formaterDateLimite(date.toISOString());
+}
+
 const PANNEAU = "grid gap-3 rounded-[14px] border border-filet bg-surface p-6";
 
 /* Onglet Manifeste : signature (date limite, validation automatique, numéro de la Task Force), consentement, rédaction */
@@ -31,6 +39,8 @@ export function OngletManifeste(props: Props) {
   const { message, afficher } = useToast();
   const [enCours, demarrer] = useTransition();
   const [auto, setAuto] = useState(props.autoValidation);
+  const [saisieDate, setSaisieDate] = useState(versSaisieDate(props.dateLimite));
+  const apercu = apercuDate(saisieDate);
   const [erreurs, setErreurs] = useState<{ signature?: string; consentement?: string; googleDoc?: string }>({});
 
   const enregistrerSignature = (e: FormEvent<HTMLFormElement>) => {
@@ -78,10 +88,24 @@ export function OngletManifeste(props: Props) {
           <Field
             id="date-limite"
             libelle="Date limite des signatures"
-            aide="Heure de Dakar. Après cette date, le serveur refuse toute signature, même sans clôture."
-            className="max-w-[320px]"
+            aide="Heure de Dakar. Pour le 8 décembre à minuit, saisissez le 9 décembre à 00:00. Après cette date, le serveur refuse toute signature, même sans clôture."
+            className="max-w-[560px]"
           >
-            <Input id="date-limite" name="dateLimite" type="datetime-local" required defaultValue={versSaisieDate(props.dateLimite)} />
+            <div className="max-w-[320px]">
+              <Input
+                id="date-limite"
+                name="dateLimite"
+                type="datetime-local"
+                required
+                value={saisieDate}
+                onChange={(e) => setSaisieDate(e.target.value)}
+                aria-describedby="date-limite-apercu"
+              />
+            </div>
+            {/* Mis à jour en direct : ce que verront les CEO, en heure de Dakar et d'Abu Dhabi */}
+            <p id="date-limite-apercu" aria-live="polite" className="text-[14px] text-encre">
+              {apercu ? `Soit le ${apercu}` : "Indiquez la date et l'heure limites."}
+            </p>
           </Field>
 
           <div className="flex items-start gap-3">

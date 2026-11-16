@@ -38,7 +38,7 @@ export function OngletMessages({ modele, dateLimite, siteUrl }: Props) {
       <h3 className="font-titre text-xl font-normal">Message WhatsApp aux CEO</h3>
       <p className="text-[13px] text-texte-secondaire">
         Variables : <code>{"{prenom}"}</code> (prénom du CEO), <code>{"{lien}"}</code> (son lien personnel, obligatoire)
-        et <code>{"{date_limite}"}</code> (date limite de signature). Le message est signé par la Task Force du secteur
+        et <code>{"{date_limite}"}</code> (date limite de signature, en heure de Dakar et d&apos;Abu Dhabi). Le message est signé par la Task Force du secteur
         privé sénégalais de l&apos;eau et de l&apos;assainissement. Une relance ajoute « Petit rappel. », en gras, sur la première ligne.
       </p>
       {/* Le modèle et son rendu dans WhatsApp : côte à côte sur ordinateur, l'un sous l'autre sur téléphone */}

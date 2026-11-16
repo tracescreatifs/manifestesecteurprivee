@@ -4,6 +4,7 @@ import { Copy, Download, MessageCircle } from "lucide-react";
 import QRCode from "qrcode";
 import { useEffect, useState, useTransition } from "react";
 
+import { ApercuWhatsApp } from "@/components/apercu-whatsapp";
 import { Button, classesBouton } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { lienPartageWhatsApp, messageLienOuvert } from "@/lib/ceo/message";
@@ -12,13 +13,16 @@ import { basculerLienOuvert } from "./actions";
 
 type Props = {
   adresse: string;
+  /* Date limite, forme longue (heure de Dakar et d'Abu Dhabi) */
+  dateLimite: string;
   actif: boolean;
   onFermer: () => void;
   onMessage: (texte: string, erreur?: boolean) => void;
 };
 
 /* Lien ouvert : pour les CEO qui ne sont pas dans la liste, avec son QR code */
-export function LienOuvert({ adresse, actif, onFermer, onMessage }: Props) {
+export function LienOuvert({ adresse, dateLimite, actif, onFermer, onMessage }: Props) {
+  const message = messageLienOuvert(adresse, dateLimite);
   const [qr, setQr] = useState<string | null>(null);
   /* État affiché tout de suite, rétabli si le serveur refuse */
   const [coche, setCoche] = useState(actif);
@@ -73,7 +77,7 @@ export function LienOuvert({ adresse, actif, onFermer, onMessage }: Props) {
             </a>
           ) : null}
           <a
-            href={lienPartageWhatsApp(messageLienOuvert(adresse))}
+            href={lienPartageWhatsApp(message)}
             target="_blank"
             rel="noopener noreferrer"
             className={classesBouton("principal")}
@@ -102,6 +106,10 @@ export function LienOuvert({ adresse, actif, onFermer, onMessage }: Props) {
           <span className="font-medium break-all">{adresse}</span>
           <span className="text-[13px] text-texte-secondaire">Il se ferme à la clôture des signatures.</span>
         </div>
+      </div>
+      <div className="grid gap-2">
+        <p className="text-[13px] font-medium text-texte-secondaire">Message de partage, aperçu dans WhatsApp</p>
+        <ApercuWhatsApp message={message} />
       </div>
       <label className="flex items-start gap-2.5 text-[14px]">
         <input

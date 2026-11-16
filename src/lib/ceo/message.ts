@@ -27,21 +27,50 @@ export function neutraliserMiseEnForme(donnee: string): string {
   return donnee.replace(/\*/g, "\u2217").replace(/_/g, "\u02CD").replace(/~/g, "\u223C").replace(/`/g, "\u02CB");
 }
 
-const FUSEAU = "Africa/Dakar";
+/*
+  Date limite des signatures, en heure de Dakar et en heure d'Abu Dhabi (D105). Source unique de tout affichage.
+  Règles : 00 h 00 s'écrit « à minuit » et se rattache au jour précédent ; heure pleine « à 4 h », sinon « à 23 h 59 » ;
+  si les deux heures tombent le même jour, le jour n'est pas répété.
+*/
+const DAKAR = "Africa/Dakar";
+const ABU_DHABI = "Asia/Dubai";
 
-/* « 2 décembre à 23 h 59 », à l'heure de Dakar */
-export function formaterDateLimite(iso: string): string {
+type Moment = { jour: string; heure: string };
+
+function moment(date: Date, fuseau: string): Moment {
+  const parties = new Intl.DateTimeFormat("fr-FR", { timeZone: fuseau, hour: "numeric", minute: "2-digit", hourCycle: "h23" }).formatToParts(date);
+  const h = Number(parties.find((p) => p.type === "hour")?.value ?? 0);
+  const m = Number(parties.find((p) => p.type === "minute")?.value ?? 0);
+  const minuit = h === 0 && m === 0;
+  /* Minuit appartient au jour qui se termine : on lit le jour une minute plus tôt */
+  const jour = new Intl.DateTimeFormat("fr-FR", { timeZone: fuseau, day: "numeric", month: "long" }).format(
+    minuit ? new Date(date.getTime() - 60_000) : date,
+  );
+  const heure = minuit ? "minuit" : m === 0 ? `${h} h` : `${h} h ${String(m).padStart(2, "0")}`;
+  return { jour, heure };
+}
+
+export type DateLimiteFormatee = {
+  /* « 8 décembre à minuit, heure de Dakar (9 décembre à 4 h à Abu Dhabi) » */
+  longue: string;
+  /* Forme courte : « 8 décembre à minuit, heure de Dakar » … */
+  dakar: string;
+  /* … et, à part, « 9 décembre à 4 h à Abu Dhabi » (ou « 22 h à Abu Dhabi » le même jour) */
+  abuDhabi: string;
+};
+
+export function formaterDateLimiteComplete(iso: string): DateLimiteFormatee {
   const date = new Date(iso);
-  const jour = new Intl.DateTimeFormat("fr-FR", { timeZone: FUSEAU, day: "numeric", month: "long" }).format(date);
-  const parties = new Intl.DateTimeFormat("fr-FR", {
-    timeZone: FUSEAU,
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  }).formatToParts(date);
-  const heure = parties.find((p) => p.type === "hour")?.value ?? "";
-  const minute = parties.find((p) => p.type === "minute")?.value ?? "";
-  return `${jour} à ${heure} h ${minute}`;
+  const d = moment(date, DAKAR);
+  const a = moment(date, ABU_DHABI);
+  const dakar = `${d.jour} à ${d.heure}, heure de Dakar`;
+  const abuDhabi = a.jour === d.jour ? `${a.heure} à Abu Dhabi` : `${a.jour} à ${a.heure} à Abu Dhabi`;
+  return { longue: `${dakar} (${abuDhabi})`, dakar, abuDhabi };
+}
+
+/* Forme longue, pour les messages et les phrases */
+export function formaterDateLimite(iso: string): string {
+  return formaterDateLimiteComplete(iso).longue;
 }
 
 export function lienPersonnel(siteUrl: string, jeton: string): string {
@@ -65,9 +94,9 @@ export function remplirModele(
   return relance ? `${PREFIXE_RELANCE}${texte}` : texte;
 }
 
-/* Partage du lien ouvert par un admin (rubrique CEO, « Lien ouvert ») */
-export function messageLienOuvert(lien: string): string {
-  return `Dirigeants d'entreprises sénégalaises de l'eau et de l'assainissement : lisez et signez le *Manifeste* qui sera présenté à Abu Dhabi.\n\n${lien}`;
+/* Partage du lien ouvert par un admin (rubrique CEO, « Lien ouvert »), au nom de la Task Force (D106) */
+export function messageLienOuvert(lien: string, dateLimite: string): string {
+  return `Vous dirigez une entreprise sénégalaise de l'eau et de l'assainissement ? Lisez et signez le ${MANIFESTE_GRAS}, qui sera présenté à Abu Dhabi.\n\n${lien}\n\n*Merci de signer avant le ${neutraliserMiseEnForme(dateLimite)}.*\n\n${SIGNATURE_TASK_FORCE}`;
 }
 
 /* Le CEO s'envoie son lien personnel sur WhatsApp */

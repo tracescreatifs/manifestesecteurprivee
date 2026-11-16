@@ -25,7 +25,8 @@ import { useEffect, useMemo, useState } from "react";
 import { DocumentA4 } from "@/components/document/document-a4";
 import { Marque } from "@/components/marque";
 import { Button, classesBouton } from "@/components/ui/button";
-import { formaterDateHeure, formaterJourLong } from "@/lib/dates";
+import { formaterDateLimiteComplete } from "@/lib/ceo/message";
+import { formaterDateHeure } from "@/lib/dates";
 import type { LigneAnnexeA4 } from "@/lib/signature/annexe";
 import { garderEnAttente, INTERVALLE_RENVOI, lireEnAttente, oublierEnAttente, type EnvoiEnAttente } from "@/lib/signature/attente";
 import { debutParcours } from "@/lib/signature/parcours";
@@ -193,7 +194,8 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
   const refus = espace.refus;
   const peutCommenter = ouvert && espace.identifie && jeton !== null && !refus;
   const prenom = espace.signature?.prenom || signeeLocale?.signature.prenom || espace.saisieInitiale.prenom;
-  const dateLimite = formaterJourLong(espace.dateLimite);
+  /* Date limite en heure de Dakar et d'Abu Dhabi (D105) : forme longue dans les phrases, courte sur deux lignes ailleurs */
+  const dateLimite = formaterDateLimiteComplete(espace.dateLimite);
   const blocs = useMemo(() => version?.blocs ?? [], [version]);
   const numeros = useMemo(() => numerosDesPoints(blocs), [blocs]);
   const site = siteUrl ?? (typeof window === "undefined" ? "" : window.location.origin);
@@ -409,7 +411,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
                 Retirer
               </Button>
             </div>
-            <p className="text-[13px] text-texte-secondaire">Possible jusqu&apos;à la clôture, le {dateLimite}.</p>
+            <p className="text-[13px] text-texte-secondaire">Possible jusqu&apos;à la clôture, le {dateLimite.longue}.</p>
           </>
         ) : null}
       </div>
@@ -457,9 +459,12 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
           <Marque taille="compacte" />
         </span>
         {ouvert && !signature && !refus ? (
-          <span className="inline-flex shrink-0 items-center gap-1.5 text-[13px] text-texte-secondaire [&_svg]:size-4">
+          <span className="inline-flex shrink-0 items-center gap-2 text-[13px] leading-snug text-texte-secondaire [&_svg]:size-4 [&_svg]:shrink-0">
             <CalendarClock aria-hidden="true" strokeWidth={1.75} />
-            Signature avant le {dateLimite}
+            <span>
+              Signature avant le {dateLimite.dakar}
+              <span className="block text-[12px]">({dateLimite.abuDhabi})</span>
+            </span>
           </span>
         ) : null}
       </header>
@@ -548,9 +553,13 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
             </span>
           ) : null}
           {!signature ? (
-            <span className="inline-flex items-center gap-1.5 min-[760px]:hidden">
+            <span className="inline-flex items-start gap-1.5 min-[760px]:hidden [&_svg]:mt-0.5 [&_svg]:shrink-0">
               <Calendar aria-hidden="true" strokeWidth={1.75} />
-              Signature avant le {dateLimite}
+              <span>
+                {/* Coupure équilibrée : jamais « Dakar » seul sur sa ligne à 360 px */}
+                <span className="block [text-wrap:balance]">Signature avant le {dateLimite.dakar}</span>
+                <span className="block">({dateLimite.abuDhabi})</span>
+              </span>
             </span>
           ) : null}
         </div>
@@ -739,7 +748,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
         <p className="text-texte-secondaire">
           {confirmation === "refaire"
             ? "Votre signature actuelle est retirée, puis vous signez de nouveau. Vous recevrez une nouvelle référence et un nouvel accusé."
-            : `Votre nom et celui de votre entreprise n'apparaîtront pas dans l'annexe. Vous pourrez signer à nouveau jusqu'au ${dateLimite}.`}
+            : `Votre nom et celui de votre entreprise n'apparaîtront pas dans l'annexe. Vous pourrez signer à nouveau jusqu'au ${dateLimite.longue}.`}
         </p>
         {retrait.erreur ? (
           <p role="alert" className="text-[13.5px] text-erreur">

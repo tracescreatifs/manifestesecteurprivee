@@ -278,9 +278,10 @@ export function TableauCeo({
           d&apos;envoyer les liens.
         </p>
       ) : (
+        /* Compteur et extrait de l'annexe côte à côte seulement à partir de 1200 px : en dessous, l'un sous l'autre (aucun chevauchement) */
         <section
           aria-label="Avancement des signatures"
-          className="mb-4 grid items-center gap-6 rounded-[14px] border border-filet bg-surface px-6 py-5 min-[820px]:grid-cols-[minmax(0,1fr)_minmax(0,360px)]"
+          className="mb-4 grid items-center gap-6 rounded-[14px] border border-filet bg-surface px-6 py-5 min-[1200px]:grid-cols-[minmax(0,1fr)_minmax(0,360px)]"
         >
           <div className="grid min-w-0 gap-3">
             <div className="flex flex-wrap items-baseline justify-between gap-3">
@@ -523,6 +524,7 @@ export function TableauCeo({
       {lienOuvertVisible && siteUrl ? (
         <LienOuvert
           adresse={lienOuvert(siteUrl)}
+          dateLimite={dateLimite}
           actif={lienOuvertActif}
           onFermer={() => setLienOuvertVisible(false)}
           onMessage={(t, e) => afficher(t, e)}

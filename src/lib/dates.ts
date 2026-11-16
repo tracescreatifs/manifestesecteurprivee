@@ -26,17 +26,6 @@ export function formaterDateHeure(iso: string): string {
   return `${formatJour.format(date)} à ${formatHeure.format(date)}`;
 }
 
-const formatJourLong = new Intl.DateTimeFormat("fr-FR", {
-  timeZone: FUSEAU,
-  day: "numeric",
-  month: "long",
-});
-
-/* « 2 décembre » */
-export function formaterJourLong(iso: string): string {
-  return formatJourLong.format(new Date(iso));
-}
-
 const formatJourComplet = new Intl.DateTimeFormat("fr-FR", {
   timeZone: FUSEAU,
   day: "numeric",
