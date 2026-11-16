@@ -1,34 +1,43 @@
 "use client";
 
-import { FileText, Settings, Users, type LucideIcon } from "lucide-react";
+import { FileText, ListTodo, Settings, Users, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-/* Rubriques de l'espace admin. Doléances et Document A4 arriveront avec leurs prompts. */
+/* Rubriques de l'espace admin. Document A4 arrivera avec son prompt. */
 const RUBRIQUES: { href: string; libelle: string; court: string; icone: LucideIcon }[] = [
   { href: "/admin/texte", libelle: "Texte", court: "Texte", icone: FileText },
   { href: "/admin/ceo", libelle: "CEO", court: "CEO", icone: Users },
+  { href: "/admin/doleances", libelle: "Doléances", court: "Doléances", icone: ListTodo },
   { href: "/admin/reglages", libelle: "Réglages", court: "Réglages", icone: Settings },
 ];
 
-/* Nombre de signatures à vérifier, à côté de « CEO » (argile : réservée à « à vérifier ») */
-function Pastille({ nombre, compacte = false }: { nombre: number; compacte?: boolean }) {
+type Compteurs = { aVerifier: number; nonLues: number };
+
+/*
+  Pastille à côté d'une rubrique : signatures à vérifier à côté de « CEO » (argile : réservée à « à vérifier »),
+  doléances non lues à côté de « Doléances » (neutre, comme les nouveaux commentaires, D92)
+*/
+function Pastille({ href, compteurs, compacte = false }: { href: string; compteurs: Compteurs; compacte?: boolean }) {
+  const ceo = href === "/admin/ceo";
+  const nombre = ceo ? compteurs.aVerifier : href === "/admin/doleances" ? compteurs.nonLues : 0;
   if (!nombre) return null;
   return (
     <span
       className={
-        "rounded-md bg-argile-doux font-semibold text-[#8a4724] tabular-nums " +
+        "rounded-md font-semibold tabular-nums " +
+        (ceo ? "bg-argile-doux text-[#8a4724] " : "bg-[#E6E6E3] text-encre ") +
         (compacte ? "absolute -top-0.5 right-1 px-1 text-[10.5px] leading-4" : "ml-auto px-1.5 text-[12.5px]")
       }
     >
-      <span className="sr-only">À vérifier : </span>
+      <span className="sr-only">{ceo ? "À vérifier : " : "Non lues : "}</span>
       {nombre}
     </span>
   );
 }
 
 /* Barre latérale (ordinateur) */
-export function NavLaterale({ aVerifier }: { aVerifier: number }) {
+export function NavLaterale(compteurs: Compteurs) {
   const chemin = usePathname();
   return (
     <nav aria-label="Navigation" className="grid gap-0.5">
@@ -48,7 +57,7 @@ export function NavLaterale({ aVerifier }: { aVerifier: number }) {
           >
             <Icone aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
             {libelle}
-            {href === "/admin/ceo" ? <Pastille nombre={aVerifier} /> : null}
+            <Pastille href={href} compteurs={compteurs} />
           </Link>
         );
       })}
@@ -57,7 +66,7 @@ export function NavLaterale({ aVerifier }: { aVerifier: number }) {
 }
 
 /* Barre basse (téléphone), en verre dépoli */
-export function NavBasse({ aVerifier }: { aVerifier: number }) {
+export function NavBasse(compteurs: Compteurs) {
   const chemin = usePathname();
   return (
     <nav
@@ -82,7 +91,7 @@ export function NavBasse({ aVerifier }: { aVerifier: number }) {
           >
             <Icone aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
             <span>{court}</span>
-            {href === "/admin/ceo" ? <Pastille nombre={aVerifier} compacte /> : null}
+            <Pastille href={href} compteurs={compteurs} compacte />
           </Link>
         );
       })}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Droplets, Hourglass, Link2Off } from "lucide-react";
 import { headers } from "next/headers";
 
+import { lireDoleancesCeo } from "@/lib/doleances/serveur";
 import { adresseDuSite, lireEspace, lireWhatsappTaskForce } from "@/lib/signature/serveur";
 
 import { EcranMessage } from "./ecran-message";
@@ -46,7 +47,8 @@ export default async function PageEspaceCeo({
     );
   }
 
-  const espace = await lireEspace(jeton);
+  /* Doléances lues en même temps ; null sans droit de dépôt, avant le gel, ou sans la migration 0009 */
+  const [espace, doleances] = await Promise.all([lireEspace(jeton), lireDoleancesCeo(jeton)]);
 
   if (!espace) {
     return (
@@ -77,6 +79,7 @@ export default async function PageEspaceCeo({
       siteUrl={adresseDuSite()}
       reprendreSignature={etape === "2"}
       rejoindre={null}
+      doleances={doleances}
     />
   );
 }

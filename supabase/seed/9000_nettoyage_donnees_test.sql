@@ -1,6 +1,6 @@
 -- =====================================================================
 -- 9000_nettoyage_donnees_test.sql
--- Supprime les données de test (CEO, invitations, signatures, commentaires,
+-- Supprime les données de test (CEO, invitations, signatures, commentaires, doléances,
 -- consentements, personnes et entreprises de test) avant l'import de la vraie liste.
 --
 -- MODE D'EMPLOI (SQL Editor de Supabase) :
@@ -12,7 +12,8 @@
 --   4. Les fichiers listés (photos et accusés) se suppriment ensuite à la main,
 --      dans Supabase, Storage (le SQL ne peut pas supprimer proprement les fichiers).
 --
--- À exécuter après la migration 0007 (ou avant : le script fonctionne dans les deux cas).
+-- À exécuter après les migrations 0007 et 0009 (ou avant : le script fonctionne dans tous les cas ;
+-- sans la table des doléances, la ligne « Doléances » affiche 0).
 -- Le journal n'est jamais modifié. Seules les entreprises de la liste sont supprimées.
 -- Si plus aucune signature n'existe après la suppression, les références repartent
 -- de MSP-2026-0001.
@@ -73,6 +74,18 @@ drop table if exists pg_temp.nettoyage_commentaires;
 create temp table nettoyage_commentaires as
 select c.id from public.commentaires c where c.invitation_id in (select id from nettoyage_invitations);
 
+-- Doléances (migration 0009) : lues seulement si la table existe
+drop table if exists pg_temp.nettoyage_doleances;
+create temp table nettoyage_doleances (id uuid);
+do $$
+begin
+  if to_regclass('public.doleances') is not null then
+    execute 'insert into nettoyage_doleances (id)
+             select d.id from public.doleances d where d.invitation_id in (select id from nettoyage_invitations)';
+  end if;
+end;
+$$;
+
 drop table if exists pg_temp.nettoyage_consentements;
 create temp table nettoyage_consentements as
 select k.id from public.consentements k where k.personne_id in (select id from nettoyage_personnes);
@@ -101,6 +114,9 @@ begin
     alter table public.signatures enable trigger signatures_non_supprimees;
   end if;
   delete from public.commentaires where id in (select id from nettoyage_commentaires);
+  if to_regclass('public.doleances') is not null then
+    execute 'delete from public.doleances where id in (select id from nettoyage_doleances)';
+  end if;
   delete from public.consentements where id in (select id from nettoyage_consentements);
   delete from public.invitations where id in (select id from nettoyage_invitations);
   delete from public.personnes where id in (select id from nettoyage_personnes);
@@ -140,6 +156,9 @@ from (
   union all
   select 6, 'Consentements', count(*), null
   from nettoyage_consentements
+  union all
+  select 6.5, 'Doléances', count(*), null
+  from nettoyage_doleances
   union all
   select 7, 'Fichiers à supprimer à la main : bucket photos', count(photo_path), string_agg(photo_path, ', ')
   from nettoyage_personnes

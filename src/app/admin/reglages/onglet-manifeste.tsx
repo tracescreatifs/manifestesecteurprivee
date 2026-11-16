@@ -10,7 +10,7 @@ import { Toast, useToast } from "@/components/ui/toast";
 import { formaterDateLimite } from "@/lib/ceo/message";
 import { formaterTelephone } from "@/lib/ceo/normaliser";
 
-import { enregistrerConsentement, enregistrerGoogleDoc, enregistrerReglagesSignature } from "./actions";
+import { enregistrerClotureDoleances, enregistrerConsentement, enregistrerGoogleDoc, enregistrerReglagesSignature } from "./actions";
 
 type Props = {
   googleDocUrl: string;
@@ -20,6 +20,8 @@ type Props = {
   texteConsentement: string;
   /* Une signature existe déjà : le texte de consentement ne change plus */
   consentementVerrouille: boolean;
+  /* Clôture des doléances (0009) ; null tant que la migration n'est pas exécutée */
+  clotureDoleances: string | null;
 };
 
 /* Valeur d'un champ datetime-local : l'heure de Dakar est l'heure UTC */
@@ -41,7 +43,9 @@ export function OngletManifeste(props: Props) {
   const [auto, setAuto] = useState(props.autoValidation);
   const [saisieDate, setSaisieDate] = useState(versSaisieDate(props.dateLimite));
   const apercu = apercuDate(saisieDate);
-  const [erreurs, setErreurs] = useState<{ signature?: string; consentement?: string; googleDoc?: string }>({});
+  const [saisieCloture, setSaisieCloture] = useState(props.clotureDoleances ? versSaisieDate(props.clotureDoleances) : "");
+  const apercuCloture = apercuDate(saisieCloture);
+  const [erreurs, setErreurs] = useState<{ signature?: string; consentement?: string; googleDoc?: string; doleances?: string }>({});
 
   const enregistrerSignature = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -55,6 +59,16 @@ export function OngletManifeste(props: Props) {
       if (!r.ok) return setErreurs((x) => ({ ...x, signature: r.erreur }));
       setErreurs((x) => ({ ...x, signature: undefined }));
       afficher("Réglages enregistrés");
+    });
+  };
+
+  const enregistrerCloture = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    demarrer(async () => {
+      const r = await enregistrerClotureDoleances({ cloture: saisieCloture });
+      if (!r.ok) return setErreurs((x) => ({ ...x, doleances: r.erreur }));
+      setErreurs((x) => ({ ...x, doleances: undefined }));
+      afficher("Clôture des doléances enregistrée");
     });
   };
 
@@ -170,6 +184,46 @@ export function OngletManifeste(props: Props) {
             </Button>
           </div>
         </form>
+      </section>
+
+      <section className={PANNEAU}>
+        <h3 className="font-titre text-xl font-normal">Doléances</h3>
+        {props.clotureDoleances === null ? (
+          <p className="text-[14px] text-texte-secondaire">
+            Ce réglage apparaît après l&apos;exécution de supabase/migrations/0009_doleances.sql.
+          </p>
+        ) : (
+          <form onSubmit={enregistrerCloture} className="grid gap-4" noValidate>
+            <Field
+              id="cloture-doleances"
+              libelle="Clôture des doléances"
+              aide="Heure de Dakar. Indépendante de la clôture des signatures : après cette date, le serveur refuse toute nouvelle doléance. Pour le 8 janvier à minuit, saisissez le 9 janvier à 00:00."
+              erreur={erreurs.doleances}
+              className="max-w-[560px]"
+            >
+              <div className="max-w-[320px]">
+                <Input
+                  id="cloture-doleances"
+                  name="clotureDoleances"
+                  type="datetime-local"
+                  required
+                  value={saisieCloture}
+                  onChange={(e) => setSaisieCloture(e.target.value)}
+                  aria-describedby="cloture-doleances-apercu"
+                />
+              </div>
+              <p id="cloture-doleances-apercu" aria-live="polite" className="text-[14px] text-encre">
+                {apercuCloture ? `Soit le ${apercuCloture}` : "Indiquez la date et l'heure de clôture."}
+              </p>
+            </Field>
+            <div>
+              <Button type="submit" variante="principal" disabled={enCours}>
+                <Save aria-hidden="true" strokeWidth={1.75} />
+                Enregistrer
+              </Button>
+            </div>
+          </form>
+        )}
       </section>
 
       <section className={PANNEAU}>

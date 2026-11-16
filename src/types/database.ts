@@ -27,6 +27,8 @@ export type OrigineSignature = "en_ligne" | "sur_place";
 export type TypeConsentement = "signature_publique" | "recontact" | "annuaire" | "photo_communication";
 export type StatutCommentaire = "nouveau" | "retenu" | "integre" | "non_retenu";
 export type TypeActeur = "admin" | "ceo" | "systeme";
+/* Doléances (0009) : seul « recue » est utilisé au prompt 09a ; « publiee » et « masquee » serviront au prompt 09b */
+export type StatutDoleance = "recue" | "publiee" | "masquee";
 
 /* ----- Structures JSON ----- */
 
@@ -308,6 +310,8 @@ export type Database = {
           publie_le: string | null;
           pdf_final_path: string | null;
           whatsapp_task_force: string | null;
+          /* Clôture des doléances (0009), heure de Dakar = UTC */
+          doleances_cloture: string;
           cree_le: string;
           modifie_le: string;
         };
@@ -328,6 +332,7 @@ export type Database = {
           publie_le?: string | null;
           pdf_final_path?: string | null;
           whatsapp_task_force?: string | null;
+          doleances_cloture?: string;
           cree_le?: string;
           modifie_le?: string;
         };
@@ -348,6 +353,7 @@ export type Database = {
           publie_le?: string | null;
           pdf_final_path?: string | null;
           whatsapp_task_force?: string | null;
+          doleances_cloture?: string;
           cree_le?: string;
           modifie_le?: string;
         };
@@ -705,6 +711,78 @@ export type Database = {
         Update: Record<string, never>;
         Relationships: [];
       };
+      /* Migration 0009 : thèmes des doléances (libellé unique, ordre, actif) */
+      doleance_themes: {
+        Row: { id: string; libelle: string; ordre: number; actif: boolean; cree_le: string; modifie_le: string };
+        Insert: { id?: string; libelle: string; ordre?: number; actif?: boolean; cree_le?: string; modifie_le?: string };
+        Update: { id?: string; libelle?: string; ordre?: number; actif?: boolean; cree_le?: string; modifie_le?: string };
+        Relationships: [];
+      };
+      /* Migration 0009 : doléances privées, lues par les admins seuls ; contenu figé au dépôt (trigger doleances_figees) */
+      doleances: {
+        Row: {
+          id: string;
+          manifeste_id: string;
+          invitation_id: string;
+          personne_id: string | null;
+          entreprise_id: string | null;
+          auteur_nom: string;
+          entreprise_nom: string;
+          /* null : « Autre » */
+          theme_id: string | null;
+          theme_propose: string | null;
+          texte: string;
+          solution: string | null;
+          ne_jamais_publier: boolean;
+          statut: StatutDoleance;
+          cle_idempotence: string;
+          depose_le: string;
+          lue_le: string | null;
+          lue_par: string | null;
+          cree_le: string;
+          modifie_le: string;
+        };
+        /* Insertion par la fonction deposer_doleance seulement (clé secrète) */
+        Insert: {
+          id?: string;
+          manifeste_id: string;
+          invitation_id: string;
+          personne_id?: string | null;
+          entreprise_id?: string | null;
+          auteur_nom: string;
+          entreprise_nom: string;
+          theme_id?: string | null;
+          theme_propose?: string | null;
+          texte: string;
+          solution?: string | null;
+          ne_jamais_publier?: boolean;
+          statut?: StatutDoleance;
+          cle_idempotence: string;
+          depose_le?: string;
+          lue_le?: string | null;
+          lue_par?: string | null;
+          cree_le?: string;
+          modifie_le?: string;
+        };
+        /* Les admins ne peuvent modifier que theme_id, lue_le et lue_par */
+        Update: { theme_id?: string | null; statut?: StatutDoleance; lue_le?: string | null; lue_par?: string | null };
+        Relationships: [
+          {
+            foreignKeyName: "doleances_theme_id_fkey";
+            columns: ["theme_id"];
+            isOneToOne: false;
+            referencedRelation: "doleance_themes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "doleances_invitation_id_fkey";
+            columns: ["invitation_id"];
+            isOneToOne: false;
+            referencedRelation: "invitations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       /* Migration 0005 : empreintes hachées et salées des inscriptions par le lien ouvert (serveur seulement) */
       inscriptions_ouvertes: {
         Row: { id: string; empreinte: string; cree_le: string };
@@ -821,6 +899,53 @@ export type Database = {
       };
       traiter_commentaire: {
         Args: { p_commentaire_id: string; p_statut: StatutCommentaire; p_note: string };
+        Returns: Json;
+      };
+      /* Migration 0009, CEO (clé secrète seulement) : { id, renvoi } */
+      deposer_doleance: {
+        Args: {
+          p_invitation_id: string;
+          p_theme_id: string | null;
+          p_theme_propose: string | null;
+          p_texte: string;
+          p_solution: string | null;
+          p_ne_jamais_publier: boolean;
+          p_cle: string;
+          p_limite_par_jour: number;
+        };
+        Returns: Json;
+      };
+      supprimer_doleance: {
+        Args: { p_invitation_id: string; p_doleance_id: string };
+        Returns: Json;
+      };
+      peut_deposer_doleance: {
+        Args: { p_invitation_id: string };
+        Returns: boolean;
+      };
+      /* Migration 0009, admins actifs (session) */
+      marquer_doleance_lue: {
+        Args: { p_doleance_id: string; p_lue: boolean };
+        Returns: Json;
+      };
+      rattacher_doleance: {
+        Args: { p_doleance_id: string; p_theme_id: string };
+        Returns: Json;
+      };
+      creer_theme_doleance: {
+        Args: { p_libelle: string };
+        Returns: Json;
+      };
+      renommer_theme_doleance: {
+        Args: { p_theme_id: string; p_libelle: string };
+        Returns: Json;
+      };
+      activer_theme_doleance: {
+        Args: { p_theme_id: string; p_actif: boolean };
+        Returns: Json;
+      };
+      ordonner_themes_doleances: {
+        Args: { p_ids: string[] };
         Returns: Json;
       };
       /* Exécution révoquée pour anon et authenticated : SQL Editor uniquement */

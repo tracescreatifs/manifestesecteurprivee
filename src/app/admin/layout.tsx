@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { BarreEtapes } from "@/components/admin/barre-etapes";
 import { Marque } from "@/components/marque";
+import { compterDoleancesNonLues } from "@/lib/doleances/admin";
 import { compterAVerifier } from "@/lib/verification/serveur";
 import { NavBasse, NavLaterale } from "@/components/admin/navigation";
 import { exigerSessionAdmin } from "@/lib/session-admin";
@@ -33,7 +34,10 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
         .maybeSingle()
     : { data: null };
   /* Signatures à vérifier, affichées à côté de « CEO » dans la navigation */
-  const aVerifier = manifeste ? await compterAVerifier(supabase, manifeste.id) : 0;
+  /* Doléances non lues, à côté de « Doléances » (0 tant que la migration 0009 n'est pas exécutée) */
+  const [aVerifier, nonLues] = manifeste
+    ? await Promise.all([compterAVerifier(supabase, manifeste.id), compterDoleancesNonLues(supabase, manifeste.id)])
+    : [0, 0];
 
   return (
     <div data-ambiance="admin" className="min-h-dvh min-[820px]:grid min-[820px]:grid-cols-[240px_minmax(0,1fr)]">
@@ -41,7 +45,7 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
         <div className="px-2 pt-1 pb-5">
           <Marque deuxLignes />
         </div>
-        <NavLaterale aVerifier={aVerifier} />
+        <NavLaterale aVerifier={aVerifier} nonLues={nonLues} />
       </aside>
 
       <section className="min-w-0 px-4 pt-4 pb-24 min-[820px]:px-8 min-[820px]:pt-6">
@@ -57,7 +61,7 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
         {children}
       </section>
 
-      <NavBasse aVerifier={aVerifier} />
+      <NavBasse aVerifier={aVerifier} nonLues={nonLues} />
     </div>
   );
 }

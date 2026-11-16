@@ -31,12 +31,14 @@ import type { LigneAnnexeA4 } from "@/lib/signature/annexe";
 import { garderEnAttente, INTERVALLE_RENVOI, lireEnAttente, oublierEnAttente, type EnvoiEnAttente } from "@/lib/signature/attente";
 import { debutParcours } from "@/lib/signature/parcours";
 import { schemaSaisie } from "@/lib/signature/saisie";
+import type { DoleancesCeo } from "@/lib/doleances/serveur";
 import type { CommentaireCeo, EspaceCeo } from "@/lib/signature/serveur";
 import { numerosDesPoints } from "@/lib/texte/comparer";
 import { htmlSur, texteBrut } from "@/lib/texte/html";
 
 import { commenter, marquerOuvert, retirerMaSignature, signerManifeste } from "./actions";
 import { BarreReseau, EXPEDITEUR, Feuille, LiensPied } from "./commun";
+import { CarteDoleances } from "./doleances";
 import { FicheCeo } from "./fiche";
 import { InviterConfrere, ParcoursSignature, type EnvoiSignature, type Signee } from "./parcours-signature";
 
@@ -68,9 +70,11 @@ type Props = {
   reprendreSignature: boolean;
   /* Page /rejoindre : inscription par le lien ouvert ou par parrainage */
   rejoindre: { parrain: string | null; codeParrain: string } | null;
+  /* Doléances (prompt 09a) : null si ce lien ne permet pas d'en déposer, avant le gel, ou sans la migration 0009 */
+  doleances: DoleancesCeo | null;
 };
 
-export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, rejoindre }: Props) {
+export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, rejoindre, doleances }: Props) {
   const router = useRouter();
   const version = espace.version;
   const ouvert = espace.etat === "ouvert";
@@ -451,6 +455,28 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
     </div>
   ) : null;
 
+  /* « Pensez aussi à signer le Manifeste » : retour au bouton de signature visible (ordinateur ou barre du bas) */
+  const allerSignature = () => {
+    const bouton = ["bouton-signer-ordinateur", "bouton-signer-telephone"]
+      .map((id) => document.getElementById(id))
+      .find((b) => b && b.offsetParent !== null);
+    if (!bouton) return setParcours(true);
+    const reduit = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    bouton.scrollIntoView({ block: "center", behavior: reduit ? "auto" : "smooth" });
+    bouton.focus({ preventScroll: true });
+  };
+
+  const carteDoleances =
+    jeton && doleances && !refus ? (
+      <CarteDoleances
+        jeton={jeton}
+        donnees={doleances}
+        signe={signature !== null}
+        onSigner={allerSignature}
+        onAnnonce={setAnnonce}
+      />
+    ) : null;
+
   /* ----- En-tête : fixe sur ordinateur, en tête de page sur téléphone (sans la date, déjà dans la barre de signature) ----- */
   const entete = (
     <>
@@ -565,7 +591,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
         </div>
         {!signature ? (
           <div className="hidden gap-2 min-[760px]:grid">
-            <Button variante="principal" className="min-h-[52px] text-[16px]" onClick={() => setParcours(true)}>
+            <Button id="bouton-signer-ordinateur" variante="principal" className="min-h-[52px] text-[16px]" onClick={() => setParcours(true)}>
               <PenTool aria-hidden="true" strokeWidth={1.75} />
               Signer le Manifeste
             </Button>
@@ -585,6 +611,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
         ) : null}
         {carteInvitation}
         {listeCommentaires}
+        {carteDoleances}
       </>
     );
   } else {
@@ -607,6 +634,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
         )}
         {carteSignature}
         {listeCommentaires}
+        {carteDoleances}
       </>
     );
   }
@@ -664,7 +692,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
                   <MessageSquare aria-hidden="true" strokeWidth={1.75} />
                 </Button>
               ) : null}
-              <Button variante="principal" onClick={() => setParcours(true)}>
+              <Button id="bouton-signer-telephone" variante="principal" onClick={() => setParcours(true)}>
                 <PenTool aria-hidden="true" strokeWidth={1.75} />
                 Signer le Manifeste
               </Button>

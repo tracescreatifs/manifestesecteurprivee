@@ -140,13 +140,14 @@ export function BarreReseau({ etat }: { etat: "perdue" | "retablie" | null }) {
   );
 }
 
-/* Texte exact du prototype 2-ceo.html */
+/* Texte du prototype 2-ceo.html, complété pour les doléances (prompt 09a) */
 export function TexteConfidentialite() {
   return (
     <>
       <p>
         <strong>Ce que nous recueillons.</strong> Votre nom, votre fonction, votre entreprise, son maillon, votre numéro
-        WhatsApp et votre signature. Si vous le choisissez : votre photo et vos commentaires.
+        WhatsApp et votre signature. Si vous le choisissez : votre photo, vos commentaires et vos doléances (thème, texte et
+        solution proposée).
       </p>
       <p>
         <strong>Pourquoi.</strong> Pour faire figurer votre signature dans l&apos;annexe du Manifeste et pour vous recontacter
@@ -156,6 +157,11 @@ export function TexteConfidentialite() {
         <strong>Qui le voit.</strong> Votre nom, votre fonction, votre entreprise et votre signature sont publiés avec le
         Manifeste. Votre numéro et vos commentaires ne sont lus que par l&apos;équipe de rédaction. Votre photo n&apos;est
         visible que selon les choix de votre fiche.
+      </p>
+      <p>
+        <strong>Vos doléances.</strong> Elles sont lues uniquement par {EXPEDITEUR}. Elles ne sont jamais publiées avec votre
+        nom ni celui de votre entreprise. Une doléance pour laquelle vous avez coché « Ne jamais la publier, même sans nom »
+        n&apos;est jamais publiée du tout. Vous pouvez supprimer vos doléances depuis ce lien.
       </p>
       <p>
         <strong>Vos droits.</strong> Vous pouvez retirer votre signature jusqu&apos;à la clôture, modifier vos choix à tout

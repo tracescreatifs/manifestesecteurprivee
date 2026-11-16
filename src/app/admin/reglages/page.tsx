@@ -95,10 +95,11 @@ async function ReglagesManifeste() {
     );
   }
   /* Le texte de consentement ne change plus dès qu'une signature existe (même retirée) */
-  const { count } = await supabase
-    .from("signatures")
-    .select("id", { count: "exact", head: true })
-    .eq("manifeste_id", manifeste.id);
+  const [{ count }, { data: doleances, error: erreurDoleances }] = await Promise.all([
+    supabase.from("signatures").select("id", { count: "exact", head: true }).eq("manifeste_id", manifeste.id),
+    /* Lue à part : la page reste utilisable tant que la migration 0009 n'est pas exécutée */
+    supabase.from("manifestes").select("doleances_cloture").eq("id", manifeste.id).maybeSingle(),
+  ]);
 
   return (
     <OngletManifeste
@@ -108,6 +109,7 @@ async function ReglagesManifeste() {
       whatsapp={manifeste.whatsapp_task_force}
       texteConsentement={manifeste.texte_consentement}
       consentementVerrouille={(count ?? 0) > 0}
+      clotureDoleances={erreurDoleances || !doleances ? null : doleances.doleances_cloture}
     />
   );
 }

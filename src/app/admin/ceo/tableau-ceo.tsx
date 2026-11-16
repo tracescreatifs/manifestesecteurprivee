@@ -51,6 +51,8 @@ type Props = {
   /* Date limite brute, pour « Rétablir » dans la fiche (seulement tant que les signatures sont ouvertes) */
   dateLimiteIso: string;
   lienOuvertActif: boolean;
+  /* Fiche ouverte à l'arrivée (?fiche=, depuis la rubrique Doléances) */
+  ficheInitiale: string | null;
   /* Onglets de la rubrique (Liste et suivi, À vérifier, Commentaires), et contenu d'un autre onglet que la liste */
   onglets: ReactNode;
   contenu: ReactNode | null;
@@ -103,6 +105,7 @@ export function TableauCeo({
   dateLimite,
   dateLimiteIso,
   lienOuvertActif,
+  ficheInitiale,
   onglets,
   contenu,
 }: Props) {
@@ -112,7 +115,7 @@ export function TableauCeo({
   const [maillon, setMaillon] = useState("");
   const [recherche, setRecherche] = useState("");
   /* Fiche ouverte : identifiant de l'invitation (la ligne est relue à chaque mise à jour) */
-  const [fiche, setFiche] = useState<string | null>(null);
+  const [fiche, setFiche] = useState<string | null>(ficheInitiale);
   const [envoi, setEnvoi] = useState<{ ceo: LigneCeo; relance: boolean } | null>(null);
   const [fileOuverte, setFileOuverte] = useState(false);
   const [formulaire, setFormulaire] = useState<{ ceo: LigneCeo | null } | null>(null);

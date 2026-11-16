@@ -39,6 +39,18 @@ export const LIBELLES_ACTIONS = {
   signature_refusee: "Signature refusée",
   signature_retablie: "Signature rétablie",
   commentaire_traite: "Commentaire traité",
+  doleance_deposee: "Doléance déposée",
+  doleance_supprimee: "Doléance supprimée par son auteur",
+  doleance_lue: "Doléance marquée comme lue",
+  doleance_non_lue: "Doléance marquée comme non lue",
+  doleance_rattachee: "Doléance rattachée à un thème",
+  theme_cree: "Thème de doléances créé",
+  theme_renomme: "Thème de doléances renommé",
+  theme_desactive: "Thème de doléances désactivé",
+  theme_reactive: "Thème de doléances réactivé",
+  themes_reordonnes: "Thèmes de doléances réordonnés",
+  doleances_exportees: "Doléances exportées",
+  cloture_doleances_modifiee: "Clôture des doléances modifiée",
 } as const;
 
 export type ActionJournal = keyof typeof LIBELLES_ACTIONS;

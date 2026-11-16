@@ -62,8 +62,22 @@ export async function OngletJournal({ page }: { page: number }) {
       if (typeof d?.nombre === "number") return `${d.nombre} CEO${d.fichier ? `, depuis ${d.fichier}` : ""}`;
     }
     if (type === "manifeste") {
-      const d = details as { nombre?: number } | null;
-      if (typeof d?.nombre === "number") return `${d.nombre} signature${d.nombre > 1 ? "s" : ""}`;
+      const d = details as { nombre?: number; objet?: string } | null;
+      if (typeof d?.nombre === "number") {
+        const mot = d.objet === "doleances" ? "doléance" : "signature";
+        return `${d.nombre} ${mot}${d.nombre > 1 ? "s" : ""}`;
+      }
+    }
+    /* Doléances : auteur, entreprise et thème ; jamais le texte */
+    if (type === "doleance") {
+      const d = details as { nom?: string; entreprise?: string; theme?: string; de?: string; vers?: string } | null;
+      const base = [d?.nom, d?.entreprise].filter(Boolean).join(", ");
+      if (d?.vers) return `${base} : de ${d.de ?? "Autre"} vers ${d.vers}`;
+      return `${base}${d?.theme ? ` (${d.theme})` : ""}`;
+    }
+    if (type === "theme") {
+      const d = details as { libelle?: string; ancien?: string } | null;
+      return d?.ancien ? `${d.ancien}, devenu ${d.libelle ?? ""}` : (d?.libelle ?? "");
     }
     if (type === "version") {
       const numero = (details as { numero?: number } | null)?.numero;

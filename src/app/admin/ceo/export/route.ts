@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { traceSure } from "@/components/document/signature";
 import { estTrace } from "@/lib/ceo/serveur";
+import { cellule, dateHeureDakar } from "@/lib/csv";
 import { journaliser } from "@/lib/journal";
 import { exigerAdminActif } from "@/lib/session-admin";
 import { creerClientServeur } from "@/lib/supabase/server";
@@ -14,30 +15,6 @@ import { lireManifeste } from "@/lib/texte/serveur";
   tracés compris) et un SVG par signature, nommé par sa référence.
 */
 export const dynamic = "force-dynamic";
-
-const FUSEAU = "Africa/Dakar";
-
-function dateHeureDakar(iso: string): string {
-  const parties = new Intl.DateTimeFormat("fr-FR", {
-    timeZone: FUSEAU,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  }).formatToParts(new Date(iso));
-  const v = (t: string) => parties.find((p) => p.type === t)?.value ?? "";
-  return `${v("year")}-${v("month")}-${v("day")} ${v("hour")}:${v("minute")}`;
-}
-
-/* Cellule CSV : séparateur point-virgule (Excel en français), guillemets échappés */
-function cellule(valeur: string | number | null | undefined): string {
-  const texte = valeur === null || valeur === undefined ? "" : String(valeur);
-  /* Une cellule qui commence par =, +, - ou @ serait lue comme une formule par Excel */
-  const sure = /^[=+\-@]/.test(texte) ? `'${texte}` : texte;
-  return /[";\n\r]/.test(sure) ? `"${sure.replace(/"/g, '""')}"` : sure;
-}
 
 function svg(vb: string, d: string[]): string {
   const chemins = d

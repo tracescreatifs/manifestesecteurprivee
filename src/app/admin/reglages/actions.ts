@@ -364,6 +364,49 @@ export async function enregistrerReglagesSignature(saisie: {
   return { ok: true };
 }
 
+/* ----- Clôture des doléances (prompt 09a) : saisie à l'heure de Dakar, qui est aussi l'heure UTC ----- */
+
+const schemaClotureDoleances = z.object({
+  cloture: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/, "Indiquez la date et l'heure de clôture.")
+    .transform((v) => new Date(`${v}:00Z`))
+    .refine((d) => !Number.isNaN(d.getTime()), "Indiquez une date valide."),
+});
+
+export async function enregistrerClotureDoleances(saisie: { cloture: string }): Promise<ResultatAction> {
+  const acces = await exigerAdminActif();
+  if (!acces.ok) return acces;
+  const donnees = schemaClotureDoleances.safeParse(saisie);
+  if (!donnees.success) return { ok: false, erreur: donnees.error.issues[0]?.message ?? "Date invalide." };
+  const { cloture } = donnees.data;
+
+  const supabase = await creerClientServeur();
+  const { data: manifeste, error: erreurLecture } = await supabase
+    .from("manifestes")
+    .select("id, doleances_cloture")
+    .order("cree_le", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (erreurLecture) return { ok: false, erreur: "Exécutez d'abord la migration 0009 des doléances." };
+  if (!manifeste) return { ok: false, erreur: "Le Manifeste n'existe pas encore en base." };
+  if (new Date(manifeste.doleances_cloture).getTime() === cloture.getTime()) return { ok: true };
+
+  const { error } = await supabase.from("manifestes").update({ doleances_cloture: cloture.toISOString() }).eq("id", manifeste.id);
+  if (error) return { ok: false, erreur: "La clôture n'a pas pu être enregistrée. Réessayez." };
+
+  await journaliser({
+    acteurType: "admin",
+    acteurId: acces.admin.user_id,
+    action: "cloture_doleances_modifiee",
+    cibleType: "manifeste",
+    cibleId: manifeste.id,
+    details: { doleances_cloture: cloture.toISOString() },
+  });
+  revalidatePath("/admin", "layout");
+  return { ok: true };
+}
+
 /* ----- Texte de consentement : modifiable seulement tant qu'aucune signature n'existe ----- */
 
 const schemaConsentement = z.object({

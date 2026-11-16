@@ -79,6 +79,7 @@ export default async function PageRejoindre({ searchParams }: { searchParams: Pr
         codeParrainage: null,
         refus: null,
       }}
+      doleances={null}
     />
   );
 }

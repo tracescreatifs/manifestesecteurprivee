@@ -1,6 +1,6 @@
 # État du projet
 
-Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 06.2, 16 novembre 2026.
+Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 09a, 16 novembre 2026.
 
 ---
 
@@ -22,10 +22,10 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 | 07 | Vérification des signatures (« À vérifier ») et traitement des commentaires, avancé avant l'audit | `main` | 21 novembre 2026 | Validé |
 | 06 | Audit complet et vérifications d'avant mise en ligne (domaine, redirections, RLS, parcours sur téléphone et ordinateur), sur la plateforme complète ; message de validation avec le lien ; script de nettoyage des données de test | `main` | 22 novembre 2026 | Validé |
 | 06.1 | Finitions d'interface (marque, liste des CEO, barre d'étapes, en-tête CEO), messages WhatsApp mis en forme, clé anti-doublon de l'inscription par le lien ouvert | `main` | 22 novembre 2026 | Validé |
-| 06.2 | Date limite en heure de Dakar et d'Abu Dhabi, message du lien ouvert au nom de la Task Force, rubrique CEO sans chevauchement | `main` | 22 novembre 2026 | En cours de validation |
-| À numéroter | Doléances privées (priorité nouvelle, D108) : le CEO dépose une doléance depuis son lien, qu'il ait signé ou non ; lue par les admins seuls | `main` | 22 novembre 2026 | À faire |
+| 06.2 | Date limite en heure de Dakar et d'Abu Dhabi, message du lien ouvert au nom de la Task Force, rubrique CEO sans chevauchement | `main` | 22 novembre 2026 | Validé |
+| 09a | Doléances privées (D108, D109) : le CEO dépose une doléance depuis son lien, qu'il ait signé ou non ; lue par les admins seuls ; rubrique Doléances, thèmes, export, clôture des doléances | `main` | 22 novembre 2026 | En cours de validation |
 | 08 | Document final : PDF A4, clôture, publication, signataires sur place. Besoin ajouté (D105) : **télécharger les pages de l'annexe seules, en un clic, juste après la clôture** (le texte est imprimé à l'avance, seule l'annexe est imprimée sur place à Abu Dhabi le 9 décembre avant 9 h) | branche `feat/...`, après le 23 novembre | 8 décembre 2026 | À faire |
-| 09 | Cahier de doléances, partie publique : publication anonyme après validation et soutiens, après la clôture | branche `feat/...`, après le 23 novembre | décembre 2026 | À faire |
+| 09b | Cahier de doléances, partie publique, après la clôture des signatures : validation par un admin, publication anonyme, visibilité entre CEO (sans nom ni entreprise, jamais une doléance « ne jamais publier »), soutiens (table `doleance_soutiens`, l'auteur compte pour un, D22), classement par soutiens, export PDF (A4), fusion de thèmes. Le modèle de 0009 est prêt : statut (`recue`, `publiee`, `masquee`), thèmes ordonnés et désactivables | branche `feat/...`, après le 23 novembre | décembre 2026 | À faire |
 
 ### Calendrier (décision de Ziza, D105 ; prime sur la partie 2 du cahier des charges)
 
@@ -94,6 +94,9 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 - Nom complet partout : textes des accords de la fiche complétés (D103) ; recherche dans `src/` jointe au rapport.
 - Inscription par le lien ouvert : clé anti-doublon (migration `0008_inscription_anti_doublon.sql`, D102), testée deux fois de suite sur PostgreSQL 16 avec la même clé (une seule invitation) et deux clés (deux invitations, comme avant). Tests vitest : 90.
 - Prompt 06.2 : date limite affichée en heure de Dakar et d'Abu Dhabi, par une seule fonction (`formaterDateLimiteComplete` dans `src/lib/ceo/message.ts`, forme longue et forme courte), dans les messages, l'en-tête et la colonne de l'espace CEO, « Refaire » et « Retirer », Réglages (aperçu en direct sous le champ) ; message de partage du lien ouvert au nom de la Task Force, avec aperçu ; compteur et extrait de l'annexe de la rubrique CEO l'un sous l'autre sous 1200 px (D105 à D107). Aucune migration. Tests vitest : 91.
+- Prompt 09a, doléances privées (D108, D109, D110) : migration `0009_doleances.sql` et seed `0003_themes_doleances.sql`, testés deux fois de suite sur PostgreSQL 16 (dépôt, renvoi avec la même clé, droit de dépôt, longueurs, thème désactivé, limite par jour, ouverture et clôture, contenu figé, suppression par l'auteur seulement, RLS : rien pour anon ni pour un utilisateur non admin, journal sans le texte).
+- Espace CEO : carte « Vos doléances » après la signature et les commentaires (formulaire dans une fenêtre, compteurs, « Ne jamais la publier, même sans nom », clé anti-doublon, liste et suppression, rappel « Pensez aussi à signer le Manifeste », phrase de clôture) ; confidentialité complétée. Aucune carte pour un nouvel inscrit non validé, un lien refusé, avant le gel, ou sans la migration 0009.
+- Admin : rubrique « Doléances » entre CEO et Réglages avec la pastille des non lues ; liste filtrable (thème, lecture, auteur) et triée par date ; fiche dans un panneau (marquer comme lue ou non lue, rattacher une doléance « Autre », lien vers la fiche CEO par `/admin/ceo?fiche=`) ; onglet Thèmes (créer, renommer, réordonner, désactiver) ; export CSV pour Excel noté au journal ; Réglages, onglet Manifeste : « Clôture des doléances » avec la forme longue en direct. Tests vitest : 103.
 
 ---
 
@@ -111,9 +114,11 @@ Claude Code ne marque jamais une migration comme exécutée : Ziza le confirme, 
 | 0005 | `supabase/migrations/0005_espace_ceo.sql` | Bucket privé `accuses`, table `inscriptions_ouvertes` (empreintes), fonctions `inscrire_par_lien_ouvert`, `retirer_signature` et `enregistrer_brouillon` (clé secrète seulement) | Oui (15 novembre 2026) |
 | 0006 | `supabase/migrations/0006_verification.sql` | Décision de l'admin sur l'invitation, fonctions de vérification et de traitement des commentaires (admins actifs, journalisées), signature refusée après un rejet | Oui (15 novembre 2026) |
 | 0007 | `supabase/migrations/0007_audit.sql` | Correctifs de l'audit 06 : droits des fonctions et de la séquence, signatures et versions jamais supprimées, journal au nom de l'admin, verrou du dernier admin, clé anti-doublon obligatoire, document publié protégé, limites des buckets | Oui (confirmée au prompt 06.1) |
-| seed 9000 | `supabase/seed/9000_nettoyage_donnees_test.sql` | Nettoyage des données de test avant l'envoi des liens (aperçu, puis `confirmer` à `true`). Exécuté par Ziza seulement, jamais par Claude Code | Non |
-| 0008 | `supabase/migrations/0008_inscription_anti_doublon.sql` | Clé anti-doublon de l'inscription par le lien ouvert (`invitations.cle_inscription`, unique), fonction `inscrire_par_lien_ouvert` avec la clé | Non |
-| seed 0002 | `supabase/seed/0002_modele_message_whatsapp.sql` | Modèle du message WhatsApp mis en forme, seulement si le modèle en base est encore l'ancien modèle d'origine (à exécuter après 0008) | Non |
+| seed 9000 | `supabase/seed/9000_nettoyage_donnees_test.sql` | Nettoyage des données de test avant l'envoi des liens, doléances comprises depuis le prompt 09a (aperçu, puis `confirmer` à `true`). Exécuté par Ziza seulement, jamais par Claude Code | Non |
+| 0008 | `supabase/migrations/0008_inscription_anti_doublon.sql` | Clé anti-doublon de l'inscription par le lien ouvert (`invitations.cle_inscription`, unique), fonction `inscrire_par_lien_ouvert` avec la clé | Oui (confirmée au prompt 09a) |
+| seed 0002 | `supabase/seed/0002_modele_message_whatsapp.sql` | Modèle du message WhatsApp mis en forme, seulement si le modèle en base est encore l'ancien modèle d'origine (à exécuter après 0008) | Oui (confirmée au prompt 09a) |
+| 0009 | `supabase/migrations/0009_doleances.sql` | Doléances privées : clôture des doléances sur le Manifeste, tables `doleance_themes` et `doleances` (contenu figé, clé anti-doublon unique), RLS admins seuls avec droits limités aux colonnes utiles, fonctions du CEO (clé secrète) et des admins (session), journal sans le texte | Non |
+| seed 0003 | `supabase/seed/0003_themes_doleances.sql` | Les 6 thèmes de départ, seulement si aucun thème n'existe (à exécuter après 0009) | Non |
 
 ---
 
@@ -158,4 +163,5 @@ Selon la partie 19 du cahier des charges.
 - Un admin connecté peut écrire directement dans les tables par l'API de Supabase (RLS « admin peut tout »), sans passer par les fonctions journalisées. À restreindre dans un lot dédié, après le 23 novembre.
 - Les jetons apparaissent dans les journaux d'accès de Vercel (adresse de la page) : accès réservé au compte Vercel.
 - La limite d'inscriptions par heure du lien ouvert repose sur l'adresse IP : un changement d'adresse la contourne (protection anti-spam, pas une barrière).
+- Dates au premier jour du mois : `Intl` écrit « 1 novembre » et non « 1er novembre » (formatage de 06.2, partout où une date en toutes lettres tombe un 1er). Les dates du calendrier (8 décembre, 8 janvier) ne sont pas concernées.
 - Le prompt 08 (signataires sur place) devra produire la référence par le serveur : `generer_reference_signature` n'est plus appelable par une session d'admin (0007).
