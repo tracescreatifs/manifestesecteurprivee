@@ -42,6 +42,8 @@ export type DonneesDocument = {
   lignes: LigneAnnexeA4[];
   surPlace: SignataireSurPlace[];
   aVerifier: number;
+  /* Heure de lecture des données (affichée « Mis à jour à … ») */
+  lueLe: string;
 };
 
 type SignatureLue = {
@@ -135,5 +137,6 @@ export async function lireDocument(supabase: Client): Promise<DonneesDocument | 
         signeLe: s.signe_le,
       })),
     aVerifier: aVerifier ?? 0,
+    lueLe: new Date().toISOString(),
   };
 }
