@@ -87,7 +87,7 @@ export function Modal({ ouvert, titre, onFermer, children, pied, large = false }
             transition={transition}
           >
             <div className="flex shrink-0 items-center justify-between gap-3 border-b border-filet px-6 py-4">
-              <h3 id={idTitre} className="font-titre text-xl font-normal">
+              <h3 id={idTitre} className="min-w-0 font-titre text-xl font-normal">
                 {titre}
               </h3>
               <button
@@ -95,7 +95,7 @@ export function Modal({ ouvert, titre, onFermer, children, pied, large = false }
                 data-fermer
                 onClick={onFermer}
                 aria-label="Fermer"
-                className="grid size-11 place-items-center rounded-[10px] text-texte-secondaire hover:bg-[rgba(20,33,43,0.06)] hover:text-encre"
+                className="grid size-11 shrink-0 place-items-center rounded-[10px] text-texte-secondaire hover:bg-[rgba(20,33,43,0.06)] hover:text-encre"
               >
                 <X aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
               </button>

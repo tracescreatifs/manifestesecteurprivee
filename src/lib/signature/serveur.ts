@@ -1,7 +1,8 @@
 import "server-only";
 
 import { estTrace } from "@/lib/ceo/serveur";
-import { masquerAnnexe } from "@/lib/signature/annexe";
+import { liensImages } from "@/lib/document/serveur";
+import { masquerAnnexe, reglagesDuManifeste, type ReglagesAnnexe } from "@/lib/signature/annexe";
 import type { ChoixFiche } from "@/lib/signature/fiche";
 import { formaterTelephone, normaliserNomEntreprise } from "@/lib/ceo/normaliser";
 import { lireSiteUrl } from "@/lib/env";
@@ -44,6 +45,8 @@ export type LigneAnnexe = {
   entreprise: string;
   maillon: string;
   trace: TraceSignature | null;
+  /* Signataire sur place (prompt 08) : lien signé de la photo, seulement après la publication (D75) */
+  image?: string | null;
   signeLe: string;
   /* Signature du CEO qui consulte la page */
   moi: boolean;
@@ -93,6 +96,12 @@ export type EspaceCeo = {
   codeParrainage: string | null;
   /* Signature retirée ou refusée par un admin : « Votre signature n'a pas été retenue » ; l'accusé émis reste téléchargeable */
   refus: { reference: string; signeLe: string; retireeLe: string } | null;
+  /* Prompt 08 : depuis quand les signatures sont closes (clôture enregistrée, sinon date limite passée) */
+  closDepuis: string | null;
+  /* Réglages de l'annexe du Manifeste (D69), par défaut sans la migration 0010 */
+  reglagesAnnexe: ReglagesAnnexe;
+  /* Document final publié et son PDF stocké (D25) : bouton « Télécharger le document final » */
+  documentFinal: boolean;
 };
 
 type InvitationLue = {
@@ -197,7 +206,7 @@ export async function lireEspace(jeton: string): Promise<EspaceCeo | null> {
   ] = await Promise.all([
       supabase
         .from("manifestes")
-        .select("statut, date_limite, texte_consentement, whatsapp_task_force")
+        .select("statut, date_limite, texte_consentement, whatsapp_task_force, clos_le, pdf_final_path")
         .eq("id", inv.manifeste_id)
         .single(),
       supabase
@@ -211,7 +220,7 @@ export async function lireEspace(jeton: string): Promise<EspaceCeo | null> {
       supabase
         .from("signatures")
         .select(
-          "id, invitation_id, prenom, nom, fonction, entreprise_nom, maillon_libelle, trace, signe_le, validee, reference, texte_consentement, version:manifeste_versions(numero, titre)",
+          "id, invitation_id, origine, prenom, nom, fonction, entreprise_nom, maillon_libelle, trace, image_path, signe_le, validee, reference, texte_consentement, version:manifeste_versions(numero, titre)",
         )
         .eq("manifeste_id", inv.manifeste_id)
         .is("retiree_le", null)
@@ -234,6 +243,7 @@ export async function lireEspace(jeton: string): Promise<EspaceCeo | null> {
     entreprise_nom: string | null;
     maillon_libelle: string | null;
     trace: Json | null;
+    image_path: string | null;
     signe_le: string;
     validee: boolean;
     reference: string;
@@ -245,6 +255,15 @@ export async function lireEspace(jeton: string): Promise<EspaceCeo | null> {
 
   /* L'annexe : les signatures validées, et celle du CEO même en attente de validation */
   const etat = etatCampagne(manifeste.statut, manifeste.date_limite, new Date());
+  /* Photos des signataires sur place : envoyées seulement après la publication (D75) */
+  const images =
+    etat === "publie" ? await liensImages(lues.map((s) => s.image_path).filter((c): c is string => Boolean(c))) : new Map<string, string>();
+  /* Réglages de l'annexe, lus à part : la page reste utilisable sans la migration 0010 */
+  const { data: reglages } = await supabase
+    .from("manifestes")
+    .select("annexe_ordre, annexe_lignes_par_page, annexe_lignes_vides")
+    .eq("id", inv.manifeste_id)
+    .maybeSingle();
   const lignes: LigneAnnexe[] = lues
     .filter((s) => s.validee || s.invitation_id === inv.id)
     .map((s, rang) => ({
@@ -255,6 +274,7 @@ export async function lireEspace(jeton: string): Promise<EspaceCeo | null> {
       entreprise: s.entreprise_nom ?? "",
       maillon: s.maillon_libelle ?? "",
       trace: estTrace(s.trace) ? s.trace : null,
+      image: s.image_path ? (images.get(s.image_path) ?? null) : null,
       /* La date exacte des autres signatures n'est pas transmise (seule la sienne sert) */
       signeLe: s.invitation_id === inv.id ? s.signe_le : "",
       moi: s.invitation_id === inv.id,
@@ -335,6 +355,9 @@ export async function lireEspace(jeton: string): Promise<EspaceCeo | null> {
     choix,
     codeParrainage: inv.code_parrainage,
     refus: refus ? { reference: refus.reference, signeLe: refus.signe_le, retireeLe: refus.retiree_le ?? refus.signe_le } : null,
+    closDepuis: etat === "clos" || etat === "publie" ? (manifeste.clos_le ?? manifeste.date_limite) : null,
+    reglagesAnnexe: reglagesDuManifeste(reglages),
+    documentFinal: manifeste.statut === "publie" && Boolean(manifeste.pdf_final_path),
     commentaires: (commentaires ?? []).map((c) => ({ id: c.id, blocId: c.bloc_id, texte: c.texte, creeLe: c.cree_le })),
   };
 }

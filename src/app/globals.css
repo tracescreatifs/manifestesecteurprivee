@@ -282,6 +282,14 @@
   .ann-table .ghost {
     border-color: transparent !important;
   }
+  /* Signataire sur place (prompt 08) : photo de la signature manuscrite, sur fond blanc */
+  .ann-table .ann-image {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+  }
   /* Signature d'un autre signataire, non montrée avant la publication (D75) */
   .ann-table .ann-signe {
     width: 100%;
@@ -459,5 +467,43 @@
 @media print {
   .sans-impression {
     display: none !important;
+  }
+}
+
+/*
+  Impression du document A4 (prompt 08, page /impression) : une page A4 stricte par feuille, sans marge,
+  identique à l'écran (unités cqw). Aucune ligne d'annexe ne peut être coupée : chaque page d'annexe est une feuille.
+*/
+@media print {
+  /* Le conteneur de mesure (invisible, hors de l'écran) ne doit pas allonger le document imprimé */
+  .a4-mesure {
+    display: none !important;
+  }
+  .a4-impression {
+    display: block;
+    padding: 0;
+    overflow: visible;
+  }
+  .a4-impression .a4-wrap {
+    width: 210mm;
+    max-width: none;
+    margin: 0;
+    break-after: page;
+  }
+  .a4-impression .a4-wrap:last-child {
+    break-after: auto;
+  }
+  .a4-impression .a4-page {
+    width: 210mm;
+    height: 296.9mm;
+    aspect-ratio: auto;
+    box-shadow: none;
+    border-radius: 0;
+    break-inside: avoid;
+    overflow: hidden;
+  }
+  .a4-impression * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }

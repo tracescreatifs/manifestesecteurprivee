@@ -1,6 +1,6 @@
 -- =====================================================================
 -- 9000_nettoyage_donnees_test.sql
--- Supprime les données de test (CEO, invitations, signatures, commentaires, doléances,
+-- Supprime les données de test (CEO, invitations, signatures en ligne et sur place, commentaires, doléances,
 -- consentements, personnes et entreprises de test) avant l'import de la vraie liste.
 --
 -- MODE D'EMPLOI (SQL Editor de Supabase) :
@@ -9,7 +9,7 @@
 --      Le résultat affiché est l'aperçu de tout ce qui serait supprimé.
 --   3. Si l'aperçu est juste, remplacez false par true à l'étape 1, puis exécutez de nouveau.
 --      La suppression se fait en une seule transaction : tout ou rien.
---   4. Les fichiers listés (photos et accusés) se suppriment ensuite à la main,
+--   4. Les fichiers listés (photos, accusés, signatures sur place) se suppriment ensuite à la main,
 --      dans Supabase, Storage (le SQL ne peut pas supprimer proprement les fichiers).
 --
 -- À exécuter après les migrations 0007 et 0009 (ou avant : le script fonctionne dans tous les cas ;
@@ -65,10 +65,14 @@ where (p.entreprise_id in (select id from nettoyage_entreprises)
   );
 
 drop table if exists pg_temp.nettoyage_signatures;
+-- Signatures en ligne des invitations de test, et signataires sur place (prompt 08) des entreprises de test
 create temp table nettoyage_signatures as
-select s.id, s.reference
+select s.id, s.reference, s.origine::text as origine, s.image_path
 from public.signatures s
-where s.invitation_id in (select id from nettoyage_invitations);
+where s.invitation_id in (select id from nettoyage_invitations)
+   or (s.origine = 'sur_place' and public.normaliser_nom_entreprise(coalesce(s.entreprise_nom, '')) in (
+         select public.normaliser_nom_entreprise(n) from nettoyage_parametres, unnest(entreprises_test) as n
+       ));
 
 drop table if exists pg_temp.nettoyage_commentaires;
 create temp table nettoyage_commentaires as
@@ -164,6 +168,10 @@ from (
   from nettoyage_personnes
   union all
   select 8, 'Fichiers à supprimer à la main : bucket accuses', count(*), string_agg(reference || '.pdf', ', ' order by reference)
+  from nettoyage_signatures
+  where origine = 'en_ligne'
+  union all
+  select 8.5, 'Fichiers à supprimer à la main : bucket signatures (sur place)', count(image_path), string_agg(image_path, ', ' order by image_path)
   from nettoyage_signatures
   union all
   select 9, 'Signatures restantes (hors test)', count(*), string_agg(reference, ', ' order by reference)

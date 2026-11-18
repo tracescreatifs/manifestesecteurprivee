@@ -1,13 +1,15 @@
 import { Check } from "lucide-react";
 
+import { formaterDateLimite } from "@/lib/ceo/message";
 import type { StatutManifeste } from "@/types/database";
 
+import { BoutonClore, BoutonPublier, BoutonRouvrir } from "./actions-etapes";
 import { AideEtape } from "./aide-etape";
 import { BoutonGel } from "./bouton-gel";
 import { MenuAdmin } from "./menu-admin";
 
 const ETAPES = ["Rédaction", "Gel", "Signatures", "Publication"] as const;
-const INDEX: Record<StatutManifeste, number> = { redaction: 0, gele: 2, clos: 2, publie: 3 };
+const INDEX: Record<StatutManifeste, number> = { redaction: 0, gele: 2, clos: 3, publie: 3 };
 
 /* État d'une étape, selon le statut du Manifeste (logique du prototype 1-admin.html) */
 function etatEtape(statut: StatutManifeste, i: number): "fait" | "courant" | "a_venir" {
@@ -22,6 +24,11 @@ type Props = {
   /* Numéro de la version courante (null : aucune version importée) */
   versionCourante: number | null;
   admin: { prenom: string; nom: string; email: string };
+  /* Prompt 08 : date limite, date passée (signatures closes sans clic), et nombres affichés avant la clôture */
+  dateLimite: string | null;
+  datePassee: boolean;
+  annexe: number;
+  aVerifier: number;
 };
 
 /* Identifiant du texte d'aide de l'étape, relié au bouton d'action par aria-describedby */
@@ -29,19 +36,35 @@ const AIDE_ID = "aide-etape";
 
 /*
   Barre d'étapes : collante en haut sur ordinateur, en verre dépoli.
-  Elle propose toujours la seule action suivante. En rédaction : « Geler le texte ».
-  Clore et Publier arriveront avec leurs prompts.
+  Elle propose toujours l'action suivante : « Geler le texte » en rédaction, « Clore les signatures » une fois gelé
+  (aussi quand la date limite est passée sans clic, pour enregistrer l'état), « Rouvrir » et « Publier » une fois clos.
   L'aide de l'étape : bouton d'information et bulle sur ordinateur (la barre tient sur une ligne),
   petit texte sous l'action sur téléphone.
 */
-export function BarreEtapes({ statut, versionCourante, admin }: Props) {
-  const action = statut === "redaction" && versionCourante !== null ? <BoutonGel numero={versionCourante} aideId={AIDE_ID} /> : null;
+export function BarreEtapes({ statut, versionCourante, admin, dateLimite, datePassee, annexe, aVerifier }: Props) {
+  const action =
+    statut === "redaction" && versionCourante !== null ? (
+      <BoutonGel numero={versionCourante} aideId={AIDE_ID} />
+    ) : statut === "gele" ? (
+      <BoutonClore annexe={annexe} aVerifier={aVerifier} aideId={AIDE_ID} />
+    ) : statut === "clos" ? (
+      <>
+        <BoutonRouvrir aideId={AIDE_ID} />
+        <BoutonPublier aideId={AIDE_ID} />
+      </>
+    ) : null;
   const indication =
     statut === "redaction"
       ? versionCourante === null
         ? "Importez une première version du texte depuis la rubrique Texte."
         : "Quand le texte est validé, gelez-le pour activer les liens des CEO."
-      : null;
+      : statut === "gele"
+        ? datePassee
+          ? "La date limite est passée : les signatures sont closes. Enregistrez la clôture."
+          : `Les CEO signent jusqu'au ${dateLimite ? formaterDateLimite(dateLimite) : "à la date limite"}. Vous pouvez clore avant.`
+        : statut === "clos"
+          ? "Signatures closes. Ajoutez les signataires sur place dans Document A4, puis publiez le document final."
+          : "Document final publié.";
 
   return (
     <div
@@ -93,7 +116,7 @@ export function BarreEtapes({ statut, versionCourante, admin }: Props) {
               <AideEtape texte={indication} idDescription={AIDE_ID} />
             </span>
           ) : null}
-          {action ? <span className="hidden min-[820px]:inline-flex">{action}</span> : null}
+          {action ? <span className="hidden gap-2 min-[820px]:inline-flex">{action}</span> : null}
           <MenuAdmin prenom={admin.prenom} nom={admin.nom} email={admin.email} />
         </div>
       </div>
@@ -105,7 +128,7 @@ export function BarreEtapes({ statut, versionCourante, admin }: Props) {
       {/* Sur téléphone, l'action suivante occupe sa propre ligne, avec l'aide juste dessous (lue une seule fois : par le texte masqué ci-dessus) */}
       {action || indication ? (
         <div className="grid gap-1.5 pb-1 min-[820px]:hidden">
-          {action}
+          {action ? <div className="grid auto-cols-fr grid-flow-col gap-2">{action}</div> : null}
           {indication ? (
             <p aria-hidden="true" className="text-[13px] text-texte-secondaire">
               {indication}

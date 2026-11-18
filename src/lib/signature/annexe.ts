@@ -13,6 +13,8 @@ export type LigneAnnexeA4 = {
   entreprise: string;
   maillon: string;
   trace: TraceSignature | null;
+  /* Signataire sur place (prompt 08) : photo de la signature manuscrite, par un lien signé de courte durée */
+  image?: string | null;
   signeLe: string;
   /* Signature d'un autre signataire, non montrée avant la publication (D75) : la cellule affiche « Signé » */
   masquee?: boolean;
@@ -20,9 +22,29 @@ export type LigneAnnexeA4 = {
 
 export type OrdreAnnexe = "entreprise" | "maillon" | "nom" | "date";
 
-/* Réglages de l'annexe (cahier des charges, partie 5) : pas encore d'interface pour les changer */
+/* Réglages de l'annexe (cahier des charges, partie 5 ; D69) : enregistrés sur le Manifeste (migration 0010) */
 export type ReglagesAnnexe = { ordre: OrdreAnnexe; parPage: 8 | 10 | 15; lignesVides: 0 | 5 | 10 };
 export const REGLAGES_ANNEXE: ReglagesAnnexe = { ordre: "entreprise", parPage: 10, lignesVides: 0 };
+export const ORDRES_ANNEXE: OrdreAnnexe[] = ["entreprise", "maillon", "nom", "date"];
+export const LIGNES_PAR_PAGE: ReglagesAnnexe["parPage"][] = [8, 10, 15];
+export const LIGNES_VIDES: ReglagesAnnexe["lignesVides"][] = [0, 5, 10];
+
+/* Réglages lus sur la ligne du Manifeste ; valeurs par défaut si la migration 0010 n'est pas encore exécutée */
+export function reglagesDuManifeste(m: {
+  annexe_ordre?: unknown;
+  annexe_lignes_par_page?: unknown;
+  annexe_lignes_vides?: unknown;
+} | null): ReglagesAnnexe {
+  const ordre = ORDRES_ANNEXE.find((o) => o === m?.annexe_ordre) ?? REGLAGES_ANNEXE.ordre;
+  const parPage = LIGNES_PAR_PAGE.find((n) => n === m?.annexe_lignes_par_page) ?? REGLAGES_ANNEXE.parPage;
+  const lignesVides = LIGNES_VIDES.find((n) => n === m?.annexe_lignes_vides) ?? REGLAGES_ANNEXE.lignesVides;
+  return { ordre, parPage, lignesVides };
+}
+
+/* Nombre de pages de l'annexe (une au moins) */
+export function nombrePagesAnnexe(nombreSignataires: number, reglages: ReglagesAnnexe): number {
+  return Math.max(1, Math.ceil((nombreSignataires + reglages.lignesVides) / reglages.parPage));
+}
 
 const comparer = (a: string, b: string) => a.localeCompare(b, "fr", { sensitivity: "base" });
 
@@ -51,5 +73,5 @@ export function paginerAnnexe<T extends LigneAnnexeA4>(lignes: T[], reglages: Re
 */
 export function masquerAnnexe<T extends LigneAnnexeA4 & { moi: boolean }>(lignes: T[], publie: boolean): T[] {
   if (publie) return lignes;
-  return lignes.map((l) => (l.moi ? l : { ...l, trace: null, masquee: true }));
+  return lignes.map((l) => (l.moi ? l : { ...l, trace: null, image: null, masquee: true }));
 }

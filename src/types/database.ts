@@ -29,6 +29,8 @@ export type StatutCommentaire = "nouveau" | "retenu" | "integre" | "non_retenu";
 export type TypeActeur = "admin" | "ceo" | "systeme";
 /* Doléances (0009) : seul « recue » est utilisé au prompt 09a ; « publiee » et « masquee » serviront au prompt 09b */
 export type StatutDoleance = "recue" | "publiee" | "masquee";
+/* Ordre des lignes de l'annexe (0010) */
+export type OrdreAnnexeBase = "entreprise" | "maillon" | "nom" | "date";
 
 /* ----- Structures JSON ----- */
 
@@ -312,6 +314,10 @@ export type Database = {
           whatsapp_task_force: string | null;
           /* Clôture des doléances (0009), heure de Dakar = UTC */
           doleances_cloture: string;
+          /* Réglages de l'annexe (0010, D69) */
+          annexe_ordre: OrdreAnnexeBase;
+          annexe_lignes_par_page: number;
+          annexe_lignes_vides: number;
           cree_le: string;
           modifie_le: string;
         };
@@ -333,6 +339,9 @@ export type Database = {
           pdf_final_path?: string | null;
           whatsapp_task_force?: string | null;
           doleances_cloture?: string;
+          annexe_ordre?: OrdreAnnexeBase;
+          annexe_lignes_par_page?: number;
+          annexe_lignes_vides?: number;
           cree_le?: string;
           modifie_le?: string;
         };
@@ -354,6 +363,9 @@ export type Database = {
           pdf_final_path?: string | null;
           whatsapp_task_force?: string | null;
           doleances_cloture?: string;
+          annexe_ordre?: OrdreAnnexeBase;
+          annexe_lignes_par_page?: number;
+          annexe_lignes_vides?: number;
           cree_le?: string;
           modifie_le?: string;
         };
@@ -946,6 +958,54 @@ export type Database = {
       };
       ordonner_themes_doleances: {
         Args: { p_ids: string[] };
+        Returns: Json;
+      };
+      /* Migration 0010, admins actifs (session) : document final */
+      clore_signatures: {
+        Args: { p_manifeste_id: string };
+        Returns: Json;
+      };
+      rouvrir_signatures: {
+        Args: { p_manifeste_id: string; p_date_limite: string };
+        Returns: Json;
+      };
+      publier_document: {
+        Args: { p_manifeste_id: string; p_pdf_path: string };
+        Returns: Json;
+      };
+      regler_annexe: {
+        Args: { p_manifeste_id: string; p_ordre: OrdreAnnexeBase; p_lignes_par_page: number; p_lignes_vides: number };
+        Returns: Json;
+      };
+      /* Migration 0010, signataires sur place (clé secrète seulement : la référence MSP est générée par le serveur) */
+      ajouter_signataire_sur_place: {
+        Args: {
+          p_manifeste_id: string;
+          p_admin_id: string;
+          p_prenom: string;
+          p_nom: string;
+          p_fonction: string;
+          p_entreprise: string;
+          p_maillon: string;
+          p_image_path: string;
+        };
+        Returns: Json;
+      };
+      modifier_signataire_sur_place: {
+        Args: {
+          p_signature_id: string;
+          p_admin_id: string;
+          p_prenom: string;
+          p_nom: string;
+          p_fonction: string;
+          p_entreprise: string;
+          p_maillon: string;
+          p_image_path: string | null;
+        };
+        Returns: Json;
+      };
+      retirer_signataire_sur_place: {
+        Args: { p_signature_id: string; p_admin_id: string };
         Returns: Json;
       };
       /* Exécution révoquée pour anon et authenticated : SQL Editor uniquement */

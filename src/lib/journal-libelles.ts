@@ -51,6 +51,13 @@ export const LIBELLES_ACTIONS = {
   themes_reordonnes: "Thèmes de doléances réordonnés",
   doleances_exportees: "Doléances exportées",
   cloture_doleances_modifiee: "Clôture des doléances modifiée",
+  signatures_closes: "Signatures closes",
+  signatures_rouvertes: "Signatures rouvertes",
+  document_publie: "Document final publié",
+  annexe_reglee: "Réglages de l'annexe modifiés",
+  signataire_sur_place_ajoute: "Signataire sur place ajouté",
+  signataire_sur_place_modifie: "Signataire sur place modifié",
+  signataire_sur_place_retire: "Signataire sur place retiré",
 } as const;
 
 export type ActionJournal = keyof typeof LIBELLES_ACTIONS;

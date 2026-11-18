@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 import { classesBouton } from "@/components/ui/button";
+import { formaterDateLimite } from "@/lib/ceo/message";
 import { formaterDateHeure } from "@/lib/dates";
 import { libelleAction } from "@/lib/journal-libelles";
 import { LIBELLES_STATUTS_COMMENTAIRE } from "@/lib/verification/regles";
@@ -62,11 +63,17 @@ export async function OngletJournal({ page }: { page: number }) {
       if (typeof d?.nombre === "number") return `${d.nombre} CEO${d.fichier ? `, depuis ${d.fichier}` : ""}`;
     }
     if (type === "manifeste") {
-      const d = details as { nombre?: number; objet?: string } | null;
+      const d = details as { nombre?: number; objet?: string; date_limite?: string } | null;
       if (typeof d?.nombre === "number") {
         const mot = d.objet === "doleances" ? "doléance" : "signature";
         return `${d.nombre} ${mot}${d.nombre > 1 ? "s" : ""}`;
       }
+      if (d?.date_limite) return `jusqu'au ${formaterDateLimite(d.date_limite)}`;
+    }
+    /* Signataire sur place : nom, entreprise et référence */
+    if (type === "signature") {
+      const d = details as { nom?: string; entreprise?: string; reference?: string } | null;
+      return `${[d?.nom, d?.entreprise].filter(Boolean).join(", ")}${d?.reference ? ` (${d.reference})` : ""}`;
     }
     /* Doléances : auteur, entreprise et thème ; jamais le texte */
     if (type === "doleance") {

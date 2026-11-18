@@ -1,7 +1,7 @@
 "use client";
 
 import { FileText } from "lucide-react";
-import { Fragment, useCallback, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
 import { SignatureSvg } from "@/components/document/signature";
 import { paginerAnnexe, REGLAGES_ANNEXE, type LigneAnnexeA4, type ReglagesAnnexe } from "@/lib/signature/annexe";
@@ -16,7 +16,12 @@ import type { Bloc } from "@/types/database";
     puis réparti page par page ; un intertitre n'est jamais laissé seul en bas de page.
   Composant partagé : rubrique Texte (admin), espace CEO et document final.
   Avec la prop annexe, l'annexe des signataires commence sur la page qui suit la dernière page de texte.
+  partie (prompt 08) : « texte » ou « annexe » n'affiche que ces pages, avec la numérotation du document complet
+  (l'annexe seule commence à la page qui suit la dernière page de texte, pour s'insérer derrière le texte imprimé).
+  impression : sans barre d'outils, pour la page d'impression A4.
 */
+
+export type PartieDocument = "complet" | "texte" | "annexe";
 
 const PIED = "Manifeste du secteur privé sénégalais de l'eau et de l'assainissement";
 const LARGEUR_MESURE = 800;
@@ -32,6 +37,10 @@ type Props = {
   libelle?: string;
   /* Annexe des signataires : ordre, lignes par page et lignes vides réglables (par défaut : entreprise, 10, 0) */
   annexe?: { lignes: LigneAnnexeA4[] } & Partial<ReglagesAnnexe>;
+  partie?: PartieDocument;
+  impression?: boolean;
+  /* Nombre de pages du texte et de l'annexe, dès que la mise en page est faite */
+  onPages?: (pages: { texte: number; annexe: number }) => void;
 };
 
 const COLONNES = ["N°", "Entreprise", "Maillon", "Nom et fonction du signataire", "Signature"];
@@ -74,6 +83,10 @@ function PageAnnexe({
                 <span className="ann-signe">Signé</span>
               ) : l?.trace ? (
                 <SignatureSvg trace={l.trace} className="h-full" libelle={`Signature de ${l.prenom} ${l.nom}`} />
+              ) : l?.image ? (
+                /* Signature manuscrite prise en photo sur place : lien signé de courte durée vers le bucket privé */
+                // eslint-disable-next-line @next/next/no-img-element -- lien signé privé, rendu identique à l'impression
+                <img src={l.image} alt={`Signature de ${l.prenom} ${l.nom}`} className="ann-image" />
               ) : null}
             </div>
           </Fragment>
@@ -120,7 +133,17 @@ function BlocA4({ bloc, numero }: { bloc: Bloc; numero: number | null }) {
   );
 }
 
-export function DocumentA4({ titre, sousTitre, blocs, brouillon, libelle, annexe }: Props) {
+export function DocumentA4({
+  titre,
+  sousTitre,
+  blocs,
+  brouillon,
+  libelle,
+  annexe,
+  partie = "complet",
+  impression = false,
+  onPages,
+}: Props) {
   const mesure = useRef<HTMLDivElement>(null);
   /* Pagination, liée aux blocs pour lesquels elle a été calculée */
   const [mise, setMise] = useState<{ pour: Bloc[]; pages: number[][] } | null>(null);
@@ -208,73 +231,88 @@ export function DocumentA4({ titre, sousTitre, blocs, brouillon, libelle, annexe
   );
   const pagesTexte = pages?.length ?? 0;
   const total = pagesTexte + pagesAnnexe.length;
+  const avecTexte = partie !== "annexe";
+  const avecAnnexe = partie !== "texte";
+
+  const signaler = useRef(onPages);
+  useEffect(() => {
+    signaler.current = onPages;
+  }, [onPages]);
+  useEffect(() => {
+    if (pages) signaler.current?.({ texte: pagesTexte, annexe: pagesAnnexe.length });
+  }, [pages, pagesTexte, pagesAnnexe.length]);
+
+  const barreOutils = (
+    <div className="flex flex-wrap items-center justify-between gap-2 text-[13.5px] text-texte-secondaire">
+      <p className="flex min-w-0 items-start gap-1.5">
+        <FileText aria-hidden="true" className="mt-0.5 size-4 shrink-0" strokeWidth={1.75} />
+        <span>
+          {libelle ? `${libelle} : ` : ""}
+          {pages ? (
+            <>
+              <strong className="font-semibold text-encre">
+                {pagesTexte} page{pagesTexte > 1 ? "s" : ""} A4
+              </strong>{" "}
+              de texte.{" "}
+              {annexe
+                ? `L'annexe des signataires commence page ${pagesTexte + 1}.`
+                : `L'annexe des signataires commencera page ${pagesTexte + 1}.`}
+            </>
+          ) : (
+            "mise en page en cours"
+          )}
+        </span>
+      </p>
+      <div role="group" aria-label="Zoom" className="inline-flex items-stretch overflow-hidden rounded-[10px] border border-filet-fort">
+        <button
+          type="button"
+          aria-pressed={zoom === null}
+          onClick={() => setZoom(null)}
+          className={
+            "min-h-11 border-r border-filet px-3 text-[13px] " +
+            (zoom === null ? "bg-encre text-white" : "bg-surface text-texte-secondaire hover:text-encre")
+          }
+        >
+          Ajusté
+        </button>
+        <button
+          type="button"
+          aria-label="Réduire"
+          onClick={() => setZoom(Math.max(ZOOM_MIN, Math.ceil(zoomEffectif / ZOOM_PAS) * ZOOM_PAS - ZOOM_PAS))}
+          disabled={zoomEffectif <= ZOOM_MIN}
+          className="min-h-11 min-w-11 border-r border-filet bg-surface text-[17px] text-texte-secondaire hover:text-encre disabled:opacity-40"
+        >
+          −
+        </button>
+        <span aria-live="polite" className="grid min-w-16 place-items-center border-r border-filet bg-surface px-2 text-[13px] tabular-nums">
+          {zoomEffectif} %
+        </span>
+        <button
+          type="button"
+          aria-label="Agrandir"
+          onClick={() => setZoom(Math.min(ZOOM_MAX, Math.floor(zoomEffectif / ZOOM_PAS) * ZOOM_PAS + ZOOM_PAS))}
+          disabled={zoomEffectif >= ZOOM_MAX}
+          className="min-h-11 min-w-11 bg-surface text-[17px] text-texte-secondaire hover:text-encre disabled:opacity-40"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="grid min-w-0 gap-2">
-      <div className="flex flex-wrap items-center justify-between gap-2 text-[13.5px] text-texte-secondaire">
-        <p className="flex min-w-0 items-start gap-1.5">
-          <FileText aria-hidden="true" className="mt-0.5 size-4 shrink-0" strokeWidth={1.75} />
-          <span>
-            {libelle ? `${libelle} : ` : ""}
-            {pages ? (
-              <>
-                <strong className="font-semibold text-encre">
-                  {pagesTexte} page{pagesTexte > 1 ? "s" : ""} A4
-                </strong>{" "}
-                de texte.{" "}
-                {annexe
-                  ? `L'annexe des signataires commence page ${pagesTexte + 1}.`
-                  : `L'annexe des signataires commencera page ${pagesTexte + 1}.`}
-              </>
-            ) : (
-              "mise en page en cours"
-            )}
-          </span>
-        </p>
-        <div role="group" aria-label="Zoom" className="inline-flex items-stretch overflow-hidden rounded-[10px] border border-filet-fort">
-          <button
-            type="button"
-            aria-pressed={zoom === null}
-            onClick={() => setZoom(null)}
-            className={
-              "min-h-11 border-r border-filet px-3 text-[13px] " +
-              (zoom === null ? "bg-encre text-white" : "bg-surface text-texte-secondaire hover:text-encre")
-            }
-          >
-            Ajusté
-          </button>
-          <button
-            type="button"
-            aria-label="Réduire"
-            onClick={() => setZoom(Math.max(ZOOM_MIN, Math.ceil(zoomEffectif / ZOOM_PAS) * ZOOM_PAS - ZOOM_PAS))}
-            disabled={zoomEffectif <= ZOOM_MIN}
-            className="min-h-11 min-w-11 border-r border-filet bg-surface text-[17px] text-texte-secondaire hover:text-encre disabled:opacity-40"
-          >
-            −
-          </button>
-          <span aria-live="polite" className="grid min-w-16 place-items-center border-r border-filet bg-surface px-2 text-[13px] tabular-nums">
-            {zoomEffectif} %
-          </span>
-          <button
-            type="button"
-            aria-label="Agrandir"
-            onClick={() => setZoom(Math.min(ZOOM_MAX, Math.floor(zoomEffectif / ZOOM_PAS) * ZOOM_PAS + ZOOM_PAS))}
-            disabled={zoomEffectif >= ZOOM_MAX}
-            className="min-h-11 min-w-11 bg-surface text-[17px] text-texte-secondaire hover:text-encre disabled:opacity-40"
-          >
-            +
-          </button>
-        </div>
-      </div>
+      {impression ? null : barreOutils}
 
       <div
         ref={pile}
-        className="a4-stack"
+        className={impression ? "a4-stack a4-impression" : "a4-stack"}
+        data-pret={pages ? "" : undefined}
         data-zoom={zoom === null ? undefined : ""}
         style={zoom === null ? undefined : ({ "--largeur-page": `${(LARGEUR_100 * zoom) / 100}px` } as CSSProperties)}
       >
         {pages ? (
-          pages.map((indices, p) => (
+          (avecTexte ? pages : []).map((indices, p) => (
             <div className="a4-wrap" key={p}>
               <div className="a4-page" role="region" aria-label={`Page ${p + 1} sur ${total}`}>
                 <div className="a4-body">
@@ -299,7 +337,7 @@ export function DocumentA4({ titre, sousTitre, blocs, brouillon, libelle, annexe
             <div className="a4-page" aria-hidden="true" />
           </div>
         )}
-        {pages
+        {pages && avecAnnexe
           ? pagesAnnexe.map((lignes, p) => (
               <div className="a4-wrap" key={`annexe-${p}`}>
                 <div className="a4-page" role="region" aria-label={`Page ${pagesTexte + p + 1} sur ${total}, annexe des signataires`}>
@@ -322,7 +360,7 @@ export function DocumentA4({ titre, sousTitre, blocs, brouillon, libelle, annexe
       <div
         ref={mesure}
         aria-hidden="true"
-        className="a4-wrap"
+        className="a4-wrap a4-mesure"
         style={{
           position: "absolute",
           left: -10000,

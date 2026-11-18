@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { CircleSlash, Hourglass, PauseCircle } from "lucide-react";
 
+import { REGLAGES_ANNEXE } from "@/lib/signature/annexe";
 import { adresseDuSite, lirePageRejoindre } from "@/lib/signature/serveur";
 
 import { EcranMessage } from "../s/[jeton]/ecran-message";
@@ -78,6 +79,9 @@ export default async function PageRejoindre({ searchParams }: { searchParams: Pr
         choix: { recontact: false, annuaire: false, photo_communication: false },
         codeParrainage: null,
         refus: null,
+        closDepuis: null,
+        reglagesAnnexe: REGLAGES_ANNEXE,
+        documentFinal: false,
       }}
       doleances={null}
     />

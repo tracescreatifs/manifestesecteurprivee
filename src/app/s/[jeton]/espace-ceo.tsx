@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BadgeCheck,
   BookOpen,
   Calendar,
   CalendarClock,
@@ -14,6 +15,7 @@ import {
   PenTool,
   RotateCcw,
   Send,
+  Share2,
   UserPlus,
   UserRound,
   XCircle,
@@ -25,7 +27,7 @@ import { useEffect, useMemo, useState } from "react";
 import { DocumentA4 } from "@/components/document/document-a4";
 import { Marque } from "@/components/marque";
 import { Button, classesBouton } from "@/components/ui/button";
-import { formaterDateLimiteComplete } from "@/lib/ceo/message";
+import { formaterDateLimite, formaterDateLimiteComplete, lienPartageWhatsApp, MANIFESTE_GRAS } from "@/lib/ceo/message";
 import { formaterDateHeure } from "@/lib/dates";
 import type { LigneAnnexeA4 } from "@/lib/signature/annexe";
 import { garderEnAttente, INTERVALLE_RENVOI, lireEnAttente, oublierEnAttente, type EnvoiEnAttente } from "@/lib/signature/attente";
@@ -61,6 +63,12 @@ const stockage = () => {
     return null;
   }
 };
+
+/*
+  Partage après la publication : le nom du Manifeste, sans lien (le lien personnel donnerait accès à l'espace du CEO,
+  à sa fiche et à ses doléances) et sans donnée personnelle (D113).
+*/
+const MESSAGE_PARTAGE = `Le ${MANIFESTE_GRAS} a été présenté à Abu Dhabi, avec l'annexe des entreprises signataires.`;
 
 type Props = {
   jeton: string | null;
@@ -370,7 +378,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
       blocs={blocs}
       brouillon={false}
       libelle={`Version ${version.numero}`}
-      annexe={rejoindre ? undefined : { lignes: lignesAnnexe }}
+      annexe={rejoindre ? undefined : { lignes: lignesAnnexe, ...espace.reglagesAnnexe }}
     />
   ) : null;
 
@@ -624,12 +632,37 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
               <CircleSlash aria-hidden="true" strokeWidth={1.75} />
             </span>
             <h1 className="font-titre text-[22px] font-normal">Les signatures sont closes</h1>
-            <p className="text-texte-secondaire">La période de signature est terminée. Vous pouvez encore lire le texte.</p>
+            <p className="text-texte-secondaire">
+              {espace.closDepuis ? `Les signatures sont closes depuis le ${formaterDateLimite(espace.closDepuis)}. ` : ""}
+              Vous pouvez encore lire le texte.
+            </p>
           </div>
         ) : (
+          /* Document publié (cahier des charges 7.6) : document final avec l'annexe complète, téléchargement et partage */
           <>
-            <h1 className="font-titre text-[28px] leading-[1.15] font-normal">{prenom ? `Bonjour ${prenom},` : "Bonjour,"}</h1>
-            <p className="text-[16px] leading-[1.55] text-texte-secondaire">Le Manifeste a été présenté à Abu Dhabi. Vous pouvez relire le texte.</p>
+            <h1 className="font-titre text-[28px] leading-[1.15] font-normal">
+              {signature && prenom ? `Merci, ${prenom}` : prenom ? `Bonjour ${prenom},` : "Bonjour,"}
+            </h1>
+            <p className="text-[16px] leading-[1.55] text-texte-secondaire">
+              Le Manifeste a été présenté à Abu Dhabi. Voici le document final, avec l&apos;annexe des entreprises signataires
+              {signature ? ", dont la vôtre" : ""}.
+            </p>
+            <span className="inline-flex w-fit items-center gap-1.5 rounded-md bg-succes-doux px-2.5 py-1 text-[13px] font-medium text-succes [&_svg]:size-4">
+              <BadgeCheck aria-hidden="true" strokeWidth={1.75} />
+              Présenté à Abu Dhabi, décembre 2026
+            </span>
+            <div className="grid gap-2">
+              {espace.documentFinal && jeton ? (
+                <a className={classesBouton("principal")} href={`/s/${jeton}/document-final`} download>
+                  <FileDown aria-hidden="true" strokeWidth={1.75} />
+                  Télécharger le document final
+                </a>
+              ) : null}
+              <a className={classesBouton("secondaire")} href={lienPartageWhatsApp(MESSAGE_PARTAGE)} target="_blank" rel="noopener noreferrer">
+                <Share2 aria-hidden="true" strokeWidth={1.75} />
+                Partager sur WhatsApp
+              </a>
+            </div>
           </>
         )}
         {carteSignature}
