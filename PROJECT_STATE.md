@@ -1,6 +1,6 @@
 # État du projet
 
-Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 08, 18 novembre 2026.
+Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 08.1, 18 novembre 2026.
 
 ---
 
@@ -26,6 +26,7 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 | 09a | Doléances privées (D108, D109) : le CEO dépose une doléance depuis son lien, qu'il ait signé ou non ; lue par les admins seuls ; rubrique Doléances, thèmes, export, clôture des doléances | `main` | 22 novembre 2026 | Validé |
 | 09a.1 | Libellé « Proposition de solution » dans les doléances, « 1er » pour le premier jour du mois dans toutes les dates, décisions D111 et D112, feuille de route après le 23 novembre | `main` | 20 novembre 2026 | Validé |
 | 08 | Document final (D113 à D117) : rubrique Document A4 (aperçu complet, réglages de l'annexe, impression du texte seul, de l'annexe seule avec la numérotation du document complet, et du document complet), clôture, réouverture, signataires sur place, publication avec dépôt du PDF, espace CEO après la clôture et après la publication | `main` | 22 novembre 2026 | En cours de validation |
+| 08.1 | Numérotation des pages sans le total (D118) | `main` | 22 novembre 2026 | En cours de validation |
 | Refonte 1 | Refonte visuelle de l'admin, première partie (lot a ci-dessous, maquette validée par Ziza) | `main` | 22 novembre 2026 | À faire |
 | Refonte 2 | Refonte visuelle de l'admin, seconde partie (suite du lot a) | `main` | 22 novembre 2026 | À faire |
 | Engagements | Engagements des partenaires (lot b ci-dessous) | `main` | 22 novembre 2026 | À faire |
@@ -120,6 +121,7 @@ Aucun code de ces lots n'est écrit tant que leur prompt n'est pas donné. Ordre
 - Rubrique « Document A4 » (Texte, CEO, Doléances, Document A4, Réglages) : aperçu complet avec toutes les signatures (D75), réglages de l'annexe enregistrés, pages du texte et de l'annexe, trois impressions A4 strictes (`/impression/texte`, `/impression/annexe`, `/impression/complet`, l'annexe seule numérotée à la suite du texte), mode d'emploi du 9 décembre, signataires sur place (photo recadrée, mise sur fond blanc et compressée dans le navigateur), document publié téléchargeable.
 - Barre d'étapes : « Clore les signatures » (aussi après la date limite sans clic), « Rouvrir » avec une nouvelle date en heure de Dakar et d'Abu Dhabi, « Publier » (impression du document complet, dépôt du PDF vérifié, confirmation). Espace CEO : « Les signatures sont closes depuis le … », annexe selon les réglages, document final publié avec toutes les signatures et « Télécharger le document final » (le PDF stocké), partage sans lien personnel. Impressions vérifiées dans Chromium (PDF A4, une feuille par page, numérotation, aucun intertitre seul). Tests vitest : 112.
 - Prompt 08, complément (D117) : annexe et impressions disponibles dès le gel (rédaction : texte seul, expliqué), mise à jour en continu de la rubrique Document A4 toutes les 30 secondes quand l'onglet est visible (« Mis à jour à … », « Actualiser »), rappel de l'export des signatures pour la sauvegarde du soir.
+- Prompt 08.1 (D118) : pied de page avec le numéro seul, sans total ; noms accessibles « Page 1 », « Page 6, annexe des signataires ». Vérifié en impression réelle dans Chromium : texte seul (page 1), puis annexe seule avec 15 signatures de plus (pages 2 à 6), puis document complet (1 à 6), sans rupture ni total. Aucune migration.
 
 ---
 

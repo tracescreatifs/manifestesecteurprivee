@@ -16,6 +16,8 @@ import type { Bloc } from "@/types/database";
     puis réparti page par page ; un intertitre n'est jamais laissé seul en bas de page.
   Composant partagé : rubrique Texte (admin), espace CEO et document final.
   Avec la prop annexe, l'annexe des signataires commence sur la page qui suit la dernière page de texte.
+  Pied de page : le numéro seul, sans total (D118) : le texte imprimé à l'avance et l'annexe imprimée sur place
+  ne peuvent pas porter le même total, qui dépend du nombre de signatures.
   partie (prompt 08) : « texte » ou « annexe » n'affiche que ces pages, avec la numérotation du document complet
   (l'annexe seule commence à la page qui suit la dernière page de texte, pour s'insérer derrière le texte imprimé).
   impression : sans barre d'outils, pour la page d'impression A4.
@@ -230,7 +232,6 @@ export function DocumentA4({
     [lignesAnnexe, reglages.ordre, reglages.parPage, reglages.lignesVides],
   );
   const pagesTexte = pages?.length ?? 0;
-  const total = pagesTexte + pagesAnnexe.length;
   const avecTexte = partie !== "annexe";
   const avecAnnexe = partie !== "texte";
 
@@ -314,7 +315,7 @@ export function DocumentA4({
         {pages ? (
           (avecTexte ? pages : []).map((indices, p) => (
             <div className="a4-wrap" key={p}>
-              <div className="a4-page" role="region" aria-label={`Page ${p + 1} sur ${total}`}>
+              <div className="a4-page" role="region" aria-label={`Page ${p + 1}`}>
                 <div className="a4-body">
                   <div className="a4-flow">
                     {p === 0 ? <Entete titre={titre} sousTitre={sousTitre} brouillon={brouillon} /> : null}
@@ -326,7 +327,7 @@ export function DocumentA4({
                 <div className="a4-foot">
                   <span>{pied}</span>
                   <span>
-                    {p + 1} / {total}
+                    {p + 1}
                   </span>
                 </div>
               </div>
@@ -340,14 +341,14 @@ export function DocumentA4({
         {pages && avecAnnexe
           ? pagesAnnexe.map((lignes, p) => (
               <div className="a4-wrap" key={`annexe-${p}`}>
-                <div className="a4-page" role="region" aria-label={`Page ${pagesTexte + p + 1} sur ${total}, annexe des signataires`}>
+                <div className="a4-page" role="region" aria-label={`Page ${pagesTexte + p + 1}, annexe des signataires`}>
                   <div className="a4-body">
                     <PageAnnexe lignes={lignes} premierNumero={p * reglages.parPage + 1} parPage={reglages.parPage} />
                   </div>
                   <div className="a4-foot">
                     <span>{pied}</span>
                     <span>
-                      {pagesTexte + p + 1} / {total}
+                      {pagesTexte + p + 1}
                     </span>
                   </div>
                 </div>
@@ -387,7 +388,7 @@ export function DocumentA4({
           </div>
           <div className="a4-foot">
             <span>{pied}</span>
-            <span>1 / 1</span>
+            <span>1</span>
           </div>
         </div>
       </div>
