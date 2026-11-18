@@ -15,6 +15,8 @@
   --color-texte-secondaire: #5b6670;
   --color-papier: #f7f3ea;
   --color-fond-admin: #f7f7f6;
+  /* Admin (R1) : fond de page, sous le panneau flottant (#F7F7F6) et les cartes (#FFFFFF) */
+  --color-page-admin: #ececea;
   --color-sureleve: #f1f1ef;
   --color-surface: #ffffff;
   --color-filet: rgba(20, 33, 43, 0.1);
@@ -36,6 +38,16 @@
   --font-interface: var(--font-jost), system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-doc-serif: Georgia, var(--font-gelasio), "Times New Roman", serif;
   --font-doc-sans: Calibri, var(--font-carlito), "Segoe UI", Arial, sans-serif;
+
+  /* Rayons partagés (R1) : rangée, carte, panneau, contrôle */
+  --radius-rangee: 18px;
+  --radius-carte: 24px;
+  --radius-panneau: 28px;
+  --radius-controle: 14px;
+
+  /* Ombres partagées (R1) */
+  --shadow-douce: 0 1px 2px rgba(20, 33, 43, 0.05), 0 10px 24px rgba(20, 33, 43, 0.05);
+  --shadow-panneau: 0 1px 2px rgba(20, 33, 43, 0.06), 0 12px 32px rgba(20, 33, 43, 0.06);
 
   /* Courbe d'animation unique du projet */
   --ease-projet: cubic-bezier(0.22, 1, 0.36, 1);
@@ -71,6 +83,53 @@
     outline: 2px solid var(--color-eau);
     outline-offset: 2px;
   }
+}
+
+/* Chiffre clé (R1) : Fraunces 300, 56 px sur téléphone, 64 px sur ordinateur, avec un libellé en Jost à côté */
+@utility chiffre-cle {
+  font-family: var(--font-titre);
+  font-weight: 300;
+  font-size: 56px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  @media (min-width: 820px) {
+    font-size: 64px;
+  }
+}
+
+/*
+  Réservoir du tableau de bord (R1) : deux vagues lentes, en boucle linéaire, en sens opposés.
+  L'eau ne signifie que la progression des signatures ; c'est la seule animation d'eau de l'admin.
+*/
+@keyframes vague-gauche {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes vague-droite {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.vague-avant {
+  animation: vague-gauche 10s linear infinite;
+}
+
+.vague-arriere {
+  animation: vague-droite 16s linear infinite;
+}
+
+.niveau-eau {
+  transition: height 1.2s var(--courbe);
 }
 
 @media (prefers-reduced-motion: reduce) {

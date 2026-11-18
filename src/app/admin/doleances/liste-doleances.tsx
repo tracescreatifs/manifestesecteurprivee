@@ -55,11 +55,20 @@ function Segments<T extends string>({
   );
 }
 
-export function ListeDoleances({ doleances, themes }: { doleances: DoleanceAdmin[]; themes: ThemeAdmin[] }) {
+/* lectureInitiale : filtre de lecture à l'ouverture (?lecture=non_lues, depuis « À faire maintenant », R1) */
+export function ListeDoleances({
+  doleances,
+  themes,
+  lectureInitiale = "toutes",
+}: {
+  doleances: DoleanceAdmin[];
+  themes: ThemeAdmin[];
+  lectureInitiale?: "toutes" | "non_lues" | "lues";
+}) {
   const { message, afficher } = useToast();
   const [enCours, demarrer] = useTransition();
   const [theme, setTheme] = useState("");
-  const [lecture, setLecture] = useState<"toutes" | "non_lues" | "lues">("toutes");
+  const [lecture, setLecture] = useState<"toutes" | "non_lues" | "lues">(lectureInitiale);
   const [auteur, setAuteur] = useState<"tous" | "signataires" | "non_signataires">("tous");
   const [ordre, setOrdre] = useState<"recentes" | "anciennes">("recentes");
   const [ouverte, setOuverte] = useState<string | null>(null);

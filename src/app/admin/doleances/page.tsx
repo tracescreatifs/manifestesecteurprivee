@@ -28,9 +28,9 @@ function phraseOuverture(statut: StatutManifeste, cloture: string): string {
   Rubrique Doléances (prompt 09a) : doléances privées déposées par les CEO depuis leur lien,
   lues par les admins seuls. La publication anonyme, les soutiens et le classement viendront au prompt 09b.
 */
-export default async function PageDoleances({ searchParams }: { searchParams: Promise<{ onglet?: string }> }) {
+export default async function PageDoleances({ searchParams }: { searchParams: Promise<{ onglet?: string; lecture?: string }> }) {
   await exigerSessionAdmin();
-  const { onglet } = await searchParams;
+  const { onglet, lecture } = await searchParams;
   const actif = onglet === "themes" ? "themes" : "liste";
   const supabase = await creerClientServeur();
   const manifeste = await lireManifeste(supabase);
@@ -96,7 +96,11 @@ export default async function PageDoleances({ searchParams }: { searchParams: Pr
       {actif === "themes" ? (
         <ThemesDoleances themes={donnees.themes} />
       ) : (
-        <ListeDoleances doleances={donnees.doleances} themes={donnees.themes} />
+        <ListeDoleances
+          doleances={donnees.doleances}
+          themes={donnees.themes}
+          lectureInitiale={lecture === "non_lues" || lecture === "lues" ? lecture : "toutes"}
+        />
       )}
     </>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Printer } from "lucide-react";
+import { ArrowLeft, FileDown } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 
 import { DocumentA4, type PartieDocument } from "@/components/document/document-a4";
@@ -51,10 +51,10 @@ export function ImpressionDocument({ partie, donnees }: { partie: PartieDocument
       <style>{IMPRESSION}</style>
       <div className="sans-impression mx-auto mb-5 flex w-full max-w-[700px] flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-titre text-[20px] font-normal">Impression : {TITRES[partie]}</h1>
+          <h1 className="font-titre text-[20px] font-normal">{TITRES[partie]}</h1>
           <p className="text-[13.5px] text-texte-secondaire">
             {fin ? `${fin - debut + 1} page${fin > debut ? "s" : ""} A4, ${debut === fin ? `page ${debut}` : `pages ${debut} à ${fin}`}. ` : ""}
-            Dans la fenêtre d&apos;impression, choisissez Enregistrer en PDF pour obtenir le fichier.
+            Une fenêtre s&apos;ouvre : choisissez Enregistrer en PDF.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -63,8 +63,8 @@ export function ImpressionDocument({ partie, donnees }: { partie: PartieDocument
             Document A4
           </a>
           <Button variante="principal" onClick={() => window.print()} disabled={!pages}>
-            <Printer aria-hidden="true" strokeWidth={1.75} />
-            Imprimer
+            <FileDown aria-hidden="true" strokeWidth={1.75} />
+            Exporter en PDF
           </Button>
         </div>
       </div>

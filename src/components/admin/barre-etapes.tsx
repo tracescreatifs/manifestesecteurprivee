@@ -35,7 +35,7 @@ type Props = {
 const AIDE_ID = "aide-etape";
 
 /*
-  Barre d'étapes : collante en haut sur ordinateur, en verre dépoli.
+  Barre d'étapes : flottante et collante en haut sur ordinateur, en verre dépoli (R1 : rayon 22, ombre douce).
   Elle propose toujours l'action suivante : « Geler le texte » en rédaction, « Clore les signatures » une fois gelé
   (aussi quand la date limite est passée sans clic, pour enregistrer l'état), « Rouvrir » et « Publier » une fois clos.
   L'aide de l'étape : bouton d'information et bulle sur ordinateur (la barre tient sur une ligne),
@@ -69,8 +69,8 @@ export function BarreEtapes({ statut, versionCourante, admin, dateLimite, datePa
   return (
     <div
       className={
-        "z-20 mb-6 grid gap-2 rounded-[14px] border border-filet bg-white/92 px-4 py-2 " +
-        "min-[820px]:sticky min-[820px]:top-2 " +
+        "z-20 mb-6 grid gap-2 rounded-[22px] border border-white/70 bg-white/92 px-4 py-2 shadow-douce " +
+        "min-[820px]:sticky min-[820px]:top-5 " +
         "supports-[backdrop-filter]:bg-white/68 supports-[backdrop-filter]:backdrop-blur-[16px] supports-[backdrop-filter]:backdrop-saturate-[1.6]"
       }
     >
@@ -117,7 +117,10 @@ export function BarreEtapes({ statut, versionCourante, admin, dateLimite, datePa
             </span>
           ) : null}
           {action ? <span className="hidden gap-2 min-[820px]:inline-flex">{action}</span> : null}
-          <MenuAdmin prenom={admin.prenom} nom={admin.nom} email={admin.email} />
+          {/* Sur ordinateur, le compte est en bas du panneau latéral (R1) */}
+          <span className="inline-grid min-[820px]:hidden">
+            <MenuAdmin prenom={admin.prenom} nom={admin.nom} email={admin.email} />
+          </span>
         </div>
       </div>
       {indication ? (

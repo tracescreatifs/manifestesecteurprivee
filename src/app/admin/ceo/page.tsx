@@ -16,14 +16,14 @@ import { TableauCeo } from "./tableau-ceo";
 
 export const metadata: Metadata = { title: "CEO" };
 
-/* Rubrique CEO : « Liste et suivi », « À vérifier » (prompt 07) et « Commentaires » (prompt 07). ?fiche= ouvre la fiche d'un CEO (lien depuis une doléance) */
+/* Rubrique CEO : « Liste et suivi », « À vérifier » (prompt 07) et « Commentaires » (prompt 07). ?fiche= ouvre la fiche d'un CEO (lien depuis une doléance), ?filtre= choisit le statut affiché (R1) */
 export default async function PageCeo({
   searchParams,
 }: {
-  searchParams: Promise<{ onglet?: string; cas?: string; fiche?: string }>;
+  searchParams: Promise<{ onglet?: string; cas?: string; fiche?: string; filtre?: string }>;
 }) {
   await exigerSessionAdmin();
-  const { onglet, cas, fiche } = await searchParams;
+  const { onglet, cas, fiche, filtre } = await searchParams;
   const actif = onglet === "verifier" || onglet === "commentaires" ? onglet : "liste";
   const supabase = await creerClientServeur();
   const manifeste = await lireManifeste(supabase);
@@ -102,6 +102,7 @@ export default async function PageCeo({
       dateLimiteIso={manifeste.date_limite}
       lienOuvertActif={manifeste.lien_ouvert_actif}
       ficheInitiale={actif === "liste" && typeof fiche === "string" ? fiche : null}
+      filtreInitial={filtre === "a_envoyer" || filtre === "envoye" || filtre === "ouvert" || filtre === "signe" ? filtre : undefined}
       onglets={onglets}
       contenu={contenu}
     />

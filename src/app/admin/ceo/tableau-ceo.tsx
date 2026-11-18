@@ -53,6 +53,8 @@ type Props = {
   lienOuvertActif: boolean;
   /* Fiche ouverte à l'arrivée (?fiche=, depuis la rubrique Doléances) */
   ficheInitiale: string | null;
+  /* Filtre de statut à l'ouverture (?filtre=, depuis « À faire maintenant », R1) */
+  filtreInitial?: StatutEnvoi;
   /* Onglets de la rubrique (Liste et suivi, À vérifier, Commentaires), et contenu d'un autre onglet que la liste */
   onglets: ReactNode;
   contenu: ReactNode | null;
@@ -106,12 +108,13 @@ export function TableauCeo({
   dateLimiteIso,
   lienOuvertActif,
   ficheInitiale,
+  filtreInitial,
   onglets,
   contenu,
 }: Props) {
   const { message: toast, afficher } = useToast();
   const [enCours, demarrer] = useTransition();
-  const [filtre, setFiltre] = useState<"tous" | StatutEnvoi>("tous");
+  const [filtre, setFiltre] = useState<"tous" | StatutEnvoi>(filtreInitial ?? "tous");
   const [maillon, setMaillon] = useState("");
   const [recherche, setRecherche] = useState("");
   /* Fiche ouverte : identifiant de l'invitation (la ligne est relue à chaque mise à jour) */

@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgeCheck, CircleSlash, FileUp, Printer, RotateCcw } from "lucide-react";
+import { BadgeCheck, CircleSlash, FileDown, FileUp, RotateCcw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -146,7 +146,7 @@ export function BoutonRouvrir({ aideId }: { aideId?: string }) {
   );
 }
 
-/* « Publier » (D25) : imprimer le document complet, l'enregistrer en PDF, le déposer, puis publier. Sans retour. */
+/* « Publier » (D25) : exporter le document complet en PDF, le déposer, puis publier. Sans retour. */
 export function BoutonPublier({ aideId }: { aideId?: string }) {
   const router = useRouter();
   const [ouvert, setOuvert] = useState(false);
@@ -218,11 +218,20 @@ export function BoutonPublier({ aideId }: { aideId?: string }) {
         </p>
         <ol className="grid gap-4">
           <li className="grid gap-2">
-            <strong className="font-semibold">1. Imprimez le document complet, enregistrez-le en PDF, puis déposez-le ici</strong>
-            <a href="/impression/complet" target="_blank" rel="noopener" className={classesBouton("secondaire", "w-fit")}>
-              <Printer aria-hidden="true" strokeWidth={1.75} />
-              Imprimer le document complet
+            <strong className="font-semibold">1. Exportez le document complet en PDF</strong>
+            <a
+              href="/impression/complet"
+              target="_blank"
+              rel="noopener"
+              aria-describedby="aide-export-publication"
+              className={classesBouton("secondaire", "w-fit")}
+            >
+              <FileDown aria-hidden="true" strokeWidth={1.75} />
+              Exporter en PDF
             </a>
+            <p id="aide-export-publication" className="text-[13px] text-texte-secondaire">
+              Une fenêtre s&apos;ouvre : choisissez Enregistrer en PDF.
+            </p>
           </li>
           <li className="grid gap-2">
             <strong className="font-semibold">2. Déposez le PDF</strong>

@@ -1,6 +1,6 @@
 # État du projet
 
-Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 08.1, 18 novembre 2026.
+Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt R1, 18 novembre 2026.
 
 ---
 
@@ -27,23 +27,30 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 | 09a.1 | Libellé « Proposition de solution » dans les doléances, « 1er » pour le premier jour du mois dans toutes les dates, décisions D111 et D112, feuille de route après le 23 novembre | `main` | 20 novembre 2026 | Validé |
 | 08 | Document final (D113 à D117) : rubrique Document A4 (aperçu complet, réglages de l'annexe, impression du texte seul, de l'annexe seule avec la numérotation du document complet, et du document complet), clôture, réouverture, signataires sur place, publication avec dépôt du PDF, espace CEO après la clôture et après la publication | `main` | 22 novembre 2026 | En cours de validation |
 | 08.1 | Numérotation des pages sans le total (D118) | `main` | 22 novembre 2026 | En cours de validation |
-| Refonte 1 | Refonte visuelle de l'admin, première partie (lot a ci-dessous, maquette validée par Ziza) | `main` | 22 novembre 2026 | À faire |
-| Refonte 2 | Refonte visuelle de l'admin, seconde partie (suite du lot a) | `main` | 22 novembre 2026 | À faire |
-| Engagements | Engagements des partenaires (lot b ci-dessous) | `main` | 22 novembre 2026 | À faire |
+| R1 | Refonte de l'admin, partie 1 (D119 à D122) : socle visuel partagé, cadre de l'admin (panneau flottant, « À faire maintenant », barre d'étapes flottante, barre basse du téléphone avec « Plus »), page « Tableau de bord », « Exporter en PDF » dans la rubrique Document A4 | `main` | 22 novembre 2026 | En cours de validation |
+| R2 | Refonte de l'admin, partie 2 : les rubriques (Texte, CEO avec rangées arrondies et recherche, Doléances, Document A4, Réglages) dans le nouveau socle | `main` | 22 novembre 2026 | À faire |
+| Partenaires 1 | Engagements des partenaires (lot b ci-dessous) | `main` | 22 novembre 2026 | À faire |
 | Audit | Audit complet avant l'envoi des liens, sur la plateforme avec le document final, la refonte et les engagements | `main` | 22 novembre 2026 | À faire |
 
 
 ### Lots décrits au prompt 09a.1 (a et b avancés sur `main` avant le 23 novembre, décision de Ziza au prompt 08 ; c, d et e après le 23 novembre, chacun sur sa branche)
 
-Aucun code de ces lots n'est écrit tant que leur prompt n'est pas donné. Ordre de la suite sur `main` : refonte 1, refonte 2, engagements des partenaires, audit. Le prompt 08 (document final) est fait : l'annexe seule s'imprime en un clic dès la clôture.
+Aucun code de ces lots n'est écrit tant que leur prompt n'est pas donné. Ordre de la suite sur `main` : R1 (fait), R2, Partenaires 1, audit. Le prompt 08 (document final) est fait : l'annexe seule s'imprime en un clic dès la clôture.
 
 | Ordre | Lot | Contenu | Branche | Statut |
 | --- | --- | --- | --- | --- |
-| a | Refonte visuelle de l'admin | D'après la maquette validée par Ziza (https://claude.ai/artifact/VzNbF7bJyQmPc6AnLc3JDH) : menu latéral flottant aux grands arrondis, colonne « À faire maintenant », cartes blanches aux grands arrondis et ombre légère, chiffres grands et fins, rangées arrondies pour la liste des CEO, barre de recherche CEO et doléances, arc du taux de signature, carte « Signatures » en réservoir d'eau animé dont le niveau est le taux de signature. Règles de cohérence : l'admin et l'espace CEO partagent couleurs, polices, arrondis, ombres et la courbe d'animation ; seuls les fonds diffèrent (papier côté CEO, neutre côté admin) ; l'eau ne signifie qu'une chose, la progression des signatures, jamais un décor ; une seule animation d'eau dans l'admin, lente, arrêtée si `prefers-reduced-motion` ; verre dépoli seulement sur les barres fixes ; contrastes AA | `main` (refonte 1 et 2) | À faire |
+| a | Refonte visuelle de l'admin | D'après la maquette validée par Ziza (https://claude.ai/artifact/VzNbF7bJyQmPc6AnLc3JDH) : menu latéral flottant aux grands arrondis, colonne « À faire maintenant », cartes blanches aux grands arrondis et ombre légère, chiffres grands et fins, rangées arrondies pour la liste des CEO, barre de recherche CEO et doléances, arc du taux de signature, carte « Signatures » en réservoir d'eau animé dont le niveau est le taux de signature. Règles de cohérence : l'admin et l'espace CEO partagent couleurs, polices, arrondis, ombres et la courbe d'animation ; seuls les fonds diffèrent (papier côté CEO, neutre côté admin) ; l'eau ne signifie qu'une chose, la progression des signatures, jamais un décor ; une seule animation d'eau dans l'admin, lente, arrêtée si `prefers-reduced-motion` ; verre dépoli seulement sur les barres fixes ; contrastes AA | `main` (R1 et R2) | R1 fait, R2 à faire |
 | b | Engagements des partenaires | Registre interne, réservé aux admins, jamais publié ni visible des CEO : partenaire et type (agence des Nations unies, ONG, ministère, bailleur, autre), engagement en quelques lignes, date, source (lettre, email, réunion) avec document joint dans le stockage privé, niveau de certitude (annoncé oralement, confirmé par écrit, en cours, réalisé), thèmes de doléances auxquels il répond, journalisé. Les partenaires n'ont aucun accès à la plateforme (règle 18 de CLAUDE.md) | `main` | À faire |
 | c | 09b, doléances partie publique (déjà prévu) | Après la clôture des signatures : validation par un admin, publication anonyme, visibilité entre CEO (sans nom ni entreprise, jamais une doléance « Ne jamais la publier, même sans nom »), soutiens (table `doleance_soutiens`, l'auteur compte pour un, D22), classement par soutiens, export PDF (A4), fusion de thèmes. Le modèle de 0009 est prêt : statut (`recue`, `publiee`, `masquee`), thèmes ordonnés et désactivables | `feat/...` | À faire |
 | d | Adhésion par le lien ouvert après la clôture des signatures | /rejoindre passe en mode adhésion : fiche sans signature, validation par un admin, pour embarquer les entreprises qui n'étaient pas au Manifeste | `feat/...` | À faire |
 | e | Option à décider pendant la refonte (lot a) | Côté CEO, sur l'écran de remerciement après la signature : une fine ligne d'eau qui monte d'un cran pendant que sa ligne s'inscrit dans l'annexe (même sens que le réservoir de l'admin) | `feat/...` | À décider |
+
+### Après Abu Dhabi (feuille de route)
+
+| Lot | Contenu | Statut |
+| --- | --- | --- |
+| Page publique du document final | Une page publique du document final, partageable sans lien personnel. D'ici là, le partage du CEO reste sans lien (D116) | À faire |
+| Essai de la publication | Début décembre : essai complet de la publication (dépôt du PDF, publication, espace CEO) sur une copie de la plateforme, jamais sur la base de production (la publication est irréversible) | À faire |
 
 ### Calendrier (décision de Ziza, D105 ; prime sur la partie 2 du cahier des charges)
 
@@ -123,6 +130,8 @@ Aucun code de ces lots n'est écrit tant que leur prompt n'est pas donné. Ordre
 - Prompt 08, complément (D117) : annexe et impressions disponibles dès le gel (rédaction : texte seul, expliqué), mise à jour en continu de la rubrique Document A4 toutes les 30 secondes quand l'onglet est visible (« Mis à jour à … », « Actualiser »), rappel de l'export des signatures pour la sauvegarde du soir.
 - Prompt 08.1 (D118) : pied de page avec le numéro seul, sans total ; noms accessibles « Page 1 », « Page 6, annexe des signataires ». Vérifié en impression réelle dans Chromium : texte seul (page 1), puis annexe seule avec 15 signatures de plus (pages 2 à 6), puis document complet (1 à 6), sans rupture ni total. Aucune migration.
 
+- Prompt R1, refonte de l'admin partie 1 (D119 à D122) : jetons partagés (rayons, ombres, fonds de l'admin, chiffre clé) ; cadre de l'admin : panneau flottant (navigation avec « Tableau de bord », « Journal », bloc du compte), « À faire maintenant » (À vérifier, À relancer, Doléances, Export du soir : valeurs réelles, chaque raccourci mène où agir, avec les filtres `?filtre=ouvert` de la rubrique CEO et `?lecture=non_lues` des doléances), barre d'étapes flottante, barre basse flottante du téléphone (Accueil, Texte, CEO, Doléances, Plus). Page « Tableau de bord » (`/admin`) : vue d'ensemble et ligne d'état, réservoir d'eau animé (immobile si mouvement réduit), parcours des liens, clôture, taux de signature en arc, doléances par thème, dernières actions, actualisation toutes les 30 secondes ; état propre avant le gel. Document A4 : « Exporter en PDF », « Texte seul », « Annexe seule » en tête de rubrique, même libellé dans la fenêtre de publication et la page d'export. Aucune migration, aucune dépendance. Tests vitest : 118.
+
 ---
 
 ## Registre des migrations
@@ -144,7 +153,7 @@ Claude Code ne marque jamais une migration comme exécutée : Ziza le confirme, 
 | seed 0002 | `supabase/seed/0002_modele_message_whatsapp.sql` | Modèle du message WhatsApp mis en forme, seulement si le modèle en base est encore l'ancien modèle d'origine (à exécuter après 0008) | Oui (confirmée au prompt 09a) |
 | 0009 | `supabase/migrations/0009_doleances.sql` | Doléances privées : clôture des doléances sur le Manifeste, tables `doleance_themes` et `doleances` (contenu figé, clé anti-doublon unique), RLS admins seuls avec droits limités aux colonnes utiles, fonctions du CEO (clé secrète) et des admins (session), journal sans le texte | Oui (confirmée au prompt 08) |
 | seed 0003 | `supabase/seed/0003_themes_doleances.sql` | Les 6 thèmes de départ, seulement si aucun thème n'existe (à exécuter après 0009) | Oui (confirmée au prompt 08) |
-| 0010 | `supabase/migrations/0010_document_final.sql` | Document final : réglages de l'annexe sur le Manifeste, bucket privé `signatures`, signatures figées (sauf un signataire sur place corrigé quand le Manifeste est clos ; plus rien après la publication), fonctions clore, rouvrir, publier, régler l'annexe (session d'admin) et signataires sur place (clé secrète) | Non |
+| 0010 | `supabase/migrations/0010_document_final.sql` | Document final : réglages de l'annexe sur le Manifeste, bucket privé `signatures`, signatures figées (sauf un signataire sur place corrigé quand le Manifeste est clos ; plus rien après la publication), fonctions clore, rouvrir, publier, régler l'annexe (session d'admin) et signataires sur place (clé secrète) | Oui (confirmée au prompt R1) |
 
 ---
 
