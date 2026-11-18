@@ -49,6 +49,12 @@ describe("message WhatsApp", () => {
     expect(formaterDateLimite("2026-12-08T09:05:00Z")).toBe("8 décembre à 9 h 05, heure de Dakar (13 h 05 à Abu Dhabi)");
     /* Minuit à Abu Dhabi : rattaché au jour qui se termine, donc le même jour qu'à Dakar */
     expect(formaterDateLimite("2026-12-08T20:00:00Z")).toBe("8 décembre à 20 h, heure de Dakar (minuit à Abu Dhabi)");
+    /* « 1er » pour le premier jour du mois, jamais « 1 » ; le 2 reste « 2 » (09a.1) */
+    expect(formaterDateLimite("2026-12-31T23:59:00Z")).toBe("31 décembre à 23 h 59, heure de Dakar (1er janvier à 3 h 59 à Abu Dhabi)");
+    expect(formaterDateLimite("2026-12-01T10:00:00Z")).toBe("1er décembre à 10 h, heure de Dakar (14 h à Abu Dhabi)");
+    expect(formaterDateLimite("2026-12-02T10:00:00Z")).toBe("2 décembre à 10 h, heure de Dakar (14 h à Abu Dhabi)");
+    /* Minuit le 2 : rattaché au 1er à Dakar */
+    expect(formaterDateLimite("2026-12-02T00:00:00Z")).toBe("1er décembre à minuit, heure de Dakar (2 décembre à 4 h à Abu Dhabi)");
     /* Jamais « 0 h » */
     expect(formaterDateLimite("2026-12-09T00:00:00Z")).not.toMatch(/\b0 h/);
   });

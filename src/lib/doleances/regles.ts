@@ -55,7 +55,7 @@ export const schemaDoleance = z
       `Décrivez la difficulté en ${TEXTE_MIN} caractères au moins.`,
       `Votre doléance : ${TEXTE_MAX} caractères au plus.`,
     ),
-    solution: z.string().check(z.trim(), z.maxLength(SOLUTION_MAX, `Solution proposée : ${SOLUTION_MAX} caractères au plus.`)),
+    solution: z.string().check(z.trim(), z.maxLength(SOLUTION_MAX, `Proposition de solution : ${SOLUTION_MAX} caractères au plus.`)),
     neJamaisPublier: z.boolean(),
   });
 
@@ -91,7 +91,7 @@ export const MESSAGES_DOLEANCE: Record<CodeDoleance, string> = {
   pas_ouvert: "Le dépôt des doléances n'est pas encore ouvert.",
   doleances_closes: "Le dépôt des doléances est clos.",
   theme_invalide: "Ce thème n'est plus proposé. Choisissez-en un autre.",
-  texte_invalide: "Vérifiez la longueur de votre doléance et de la solution proposée.",
+  texte_invalide: "Vérifiez la longueur de votre doléance et de la proposition de solution.",
   cle_invalide: "La doléance n'a pas pu être enregistrée. Rechargez la page, puis réessayez.",
   limite_atteinte: `Vous avez déposé ${LIMITE_PAR_JOUR} doléances en 24 heures. Réessayez demain.`,
   echec: "La doléance n'a pas pu être enregistrée. Réessayez : elle ne sera jamais enregistrée deux fois.",

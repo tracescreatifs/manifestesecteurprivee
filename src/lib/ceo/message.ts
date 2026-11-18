@@ -1,5 +1,7 @@
 /* Messages WhatsApp envoyés aux CEO, au nom de la Task Force */
 
+import { formaterAvecPremier } from "@/lib/dates";
+
 /*
   Mise en forme WhatsApp : *texte* en gras, _texte_ en italique (D101).
   Nom du Manifeste en gras, signature de la Task Force en italique sur sa propre ligne,
@@ -43,7 +45,8 @@ function moment(date: Date, fuseau: string): Moment {
   const m = Number(parties.find((p) => p.type === "minute")?.value ?? 0);
   const minuit = h === 0 && m === 0;
   /* Minuit appartient au jour qui se termine : on lit le jour une minute plus tôt */
-  const jour = new Intl.DateTimeFormat("fr-FR", { timeZone: fuseau, day: "numeric", month: "long" }).format(
+  const jour = formaterAvecPremier(
+    new Intl.DateTimeFormat("fr-FR", { timeZone: fuseau, day: "numeric", month: "long" }),
     minuit ? new Date(date.getTime() - 60_000) : date,
   );
   const heure = minuit ? "minuit" : m === 0 ? `${h} h` : `${h} h ${String(m).padStart(2, "0")}`;

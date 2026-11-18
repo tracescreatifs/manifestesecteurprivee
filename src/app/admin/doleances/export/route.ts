@@ -32,7 +32,7 @@ export async function GET() {
       "Thème",
       "Thème proposé",
       "Doléance",
-      "Solution proposée",
+      "Proposition de solution",
       "Déposée le (heure de Dakar)",
       "Auteur",
       "Entreprise",

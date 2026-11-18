@@ -147,7 +147,7 @@ export function TexteConfidentialite() {
       <p>
         <strong>Ce que nous recueillons.</strong> Votre nom, votre fonction, votre entreprise, son maillon, votre numéro
         WhatsApp et votre signature. Si vous le choisissez : votre photo, vos commentaires et vos doléances (thème, texte et
-        solution proposée).
+        proposition de solution).
       </p>
       <p>
         <strong>Pourquoi.</strong> Pour faire figurer votre signature dans l&apos;annexe du Manifeste et pour vous recontacter

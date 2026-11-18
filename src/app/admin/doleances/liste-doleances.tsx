@@ -238,7 +238,7 @@ export function ListeDoleances({ doleances, themes }: { doleances: DoleanceAdmin
               <p className="text-[15.5px] whitespace-pre-line [overflow-wrap:anywhere]">{d.texte}</p>
             </div>
             <div className="grid gap-1.5">
-              <h4 className="text-[13px] font-medium text-texte-secondaire">Solution proposée</h4>
+              <h4 className="text-[13px] font-medium text-texte-secondaire">Proposition de solution</h4>
               <p className={"text-[15px] whitespace-pre-line [overflow-wrap:anywhere] " + (d.solution ? "" : "text-texte-secondaire")}>
                 {d.solution ?? "Aucune"}
               </p>

@@ -79,7 +79,7 @@ describe("doléances : longueurs et thème", () => {
     expect(erreursDoleance({ ...SAISIE, texte: `   ${"a".repeat(14)}   ` })?.texte).toBeDefined();
     expect(erreursDoleance({ ...SAISIE, texte: "a".repeat(500) })).toBeNull();
     expect(erreursDoleance({ ...SAISIE, texte: "a".repeat(501) })?.texte).toBe("Votre doléance : 500 caractères au plus.");
-    expect(erreursDoleance({ ...SAISIE, solution: "s".repeat(401) })?.solution).toBe("Solution proposée : 400 caractères au plus.");
+    expect(erreursDoleance({ ...SAISIE, solution: "s".repeat(401) })?.solution).toBe("Proposition de solution : 400 caractères au plus.");
     expect(erreursDoleance({ ...SAISIE, theme: AUTRE, themePropose: "t".repeat(61) })?.themePropose).toBe(
       "Votre thème : 60 caractères au plus.",
     );

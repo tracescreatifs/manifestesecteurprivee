@@ -192,7 +192,7 @@ export function CarteDoleances({
                 <p className="text-[14.5px] whitespace-pre-line [overflow-wrap:anywhere]">{d.texte}</p>
                 {d.solution ? (
                   <p className="text-[14px] whitespace-pre-line text-texte-secondaire [overflow-wrap:anywhere]">
-                    <strong className="font-semibold text-encre">Solution proposée :</strong> {d.solution}
+                    <strong className="font-semibold text-encre">Proposition de solution :</strong> {d.solution}
                   </p>
                 ) : null}
                 {d.neJamaisPublier ? <span className="text-[12.5px] text-texte-secondaire">Ne jamais la publier, même sans nom</span> : null}
@@ -297,16 +297,18 @@ export function CarteDoleances({
         </div>
         <div className="grid gap-2">
           <label htmlFor="doleance-solution" className="text-[13.5px] font-medium text-texte-secondaire">
-            Solution proposée (facultatif)
+            Votre proposition de solution (facultatif)
           </label>
+          <span id="doleance-aide-solution" className="text-[12.5px] text-texte-secondaire">
+            Ce qui changerait la situation pour votre entreprise ou le secteur
+          </span>
           <textarea
             id="doleance-solution"
             value={saisie.solution}
             maxLength={SOLUTION_MAX}
             onChange={(e) => changer("solution", e.target.value)}
-            placeholder="Ce qui aiderait, selon vous."
             aria-invalid={Boolean(erreurs.solution)}
-            aria-describedby={`${decrit("solution") ?? ""} doleance-compte-solution`.trim()}
+            aria-describedby={`doleance-aide-solution ${decrit("solution") ?? ""} doleance-compte-solution`.replace(/\s+/g, " ").trim()}
             className={`${classes("solution")} min-h-[88px] resize-y`}
           />
           <div className="flex justify-between gap-3">

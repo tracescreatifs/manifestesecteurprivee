@@ -1,6 +1,6 @@
 # État du projet
 
-Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 09a, 16 novembre 2026.
+Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 09a.1, 18 novembre 2026.
 
 ---
 
@@ -23,9 +23,22 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 | 06 | Audit complet et vérifications d'avant mise en ligne (domaine, redirections, RLS, parcours sur téléphone et ordinateur), sur la plateforme complète ; message de validation avec le lien ; script de nettoyage des données de test | `main` | 22 novembre 2026 | Validé |
 | 06.1 | Finitions d'interface (marque, liste des CEO, barre d'étapes, en-tête CEO), messages WhatsApp mis en forme, clé anti-doublon de l'inscription par le lien ouvert | `main` | 22 novembre 2026 | Validé |
 | 06.2 | Date limite en heure de Dakar et d'Abu Dhabi, message du lien ouvert au nom de la Task Force, rubrique CEO sans chevauchement | `main` | 22 novembre 2026 | Validé |
-| 09a | Doléances privées (D108, D109) : le CEO dépose une doléance depuis son lien, qu'il ait signé ou non ; lue par les admins seuls ; rubrique Doléances, thèmes, export, clôture des doléances | `main` | 22 novembre 2026 | En cours de validation |
+| 09a | Doléances privées (D108, D109) : le CEO dépose une doléance depuis son lien, qu'il ait signé ou non ; lue par les admins seuls ; rubrique Doléances, thèmes, export, clôture des doléances | `main` | 22 novembre 2026 | Validé |
+| 09a.1 | Libellé « Proposition de solution » dans les doléances, « 1er » pour le premier jour du mois dans toutes les dates, décisions D111 et D112, feuille de route après le 23 novembre | `main` | 20 novembre 2026 | En cours de validation |
 | 08 | Document final : PDF A4, clôture, publication, signataires sur place. Besoin ajouté (D105) : **télécharger les pages de l'annexe seules, en un clic, juste après la clôture** (le texte est imprimé à l'avance, seule l'annexe est imprimée sur place à Abu Dhabi le 9 décembre avant 9 h) | branche `feat/...`, après le 23 novembre | 8 décembre 2026 | À faire |
-| 09b | Cahier de doléances, partie publique, après la clôture des signatures : validation par un admin, publication anonyme, visibilité entre CEO (sans nom ni entreprise, jamais une doléance « ne jamais publier »), soutiens (table `doleance_soutiens`, l'auteur compte pour un, D22), classement par soutiens, export PDF (A4), fusion de thèmes. Le modèle de 0009 est prêt : statut (`recue`, `publiee`, `masquee`), thèmes ordonnés et désactivables | branche `feat/...`, après le 23 novembre | décembre 2026 | À faire |
+
+
+### Après le 23 novembre, dans cet ordre, chacun sur sa branche (décision de Ziza, prompt 09a.1)
+
+Aucun code de ces lots n'est écrit tant que leur prompt n'est pas donné. Le prompt 08 (document final, annexe seule téléchargeable dès la clôture) reste prioritaire avant le 8 décembre.
+
+| Ordre | Lot | Contenu | Branche | Statut |
+| --- | --- | --- | --- | --- |
+| a | Refonte visuelle de l'admin | D'après la maquette validée par Ziza (https://claude.ai/artifact/VzNbF7bJyQmPc6AnLc3JDH) : menu latéral flottant aux grands arrondis, colonne « À faire maintenant », cartes blanches aux grands arrondis et ombre légère, chiffres grands et fins, rangées arrondies pour la liste des CEO, barre de recherche CEO et doléances, arc du taux de signature, carte « Signatures » en réservoir d'eau animé dont le niveau est le taux de signature. Règles de cohérence : l'admin et l'espace CEO partagent couleurs, polices, arrondis, ombres et la courbe d'animation ; seuls les fonds diffèrent (papier côté CEO, neutre côté admin) ; l'eau ne signifie qu'une chose, la progression des signatures, jamais un décor ; une seule animation d'eau dans l'admin, lente, arrêtée si `prefers-reduced-motion` ; verre dépoli seulement sur les barres fixes ; contrastes AA | `feat/...` | À faire |
+| b | Engagements des partenaires | Registre interne, réservé aux admins, jamais publié ni visible des CEO : partenaire et type (agence des Nations unies, ONG, ministère, bailleur, autre), engagement en quelques lignes, date, source (lettre, email, réunion) avec document joint dans le stockage privé, niveau de certitude (annoncé oralement, confirmé par écrit, en cours, réalisé), thèmes de doléances auxquels il répond, journalisé. Les partenaires n'ont aucun accès à la plateforme (règle 18 de CLAUDE.md) | `feat/...` | À faire |
+| c | 09b, doléances partie publique (déjà prévu) | Après la clôture des signatures : validation par un admin, publication anonyme, visibilité entre CEO (sans nom ni entreprise, jamais une doléance « Ne jamais la publier, même sans nom »), soutiens (table `doleance_soutiens`, l'auteur compte pour un, D22), classement par soutiens, export PDF (A4), fusion de thèmes. Le modèle de 0009 est prêt : statut (`recue`, `publiee`, `masquee`), thèmes ordonnés et désactivables | `feat/...` | À faire |
+| d | Adhésion par le lien ouvert après la clôture des signatures | /rejoindre passe en mode adhésion : fiche sans signature, validation par un admin, pour embarquer les entreprises qui n'étaient pas au Manifeste | `feat/...` | À faire |
+| e | Option à décider pendant la refonte (lot a) | Côté CEO, sur l'écran de remerciement après la signature : une fine ligne d'eau qui monte d'un cran pendant que sa ligne s'inscrit dans l'annexe (même sens que le réservoir de l'admin) | `feat/...` | À décider |
 
 ### Calendrier (décision de Ziza, D105 ; prime sur la partie 2 du cahier des charges)
 
@@ -36,6 +49,7 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 | Mardi 8 décembre 2026 à minuit, heure de Dakar (9 décembre à 4 h à Abu Dhabi) | Clôture des signatures (`date_limite` = `2026-12-09T00:00:00Z`, à saisir par Ziza dans Réglages, onglet Manifeste) |
 | Mercredi 9 décembre 2026, avant 9 h à Abu Dhabi | Impression de l'annexe sur place (les pages du texte sont imprimées à l'avance) |
 | Mercredi 9 décembre 2026 | Remise du Manifeste (conférence du 8 au 10 décembre à Abu Dhabi) |
+| Jeudi 31 décembre 2026 à 23 h 59, heure de Dakar (1er janvier à 3 h 59 à Abu Dhabi) | Clôture des doléances (D111 ; réglage saisi par Ziza dans Réglages, onglet Manifeste, qui fait foi) |
 
 ---
 
@@ -97,6 +111,7 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 - Prompt 09a, doléances privées (D108, D109, D110) : migration `0009_doleances.sql` et seed `0003_themes_doleances.sql`, testés deux fois de suite sur PostgreSQL 16 (dépôt, renvoi avec la même clé, droit de dépôt, longueurs, thème désactivé, limite par jour, ouverture et clôture, contenu figé, suppression par l'auteur seulement, RLS : rien pour anon ni pour un utilisateur non admin, journal sans le texte).
 - Espace CEO : carte « Vos doléances » après la signature et les commentaires (formulaire dans une fenêtre, compteurs, « Ne jamais la publier, même sans nom », clé anti-doublon, liste et suppression, rappel « Pensez aussi à signer le Manifeste », phrase de clôture) ; confidentialité complétée. Aucune carte pour un nouvel inscrit non validé, un lien refusé, avant le gel, ou sans la migration 0009.
 - Admin : rubrique « Doléances » entre CEO et Réglages avec la pastille des non lues ; liste filtrable (thème, lecture, auteur) et triée par date ; fiche dans un panneau (marquer comme lue ou non lue, rattacher une doléance « Autre », lien vers la fiche CEO par `/admin/ceo?fiche=`) ; onglet Thèmes (créer, renommer, réordonner, désactiver) ; export CSV pour Excel noté au journal ; Réglages, onglet Manifeste : « Clôture des doléances » avec la forme longue en direct. Tests vitest : 103.
+- Prompt 09a.1 : « Proposition de solution » partout (formulaire du CEO : « Votre proposition de solution (facultatif) » avec une aide, liste du CEO, fiche admin, export, confidentialité, messages d'erreur) ; « 1er » pour le premier jour du mois dans toutes les dates en lettres (`formaterAvecPremier` dans `src/lib/dates.ts`, utilisée aussi par la date limite) ; D111 et D112 ; feuille de route après le 23 novembre. Aucune migration. Tests vitest : 105.
 
 ---
 
@@ -148,7 +163,7 @@ Selon la partie 19 du cahier des charges.
 | Accord du groupe de la Task Force pour l'envoi des liens en son nom | Avant le 23 novembre 2026 | À fournir |
 | Validations du texte avec Khadija : formulations sur l'Afrique (le Manifeste est sénégalais), sources des chiffres 9 % et 90 %, sens de « c'est un précédent », date de la mention finale | Avant le gel du 20 novembre 2026 | À fournir |
 | Confirmation de « Axes transversaux » comme cinquième maillon | Avant l'import de la liste | À fournir |
-| Confirmation de la clôture des doléances au 8 janvier 2027 | Avant la publication | À fournir |
+| Confirmation de la clôture des doléances | Avant la publication | Fourni : le 31 décembre 2026 à 23 h 59, heure de Dakar (D111) |
 | Test du modèle Word après passage dans Google Docs | Avant le prompt 03 | À fournir |
 | Thèmes de doléances issus des tables du déjeuner du 22 octobre (à défaut, les 6 thèmes de départ, D23) | Avant la publication | À fournir |
 
@@ -163,5 +178,4 @@ Selon la partie 19 du cahier des charges.
 - Un admin connecté peut écrire directement dans les tables par l'API de Supabase (RLS « admin peut tout »), sans passer par les fonctions journalisées. À restreindre dans un lot dédié, après le 23 novembre.
 - Les jetons apparaissent dans les journaux d'accès de Vercel (adresse de la page) : accès réservé au compte Vercel.
 - La limite d'inscriptions par heure du lien ouvert repose sur l'adresse IP : un changement d'adresse la contourne (protection anti-spam, pas une barrière).
-- Dates au premier jour du mois : `Intl` écrit « 1 novembre » et non « 1er novembre » (formatage de 06.2, partout où une date en toutes lettres tombe un 1er). Les dates du calendrier (8 décembre, 8 janvier) ne sont pas concernées.
 - Le prompt 08 (signataires sur place) devra produire la référence par le serveur : `generer_reference_signature` n'est plus appelable par une session d'admin (0007).
