@@ -23,14 +23,14 @@ export function MenuAdmin({ prenom, nom, email, bloc = false }: { prenom: string
       elements={[]}
       classeDeclencheur={
         bloc
-          ? "flex min-h-14 w-full min-w-0 items-center gap-2.5 rounded-controle px-2.5 py-2 text-left hover:bg-[rgba(20,33,43,0.05)]"
+          ? "flex min-h-14 w-full min-w-0 items-center gap-3 overflow-hidden rounded-controle py-2 pr-2.5 pl-[15px] text-left hover:bg-[rgba(20,33,43,0.05)]"
           : "grid size-11 place-items-center rounded-full"
       }
       declencheur={
         bloc ? (
           <>
             {pastille}
-            <span className="grid min-w-0 leading-tight">
+            <span className="menu-texte grid min-w-0 leading-tight">
               <span className="truncate text-[14px] font-medium">
                 {prenom} {nom}
               </span>

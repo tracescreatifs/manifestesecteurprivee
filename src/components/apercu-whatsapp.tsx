@@ -20,7 +20,7 @@ export function ApercuWhatsApp({
   return (
     <div
       className={
-        "relative rounded-[10px] p-3 text-[14px] leading-[1.45] whitespace-pre-wrap text-encre [overflow-wrap:anywhere] " +
+        "relative rounded-controle p-3 text-[14px] leading-[1.45] whitespace-pre-wrap text-encre [overflow-wrap:anywhere] " +
         (fond === "surface" ? "bg-surface " : "bg-sureleve ") +
         (etiquette ? "pt-8" : "")
       }

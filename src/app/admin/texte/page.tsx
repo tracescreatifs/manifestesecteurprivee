@@ -52,7 +52,7 @@ export default async function PageTexte() {
     <>
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="font-titre text-[22px] font-normal tracking-[-0.01em]">Texte</h2>
+          <h2 className="font-titre text-[30px] leading-tight font-light tracking-[-0.01em]">Texte</h2>
           <p className="mt-1 max-w-[64ch] text-texte-secondaire">
             Le texte s&apos;écrit dans le Google Doc partagé. Quand les rédacteurs ont terminé, téléchargez-le en Word
             et importez-le ici : la plateforme applique la mise en page A4.
@@ -75,7 +75,7 @@ export default async function PageTexte() {
         <BandeauGel geleLe={formaterDateHeure(manifeste.gele_le)} numero={gelee?.numero ?? null} peutRevenir={peutRevenir} />
       ) : null}
       {statut === "clos" || statut === "publie" ? (
-        <div className="mb-4 flex items-start gap-3 rounded-[10px] bg-sureleve px-4 py-3 text-[14.5px]">
+        <div className="mb-4 flex items-start gap-3 rounded-controle bg-sureleve px-4 py-3 text-[14.5px]">
           <CircleSlash aria-hidden="true" className="mt-0.5 size-[18px] shrink-0" strokeWidth={1.75} />
           <p>{statut === "publie" ? "Document publié." : "Signatures closes."} Le texte ne peut plus être modifié.</p>
         </div>
@@ -99,7 +99,7 @@ export default async function PageTexte() {
         </div>
       ) : (
         <div className="grid max-w-[640px] gap-4">
-          <div className="grid gap-2 rounded-[14px] border border-filet bg-surface p-6">
+          <div className="grid gap-2 rounded-carte bg-surface shadow-douce p-6">
             <h3 className="font-titre text-xl font-normal">Aucune version pour l&apos;instant</h3>
             <ol className="grid list-decimal gap-1 pl-5 text-texte-secondaire">
               <li>Dans le Google Doc, ouvrez le menu Fichier, puis Télécharger, puis Microsoft Word (.docx).</li>

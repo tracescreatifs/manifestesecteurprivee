@@ -46,7 +46,7 @@ export function Toast({ message }: { message: MessageToast | null }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={reduit ? { duration: 0 } : { duration: 0.2, ease: COURBE }}
-            className="flex max-w-full items-center gap-2.5 rounded-[10px] bg-encre px-4 py-3 text-[14.5px] text-white shadow-[0_10px_30px_rgba(20,33,43,0.25)]"
+            className="flex max-w-full items-center gap-2.5 rounded-controle bg-encre px-4 py-3 text-[14.5px] text-white shadow-[0_10px_30px_rgba(20,33,43,0.25)]"
           >
             <Icone aria-hidden="true" className="size-[18px] shrink-0" strokeWidth={1.75} />
             <span>{message.texte}</span>

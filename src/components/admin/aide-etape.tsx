@@ -47,7 +47,7 @@ export function AideEtape({ texte, idDescription }: { texte: string; idDescripti
         onFocus={() => setOuvert(true)}
         onBlur={() => setOuvert(false)}
         onClick={() => setOuvert(true)}
-        className="grid size-11 shrink-0 place-items-center rounded-[10px] text-texte-secondaire hover:bg-[rgba(20,33,43,0.06)] hover:text-encre"
+        className="grid size-11 shrink-0 place-items-center rounded-controle text-texte-secondaire hover:bg-[rgba(20,33,43,0.06)] hover:text-encre"
       >
         <Info aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
       </button>

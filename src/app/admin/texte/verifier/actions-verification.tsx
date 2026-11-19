@@ -34,7 +34,7 @@ export function ActionsVerification({ fichier, numero, gele, raisonBlocage }: Pr
     <div className="grid gap-3 border-t border-filet pt-3.5">
       {gele && !raisonBlocage ? (
         <>
-          <p className="flex items-start gap-2.5 rounded-[10px] bg-argile-doux px-3 py-2.5 text-[14px] text-[#6d3818]">
+          <p className="flex items-start gap-2.5 rounded-controle bg-argile-doux px-3 py-2.5 text-[14px] text-[#6d3818]">
             <Lock aria-hidden="true" className="mt-0.5 size-[18px] shrink-0" strokeWidth={1.75} />
             Le texte est gelé : cette version sera une correction mineure. Le fond ne doit pas changer, et les
             signatures déjà recueillies restent valables.

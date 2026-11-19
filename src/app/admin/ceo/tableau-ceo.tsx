@@ -23,7 +23,9 @@ import { Button, classesBouton } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { MenuActions, type ElementMenu } from "@/components/ui/menu-actions";
 import { Modal } from "@/components/ui/modal";
+import { PANNEAU_LISTE, RANGEE } from "@/components/ui/rangee";
 import { Toast, useToast } from "@/components/ui/toast";
+import { estARelancer } from "@/lib/admin/compteurs";
 import { formaterDateHeure } from "@/lib/dates";
 import { lienOuvert, lienPersonnel, remplirModele } from "@/lib/ceo/message";
 import { formaterTelephone, normaliserTexte } from "@/lib/ceo/normaliser";
@@ -55,6 +57,8 @@ type Props = {
   ficheInitiale: string | null;
   /* Filtre de statut à l'ouverture (?filtre=, depuis « À faire maintenant », R1) */
   filtreInitial?: StatutEnvoi;
+  /* File « Relancer un par un » ouverte à l'arrivée (?file=relance, depuis le tableau de bord, R2) */
+  fileInitiale?: boolean;
   /* Onglets de la rubrique (Liste et suivi, À vérifier, Commentaires), et contenu d'un autre onglet que la liste */
   onglets: ReactNode;
   contenu: ReactNode | null;
@@ -109,6 +113,7 @@ export function TableauCeo({
   lienOuvertActif,
   ficheInitiale,
   filtreInitial,
+  fileInitiale = false,
   onglets,
   contenu,
 }: Props) {
@@ -120,7 +125,7 @@ export function TableauCeo({
   /* Fiche ouverte : identifiant de l'invitation (la ligne est relue à chaque mise à jour) */
   const [fiche, setFiche] = useState<string | null>(ficheInitiale);
   const [envoi, setEnvoi] = useState<{ ceo: LigneCeo; relance: boolean } | null>(null);
-  const [fileOuverte, setFileOuverte] = useState(false);
+  const [fileOuverte, setFileOuverte] = useState(fileInitiale && statutManifeste === "gele" && Boolean(siteUrl));
   const [formulaire, setFormulaire] = useState<{ ceo: LigneCeo | null } | null>(null);
   const [aRetirer, setARetirer] = useState<LigneCeo | null>(null);
   const [importOuvert, setImportOuvert] = useState(false);
@@ -148,7 +153,7 @@ export function TableauCeo({
   }, [lignes, filtre, maillon, recherche]);
 
   const aRelancer = useMemo(
-    () => lignes.filter((l) => (l.statut === "envoye" || l.statut === "ouvert") && l.telephone),
+    () => lignes.filter((l) => estARelancer(l.statut, l.telephone)),
     [lignes],
   );
 
@@ -246,7 +251,7 @@ export function TableauCeo({
     <>
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="font-titre text-[22px] font-normal tracking-[-0.01em]">CEO</h2>
+          <h2 className="font-titre text-[30px] leading-tight font-light tracking-[-0.01em]">CEO</h2>
           <p className="mt-1 max-w-[64ch] text-texte-secondaire">
             Chaque CEO reçoit un lien personnel, impossible à deviner et sans compte.
           </p>
@@ -270,7 +275,7 @@ export function TableauCeo({
       {onglets}
 
       {!siteUrl ? (
-        <p role="alert" className="mb-4 rounded-[10px] bg-erreur-doux px-4 py-3 text-[14.5px] text-[#7a2a1d]">
+        <p role="alert" className="mb-4 rounded-controle bg-erreur-doux px-4 py-3 text-[14.5px] text-[#7a2a1d]">
           L&apos;adresse du site n&apos;est pas configurée : ajoutez NEXT_PUBLIC_SITE_URL dans Vercel, puis redéployez.
           Les liens ne peuvent pas être construits sans elle.
         </p>
@@ -279,7 +284,7 @@ export function TableauCeo({
       {contenu ?? (
         <>
       {statutManifeste === "redaction" ? (
-        <p className="mb-4 rounded-[10px] bg-eau-doux px-4 py-3 text-[14.5px] text-[#173e49]">
+        <p className="mb-4 rounded-controle bg-eau-doux px-4 py-3 text-[14.5px] text-[#173e49]">
           Préparez la liste dès maintenant. Les liens deviennent actifs et envoyables au gel du texte : gelez le texte avant
           d&apos;envoyer les liens.
         </p>
@@ -287,7 +292,7 @@ export function TableauCeo({
         /* Compteur et extrait de l'annexe côte à côte seulement à partir de 1200 px : en dessous, l'un sous l'autre (aucun chevauchement) */
         <section
           aria-label="Avancement des signatures"
-          className="mb-4 grid items-center gap-6 rounded-[14px] border border-filet bg-surface px-6 py-5 min-[1200px]:grid-cols-[minmax(0,1fr)_minmax(0,360px)]"
+          className="mb-4 grid items-center gap-6 rounded-carte bg-surface px-6 py-5 shadow-douce min-[1200px]:grid-cols-[minmax(0,1fr)_minmax(0,360px)]"
         >
           <div className="grid min-w-0 gap-3">
             <div className="flex flex-wrap items-baseline justify-between gap-3">
@@ -370,7 +375,7 @@ export function TableauCeo({
             value={maillon}
             onChange={(e) => setMaillon(e.target.value)}
             aria-label="Filtrer par maillon"
-            className="min-h-11 min-w-0 flex-1 rounded-[10px] border border-filet-fort bg-surface px-3 text-[14px] min-[820px]:flex-none"
+            className="min-h-11 min-w-0 flex-1 rounded-controle border border-filet-fort bg-surface px-3 text-[14px] min-[820px]:flex-none"
           >
             <option value="">Tous les maillons</option>
             {maillons.map((m) => (
@@ -388,14 +393,15 @@ export function TableauCeo({
               onChange={(e) => setRecherche(e.target.value)}
               placeholder="Nom, entreprise, téléphone"
               aria-label="Rechercher un CEO"
-              className="min-h-11 w-full rounded-[10px] border border-filet-fort bg-surface pr-3 pl-9 text-base focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none"
+              className="min-h-11 w-full rounded-controle border border-filet-fort bg-surface pr-3 pl-9 text-base focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none"
             />
           </label>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-filet bg-surface">
-        <div className="hidden grid-cols-[minmax(0,1.5fr)_minmax(0,1.3fr)_150px_minmax(0,1.2fr)_auto] gap-3.5 bg-sureleve px-4 py-3 text-[13px] font-medium text-texte-secondaire min-[1200px]:grid">
+      {/* Liste en rangées blanches arrondies dans un panneau (R2) ; colonnes à partir de 1200 px (D104) */}
+      <div className={PANNEAU_LISTE}>
+        <div className="hidden grid-cols-[minmax(0,1.5fr)_minmax(0,1.3fr)_150px_minmax(0,1.2fr)_auto] gap-3.5 px-4 pt-2 pb-1 text-[13px] font-medium text-texte-secondaire min-[1200px]:grid">
           <div>CEO</div>
           <div>Entreprise</div>
           <div>Statut</div>
@@ -403,7 +409,7 @@ export function TableauCeo({
           <div className="w-[190px]" />
         </div>
         {visibles.length ? (
-          <ul>
+          <ul className="grid gap-2">
             {visibles.map((l) => {
               const nomComplet = `${l.prenom} ${l.nom}`.trim() || "Dirigeant à préciser";
               return (
@@ -413,7 +419,7 @@ export function TableauCeo({
                   aria-label={`${nomComplet}, ${l.entreprise}. Entrée pour ouvrir la fiche`}
                   onClick={(e) => surClicLigne(e, l)}
                   onKeyDown={(e) => surToucheLigne(e, l)}
-                  className="cursor-pointer hover:bg-[#FAFAF9] focus-visible:bg-[#FAFAF9] focus-visible:outline-offset-[-2px] grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 border-t border-filet px-4 py-3 first:border-t-0 min-[1200px]:grid-cols-[minmax(0,1.5fr)_minmax(0,1.3fr)_150px_minmax(0,1.2fr)_auto] min-[1200px]:gap-3.5"
+                  className={`${RANGEE} cursor-pointer grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 px-4 py-3 min-[1200px]:grid-cols-[minmax(0,1.5fr)_minmax(0,1.3fr)_150px_minmax(0,1.2fr)_auto] min-[1200px]:gap-3.5`}
                 >
                   <div className="flex min-w-0 items-center gap-2.5">
                     <Avatar ligne={l} />
@@ -426,7 +432,8 @@ export function TableauCeo({
                     </div>
                   </div>
                   <div className="col-span-2 row-start-2 min-w-0 min-[1200px]:col-span-1 min-[1200px]:row-start-auto">
-                    <div className="truncate">{l.entreprise}</div>
+                    {/* Nom d'entreprise entier (R2) : il passe à la ligne plutôt que d'être coupé */}
+                    <div className="[overflow-wrap:anywhere]">{l.entreprise}</div>
                     <div className="truncate text-[13px] text-texte-secondaire">{l.maillon || "Maillon à préciser"}</div>
                     {/* Numéro entier, jamais tronqué : il passe à la ligne entre deux groupes de chiffres si la colonne est étroite */}
                     <div className="flex items-start gap-1.5 text-[13px] text-texte-secondaire">

@@ -241,7 +241,7 @@ export function PaveSignature({
         <button
           type="button"
           onClick={effacer}
-          className="inline-flex min-h-11 items-center gap-2 rounded-[10px] px-3 text-[14px] font-medium text-encre hover:bg-[rgba(20,33,43,0.06)] [&_svg]:size-[18px]"
+          className="inline-flex min-h-11 items-center gap-2 rounded-controle px-3 text-[14px] font-medium text-encre hover:bg-[rgba(20,33,43,0.06)] [&_svg]:size-[18px]"
         >
           <Eraser aria-hidden="true" strokeWidth={1.75} />
           Effacer

@@ -167,7 +167,7 @@ export function ImportListe({ ouvert, onFermer, maillons, existants, onImporte }
           Par exemple la liste du déjeuner du 22 octobre ou la cartographie par maillon. Les colonnes sont reconnues par
           leur titre.
         </span>
-        <label className="relative inline-flex min-h-11 cursor-pointer items-center gap-2 overflow-hidden rounded-[10px] border border-eau bg-eau px-4 text-[15px] font-medium text-white focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-eau hover:bg-[#163f4b]">
+        <label className="relative inline-flex min-h-11 cursor-pointer items-center gap-2 overflow-hidden rounded-controle border border-eau bg-eau px-4 text-[15px] font-medium text-white focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-eau hover:bg-[#163f4b]">
           <Upload aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
           {lecture ? "Lecture du fichier" : "Choisir le fichier"}
           <input
@@ -194,7 +194,7 @@ export function ImportListe({ ouvert, onFermer, maillons, existants, onImporte }
           <textarea
             value={colle}
             onChange={(e) => setColle(e.target.value)}
-            className="min-h-28 w-full rounded-[10px] border border-filet-fort bg-surface p-3 text-[14px] focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none"
+            className="min-h-28 w-full rounded-controle border border-filet-fort bg-surface p-3 text-[14px] focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none"
             aria-label="Tableau collé"
             placeholder={"Entreprise\tPrénom\tNom\tFonction\tMaillon\tTéléphone"}
           />
@@ -232,7 +232,7 @@ export function ImportListe({ ouvert, onFermer, maillons, existants, onImporte }
               .
             </p>
           </div>
-          <ul className="grid overflow-hidden rounded-[10px] border border-filet">
+          <ul className="grid overflow-hidden rounded-controle border border-filet">
             {lignes.map((l) => (
               <li key={l.numero} className="border-t border-filet first:border-t-0">
                 <label className="grid cursor-pointer grid-cols-[auto_minmax(0,1fr)] items-start gap-3 px-3 py-2.5">

@@ -122,7 +122,7 @@ export function SignatairesSurPlace({
   const apercu = image?.apercu ?? formulaire?.signataire?.image ?? null;
 
   return (
-    <section className="grid gap-3 rounded-[14px] border border-filet bg-surface p-5" aria-labelledby="titre-sur-place">
+    <section className="grid gap-3 rounded-carte bg-surface shadow-douce p-5" aria-labelledby="titre-sur-place">
       <h3 id="titre-sur-place" className="flex items-center gap-2 font-titre text-xl font-normal [&_svg]:size-[18px] [&_svg]:text-texte-secondaire">
         <PenTool aria-hidden="true" strokeWidth={1.75} />
         Signataires sur place
@@ -138,7 +138,7 @@ export function SignatairesSurPlace({
       {signataires.length ? (
         <ul className="grid gap-2">
           {signataires.map((s) => (
-            <li key={s.id} className="grid gap-2 rounded-[10px] border border-filet p-3 min-[520px]:grid-cols-[96px_minmax(0,1fr)_auto] min-[520px]:items-center">
+            <li key={s.id} className="grid gap-2 rounded-controle border border-filet p-3 min-[520px]:grid-cols-[96px_minmax(0,1fr)_auto] min-[520px]:items-center">
               <div className="grid h-12 w-24 place-items-center rounded-md border border-filet bg-white">
                 {s.image ? (
                   // eslint-disable-next-line @next/next/no-img-element -- lien signé privé d'une heure
@@ -209,7 +209,7 @@ export function SignatairesSurPlace({
                 setSaisie((s) => ({ ...s, maillon: e.target.value }));
                 setErreurs((x) => ({ ...x, maillon: undefined }));
               }}
-              className="min-h-11 w-full rounded-[10px] border border-filet-fort bg-surface px-3 text-[15px] focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none"
+              className="min-h-11 w-full rounded-controle border border-filet-fort bg-surface px-3 text-[15px] focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none"
             >
               <option value="">Choisissez</option>
               {maillons.map((m) => (
@@ -221,7 +221,7 @@ export function SignatairesSurPlace({
           </Field>
           <div className="grid gap-2 min-[520px]:col-span-2">
             <span className="text-[13px] font-medium text-texte-secondaire">Photo de la signature</span>
-            <div className="grid h-36 place-items-center overflow-hidden rounded-[10px] border border-filet bg-white p-2">
+            <div className="grid h-36 place-items-center overflow-hidden rounded-controle border border-filet bg-white p-2">
               {apercu ? (
                 // eslint-disable-next-line @next/next/no-img-element -- aperçu local (URL d'objet) ou lien signé privé
                 <img src={apercu} alt="Aperçu de la signature, sur fond blanc" className="max-h-full max-w-full object-contain" />
@@ -230,7 +230,7 @@ export function SignatairesSurPlace({
               )}
             </div>
             <div className="flex flex-wrap gap-2">
-              <label className="relative inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-[10px] border border-filet-fort bg-surface px-4 text-[15px] font-medium focus-within:border-eau focus-within:shadow-[0_0_0_3px_var(--color-eau-doux)] [&_svg]:size-[18px]">
+              <label className="relative inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-controle border border-filet-fort bg-surface px-4 text-[15px] font-medium focus-within:border-eau focus-within:shadow-[0_0_0_3px_var(--color-eau-doux)] [&_svg]:size-[18px]">
                 <Camera aria-hidden="true" strokeWidth={1.75} />
                 {fichier || formulaire?.signataire ? "Changer de photo" : "Prendre ou choisir une photo"}
                 <input

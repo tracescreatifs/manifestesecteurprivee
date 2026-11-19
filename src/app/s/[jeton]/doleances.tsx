@@ -28,7 +28,7 @@ import { EXPEDITEUR, Feuille } from "./commun";
 */
 
 const CHAMP =
-  "min-h-11 w-full rounded-[10px] border bg-surface px-3 py-3 text-[16px] text-encre outline-none focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)]";
+  "min-h-11 w-full rounded-controle border bg-surface px-3 py-3 text-[16px] text-encre outline-none focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)]";
 const VIDE: SaisieDoleance = { theme: "", themePropose: "", texte: "", solution: "", neJamaisPublier: false };
 
 /* Clé anti-doublon : tirée au premier envoi, gardée pour chaque nouvel essai, renouvelée après un dépôt réussi */
@@ -131,7 +131,7 @@ export function CarteDoleances({
     ) : null;
 
   return (
-    <section aria-labelledby="titre-doleances" className="grid gap-3 rounded-2xl border border-filet bg-surface p-5">
+    <section aria-labelledby="titre-doleances" className="grid gap-3 rounded-carte bg-surface shadow-douce p-5">
       <h2
         id="titre-doleances"
         className="flex items-center gap-2 font-titre text-[19px] font-normal [&_svg]:size-[18px] [&_svg]:text-texte-secondaire"
@@ -157,14 +157,14 @@ export function CarteDoleances({
           <p className="text-[13px] text-texte-secondaire">Dépôt possible jusqu&apos;au {formaterDateLimite(donnees.cloture)}.</p>
         </>
       ) : (
-        <p className="rounded-[10px] bg-sureleve px-3 py-2.5 text-[14px]">
+        <p className="rounded-controle bg-sureleve px-3 py-2.5 text-[14px]">
           Le dépôt des doléances est clos depuis le {formaterDateLimite(donnees.cloture)}.
         </p>
       )}
 
       <div role="status" aria-live="polite">
         {envoyee ? (
-          <div className="grid gap-2 rounded-[10px] bg-succes-doux px-4 py-3 text-[14px] text-[#214d39]">
+          <div className="grid gap-2 rounded-controle bg-succes-doux px-4 py-3 text-[14px] text-[#214d39]">
             <p>Votre doléance est envoyée. Elle est lue par la Task Force seulement.</p>
             {!signe ? (
               <button

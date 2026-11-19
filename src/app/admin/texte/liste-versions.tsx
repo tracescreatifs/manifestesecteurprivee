@@ -45,7 +45,7 @@ export function ListeVersions({
   };
 
   return (
-    <section className="grid gap-2.5 rounded-[14px] border border-filet bg-surface p-[18px]">
+    <section className="grid gap-2.5 rounded-carte bg-surface shadow-douce p-[18px]">
       <h3 className="flex items-center gap-2 font-titre text-[17px] font-normal">
         <History aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
         Versions
@@ -55,7 +55,7 @@ export function ListeVersions({
       ) : (
         <ol className="grid gap-2.5 min-[1080px]:max-h-[calc(100vh-420px)] min-[1080px]:overflow-y-auto">
           {versions.map((v) => (
-            <li key={v.numero} className="grid gap-1.5 rounded-[10px] border border-filet p-3">
+            <li key={v.numero} className="grid gap-1.5 rounded-controle border border-filet p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <strong className="font-titre text-[17px] font-normal">Version {v.numero}</strong>
                 <span className="flex flex-wrap gap-1.5">

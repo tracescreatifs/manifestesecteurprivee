@@ -34,7 +34,7 @@ export function OngletMessages({ modele, dateLimite, siteUrl }: Props) {
     });
 
   return (
-    <section className="grid gap-3 rounded-[14px] border border-filet bg-surface p-6">
+    <section className="grid gap-3 rounded-carte bg-surface shadow-douce p-6">
       <h3 className="font-titre text-xl font-normal">Message WhatsApp aux CEO</h3>
       <p className="text-[13px] text-texte-secondaire">
         Variables : <code>{"{prenom}"}</code> (prénom du CEO), <code>{"{lien}"}</code> (son lien personnel, obligatoire)
@@ -52,7 +52,7 @@ export function OngletMessages({ modele, dateLimite, siteUrl }: Props) {
             value={texte}
             aria-describedby="modele-aide"
             onChange={(e) => setTexte(e.target.value)}
-            className="min-h-72 w-full rounded-[10px] border border-filet-fort bg-surface p-3 text-[14.5px] focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none"
+            className="min-h-72 w-full rounded-controle border border-filet-fort bg-surface p-3 text-[14.5px] focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none"
           />
           <p id="modele-aide" className="text-[13px] text-texte-secondaire">
             *texte* pour le gras, _texte_ pour l&apos;italique

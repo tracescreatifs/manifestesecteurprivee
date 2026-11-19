@@ -132,7 +132,7 @@ export function FicheCeo({
       <div className="flex flex-wrap gap-2">
         <label
           className={
-            "relative inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-[10px] border border-filet-fort bg-surface px-3 text-[14px] font-medium " +
+            "relative inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-controle border border-filet-fort bg-surface px-3 text-[14px] font-medium " +
             "focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-eau [&_svg]:size-[18px] " +
             (occupe ? "pointer-events-none opacity-50" : "")
           }

@@ -95,7 +95,7 @@ export function OngletAdmins({ admins, moi }: { admins: LigneAdmin[]; moi: strin
   };
 
   return (
-    <section className="grid gap-3 rounded-[14px] border border-filet bg-surface p-6">
+    <section className="grid gap-3 rounded-carte bg-surface shadow-douce p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <h3 className="font-titre text-xl font-normal">Admins</h3>
         <Button
@@ -256,7 +256,7 @@ export function OngletAdmins({ admins, moi }: { admins: LigneAdmin[]; moi: strin
                 ? "Il permet de choisir un mot de passe et d'entrer dans l'espace admin."
                 : "Il permet de choisir un nouveau mot de passe."}
             </p>
-            <p className="rounded-[10px] bg-sureleve px-3 py-2.5 text-[14px] break-all select-all">
+            <p className="rounded-controle bg-sureleve px-3 py-2.5 text-[14px] break-all select-all">
               {lienGenere.lien}
             </p>
             <p className="text-[13px] text-texte-secondaire">

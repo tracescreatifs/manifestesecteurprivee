@@ -23,7 +23,7 @@ const STYLES_AVERTISSEMENT = {
 function LigneAvertissement({ a }: { a: Avertissement }) {
   const { classe, Icone, nom } = STYLES_AVERTISSEMENT[a.niveau];
   return (
-    <li className={`flex items-start gap-2.5 rounded-[10px] px-3 py-2.5 text-[14px] ${classe}`}>
+    <li className={`flex items-start gap-2.5 rounded-controle px-3 py-2.5 text-[14px] ${classe}`}>
       <Icone aria-hidden="true" className="mt-0.5 size-[18px] shrink-0" strokeWidth={1.75} />
       <span>
         <span className="sr-only">{nom} : </span>
@@ -56,7 +56,7 @@ export default async function PageVerifier({
   if (!analyse) {
     return (
       <div className="grid max-w-[640px] gap-3">
-        <h2 className="font-titre text-[22px] font-normal">Vérifier l&apos;import</h2>
+        <h2 className="font-titre text-[30px] leading-tight font-light tracking-[-0.01em]">Vérifier l&apos;import</h2>
         <p role="alert" className="text-erreur">
           {erreur ?? "Cet import est introuvable (déjà validé ou annulé). Déposez à nouveau le fichier depuis la rubrique Texte."}
         </p>
@@ -91,7 +91,7 @@ export default async function PageVerifier({
     <>
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="font-titre text-[22px] font-normal tracking-[-0.01em]">Vérifier l&apos;import</h2>
+          <h2 className="font-titre text-[30px] leading-tight font-light tracking-[-0.01em]">Vérifier l&apos;import</h2>
           <p className="mt-1 text-texte-secondaire">
             <span className="break-all">{analyse.nom}</span>. Rien n&apos;est remplacé tant que vous n&apos;avez pas
             validé.
@@ -109,7 +109,7 @@ export default async function PageVerifier({
         />
 
         <div className="grid gap-4 min-[1080px]:sticky min-[1080px]:top-24">
-          <section className="grid gap-3.5 rounded-[14px] border border-filet bg-surface p-[18px]">
+          <section className="grid gap-3.5 rounded-carte bg-surface shadow-douce p-[18px]">
             <h3 className="flex items-center gap-2 font-titre text-[17px] font-normal">
               <ScanLine aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
               Ce qui a été reconnu
@@ -141,7 +141,7 @@ export default async function PageVerifier({
                 ))}
               </ul>
             ) : (
-              <p className="flex items-start gap-2.5 rounded-[10px] bg-sureleve px-3 py-2.5 text-[14px]">
+              <p className="flex items-start gap-2.5 rounded-controle bg-sureleve px-3 py-2.5 text-[14px]">
                 <CheckCircle2 aria-hidden="true" className="mt-0.5 size-[18px] shrink-0" strokeWidth={1.75} />
                 Aucun problème détecté.
               </p>

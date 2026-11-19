@@ -9,9 +9,10 @@ import { compterAVerifier } from "@/lib/verification/serveur";
 import type { Database, StatutEnvoi, StatutManifeste } from "@/types/database";
 
 import { jourDakar } from "./calculs";
+import { estARelancer } from "./compteurs";
 
 /*
-  Tableau de bord de l'admin (R1) et cartes « À faire maintenant ». Lu avec la session de l'admin (RLS).
+  Tableau de bord de l'admin (R1, R2) et ligne « À faire maintenant ». Lu avec la session de l'admin (RLS).
   Uniquement des valeurs réelles, lues en base à chaque requête ; les calculs sont définis dans decisions.md (D120).
 */
 
@@ -20,10 +21,10 @@ type Client = SupabaseClient<Database>;
 /* Parcours des liens : chaque invitation compte une seule fois, avec le même statut que la rubrique CEO */
 export type Parcours = Record<StatutEnvoi, number> & { total: number };
 
-/* Cartes « À faire maintenant » */
+/* Ligne « À faire maintenant » du tableau de bord (R2) et pastilles du menu */
 export type AFaire = {
   aVerifier: number;
-  /* Liens ouverts sans signature */
+  /* Liens envoyés ou ouverts, pas encore signés, avec un numéro (estARelancer, comme « Relancer un par un ») */
   aRelancer: number;
   /* Doléances non lues */
   nonLues: number;
@@ -52,12 +53,13 @@ export type TableauDeBord = {
   lueLe: string;
 };
 
+type InvitationLue = { id: string; statut_envoi: StatutEnvoi; personne: { telephone: string | null } | null };
 type SignatureActive = { invitation_id: string | null; validee: boolean; origine: string; signe_le: string };
 
 /* Invitations et signatures actives (non retirées) : base du parcours, de l'annexe et de « À relancer » */
 async function lireInvitationsEtSignatures(supabase: Client, manifesteId: string) {
   const [{ data: invitations }, { data: signatures }] = await Promise.all([
-    supabase.from("invitations").select("id, statut_envoi").eq("manifeste_id", manifesteId),
+    supabase.from("invitations").select("id, statut_envoi, personne:personnes(telephone)").eq("manifeste_id", manifesteId),
     supabase
       .from("signatures")
       .select("invitation_id, validee, origine, signe_le")
@@ -65,12 +67,18 @@ async function lireInvitationsEtSignatures(supabase: Client, manifesteId: string
       .is("retiree_le", null),
   ]);
   return {
-    invitations: (invitations ?? []) as { id: string; statut_envoi: StatutEnvoi }[],
+    invitations: (invitations ?? []) as unknown as InvitationLue[],
     signatures: (signatures ?? []) as SignatureActive[],
   };
 }
 
-function calculerParcours(invitations: { id: string; statut_envoi: StatutEnvoi }[], signatures: SignatureActive[]): Parcours {
+/* Statut de la rubrique CEO : « signe » dès qu'une signature active existe, sinon le statut d'envoi */
+function statuts(invitations: InvitationLue[], signatures: SignatureActive[]): { statut: StatutEnvoi; telephone: string | null }[] {
+  const signees = new Set(signatures.map((s) => s.invitation_id).filter((x): x is string => Boolean(x)));
+  return invitations.map((i) => ({ statut: signees.has(i.id) ? "signe" : i.statut_envoi, telephone: i.personne?.telephone ?? null }));
+}
+
+function calculerParcours(invitations: InvitationLue[], signatures: SignatureActive[]): Parcours {
   const signees = new Set(signatures.map((s) => s.invitation_id).filter((x): x is string => Boolean(x)));
   const p: Parcours = { a_envoyer: 0, envoye: 0, ouvert: 0, signe: 0, total: invitations.length };
   invitations.forEach((i) => p[signees.has(i.id) ? "signe" : i.statut_envoi]++);
@@ -98,7 +106,7 @@ export async function lireCadreAdmin(supabase: Client, manifesteId: string): Pro
   ]);
   return {
     aVerifier,
-    aRelancer: calculerParcours(invitations, signatures).ouvert,
+    aRelancer: statuts(invitations, signatures).filter((i) => estARelancer(i.statut, i.telephone)).length,
     nonLues,
     dernierExport,
     annexe: signatures.filter((s) => s.validee).length,

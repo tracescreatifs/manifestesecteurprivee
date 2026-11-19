@@ -204,7 +204,7 @@ export function FicheCeo({
               <h4 className="text-[13px] font-medium text-texte-secondaire">Commentaires ({ceo.commentaires.length})</h4>
               <ul className="grid gap-2">
                 {ceo.commentaires.map((c) => (
-                  <li key={c.id} className="grid gap-1 rounded-[10px] border border-filet p-3 text-[14px]">
+                  <li key={c.id} className="grid gap-1 rounded-controle border border-filet p-3 text-[14px]">
                     <span className="flex flex-wrap items-center justify-between gap-2 text-[12.5px] text-texte-secondaire">
                       {formaterDateHeure(c.creeLe)}
                       <Chip variante={c.statut === "nouveau" ? "neutre" : c.statut === "non_retenu" ? "neutre" : "eau"}>

@@ -41,8 +41,8 @@ const ORDRES: Record<OrdreAnnexe, string> = {
 const PAR_PAGE: Record<number, string> = { 8: "8 lignes (signatures plus grandes)", 10: "10 lignes", 15: "15 lignes (comme le document Word)" };
 const VIDES: Record<number, string> = { 0: "Aucune", 5: "5 lignes vides", 10: "10 lignes vides" };
 const SELECT =
-  "min-h-11 w-full rounded-[10px] border border-filet-fort bg-surface px-3 text-[15px] focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none disabled:opacity-60";
-const PANNEAU = "grid gap-3 rounded-[14px] border border-filet bg-surface p-5";
+  "min-h-11 w-full rounded-controle border border-filet-fort bg-surface px-3 text-[15px] focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none disabled:opacity-60";
+const PANNEAU = "grid gap-3 rounded-carte bg-surface shadow-douce p-5";
 
 /* Export en PDF (R1) : le document complet en action principale, puis le texte seul et l'annexe seule */
 const EXPORTS: { partie: PartieDocument; libelle: string; nom: string }[] = [
@@ -92,7 +92,7 @@ export function EspaceDocument({ donnees, maillons }: { donnees: DonneesDocument
 
   if (!version) {
     return (
-      <p className="rounded-xl border border-filet bg-surface px-4 py-7 text-center text-texte-secondaire">
+      <p className="rounded-carte bg-surface shadow-douce px-4 py-7 text-center text-texte-secondaire">
         Aucune version du texte : importez-la depuis la rubrique Texte.
       </p>
     );
@@ -138,7 +138,7 @@ export function EspaceDocument({ donnees, maillons }: { donnees: DonneesDocument
       <div className="grid items-start gap-5 min-[1180px]:grid-cols-[340px_minmax(0,1fr)]">
         <div className="grid gap-4 min-[1180px]:sticky min-[1180px]:top-24">
           {!donnees.disponible ? (
-            <p role="alert" className="rounded-[10px] bg-erreur-doux px-4 py-3 text-[14px] text-[#7a2a1d]">
+            <p role="alert" className="rounded-controle bg-erreur-doux px-4 py-3 text-[14px] text-[#7a2a1d]">
               Exécutez supabase/migrations/0010_document_final.sql : les réglages de l&apos;annexe, la clôture, les signataires
               sur place et la publication en dépendent.
             </p>

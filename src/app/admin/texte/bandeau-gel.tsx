@@ -31,7 +31,7 @@ export function BandeauGel({
     });
 
   return (
-    <div className="mb-4 flex flex-wrap items-start gap-3 rounded-[10px] bg-succes-doux px-4 py-3 text-[14.5px] text-[#214d39]">
+    <div className="mb-4 flex flex-wrap items-start gap-3 rounded-controle bg-succes-doux px-4 py-3 text-[14.5px] text-[#214d39]">
       <Lock aria-hidden="true" className="mt-0.5 size-[18px] shrink-0" strokeWidth={1.75} />
       <p className="min-w-0 flex-1">
         Texte gelé le {geleLe}

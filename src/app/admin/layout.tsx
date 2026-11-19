@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
-import { AFaireMaintenant } from "@/components/admin/a-faire";
 import { BarreEtapes } from "@/components/admin/barre-etapes";
-import { MenuAdmin } from "@/components/admin/menu-admin";
-import { LienJournal, NavBasse, NavLaterale } from "@/components/admin/navigation";
+import { NavBasse } from "@/components/admin/navigation";
+import { PanneauAdmin } from "@/components/admin/panneau-admin";
+import { RechercheAdmin } from "@/components/admin/recherche-admin";
 import { Marque } from "@/components/marque";
 import { lireCadreAdmin, type AFaire } from "@/lib/admin/tableau-de-bord";
 import { exigerSessionAdmin } from "@/lib/session-admin";
@@ -23,8 +23,8 @@ function estPassee(iso: string): boolean {
 /*
   Toute la zone /admin : vérifie côté serveur, à chaque requête,
   que l'utilisateur est un admin actif connecté depuis moins de 30 jours.
-  Cadre (R1) : sur ordinateur, panneau flottant (navigation, « À faire maintenant », journal, compte) ;
-  sur téléphone, marque en tête et barre basse flottante.
+  Cadre (R2) : sur ordinateur, panneau flottant réductible (marque, recherche, navigation, journal, compte) ;
+  sur téléphone, marque en tête et barre basse flottante. « À faire maintenant » est sur le tableau de bord.
 */
 export default async function LayoutAdmin({ children }: { children: ReactNode }) {
   const admin = await exigerSessionAdmin();
@@ -53,26 +53,9 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
     <div data-ambiance="admin" className="min-h-dvh bg-page-admin min-[820px]:grid min-[820px]:grid-cols-[auto_minmax(0,1fr)]">
       <aside
         aria-label="Panneau de l'admin"
-        className="sticky top-5 my-5 ml-5 hidden h-[calc(100dvh-40px)] self-start overflow-hidden rounded-panneau bg-fond-admin shadow-panneau min-[820px]:flex"
+        className="panneau-admin sticky top-5 my-5 ml-5 hidden h-[calc(100dvh-40px)] self-start overflow-hidden rounded-panneau bg-fond-admin shadow-panneau min-[820px]:flex"
       >
-        <div className="flex w-[240px] flex-col gap-4 overflow-y-auto px-3 py-4">
-          <div className="px-2 pt-1">
-            <Marque deuxLignes />
-          </div>
-          <NavLaterale aVerifier={cadre.aVerifier} nonLues={cadre.nonLues} />
-          {/* De 820 à 1439 px, « À faire maintenant » passe sous la navigation, en lignes */}
-          <div className="min-[1440px]:hidden">
-            <AFaireMaintenant donnees={cadre} forme="compacte" id="a-faire-panneau" />
-          </div>
-          <div className="mt-auto grid gap-1 border-t border-filet pt-3">
-            <LienJournal />
-            <MenuAdmin {...compte} bloc />
-          </div>
-        </div>
-        {/* À partir de 1440 px, deuxième colonne : quatre cartes */}
-        <div className="hidden w-[236px] overflow-y-auto border-l border-filet px-4 py-5 min-[1440px]:block">
-          <AFaireMaintenant donnees={cadre} forme="cartes" id="a-faire-colonne" />
-        </div>
+        <PanneauAdmin aVerifier={cadre.aVerifier} nonLues={cadre.nonLues} compte={compte} />
       </aside>
 
       <section className="min-w-0 px-4 pt-4 pb-32 min-[820px]:px-6 min-[820px]:pt-5 min-[820px]:pb-10">
@@ -93,6 +76,7 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
       </section>
 
       <NavBasse aVerifier={cadre.aVerifier} nonLues={cadre.nonLues} />
+      <RechercheAdmin />
     </div>
   );
 }

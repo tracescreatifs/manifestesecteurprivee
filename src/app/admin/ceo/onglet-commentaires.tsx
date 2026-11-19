@@ -92,7 +92,7 @@ export function OngletCommentaires({
       </div>
 
       {groupes.length === 0 ? (
-        <p className="rounded-xl border border-filet bg-surface px-4 py-7 text-center text-texte-secondaire">
+        <p className="rounded-carte bg-surface shadow-douce px-4 py-7 text-center text-texte-secondaire">
           {statutManifeste === "redaction"
             ? "Les commentaires des CEO arriveront après l'envoi des liens."
             : "Aucun commentaire dans cette catégorie."}
@@ -105,7 +105,7 @@ export function OngletCommentaires({
             <section
               key={g.blocId ?? "general"}
               aria-label={bloc ? `Paragraphe : ${extrait(texteBrut(bloc.html), 60)}` : "Commentaire général"}
-              className="grid gap-3 rounded-xl border border-filet bg-surface p-4 min-[820px]:p-5"
+              className="grid gap-3 rounded-carte bg-surface shadow-douce p-4 min-[820px]:p-5"
             >
               {bloc ? (
                 <p className="rounded-lg bg-[#F6F2E8] px-3 py-2 text-[14.5px] text-texte-secondaire italic">« {extrait(texteBrut(bloc.html))} »</p>
@@ -143,7 +143,7 @@ export function OngletCommentaires({
                           disabled={enCours}
                           onClick={() => changerStatut(c, s)}
                           className={
-                            "min-h-10 rounded-[10px] border px-3 text-[13.5px] font-medium " +
+                            "min-h-10 rounded-controle border px-3 text-[13.5px] font-medium " +
                             (c.statut === s ? "border-eau bg-eau text-white" : "border-filet-fort bg-surface text-texte-secondaire hover:text-encre")
                           }
                         >
@@ -162,7 +162,7 @@ export function OngletCommentaires({
                           maxLength={1000}
                           onChange={(e) => setNotes((n) => ({ ...n, [c.id]: e.target.value }))}
                           placeholder="Ce que l'équipe en fait"
-                          className="min-h-11 min-w-0 flex-1 basis-60 rounded-[10px] border border-filet-fort bg-surface px-3 text-[15px] outline-none focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)]"
+                          className="min-h-11 min-w-0 flex-1 basis-60 rounded-controle border border-filet-fort bg-surface px-3 text-[15px] outline-none focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)]"
                         />
                         <Button
                           disabled={enCours || note(c).trim() === c.note.trim()}
@@ -211,7 +211,7 @@ export function OngletCommentaires({
           ) : null
         }
       >
-        <p className="flex items-start gap-2.5 rounded-[10px] bg-sureleve px-4 py-3 text-[14px] text-encre [&_svg]:mt-0.5 [&_svg]:size-[18px] [&_svg]:shrink-0">
+        <p className="flex items-start gap-2.5 rounded-controle bg-sureleve px-4 py-3 text-[14px] text-encre [&_svg]:mt-0.5 [&_svg]:size-[18px] [&_svg]:shrink-0">
           <AlertTriangle aria-hidden="true" strokeWidth={1.75} />
           <span>
             Le texte est gelé : seules des corrections mineures restent possibles. Intégrer un changement de fond demanderait de

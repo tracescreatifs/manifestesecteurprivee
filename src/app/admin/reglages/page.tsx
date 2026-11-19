@@ -33,7 +33,7 @@ export default async function PageReglages({
   return (
     <>
       <div className="mb-4">
-        <h2 className="font-titre text-[22px] font-normal tracking-[-0.01em]">Réglages</h2>
+        <h2 className="font-titre text-[30px] leading-tight font-light tracking-[-0.01em]">Réglages</h2>
       </div>
       <Tabs onglets={ONGLETS} actif={actif} libelle="Rubriques des réglages" />
       <div className="grid max-w-[840px] gap-4">

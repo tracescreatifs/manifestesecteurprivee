@@ -81,7 +81,7 @@ export function Comparaison({ operations, titre, sousTitre }: Props) {
   return (
     <ol className="grid gap-2 text-[15px]">
       {changementsEntete.map((c) => (
-        <li key={c.nom} className="grid gap-1 rounded-[10px] border border-filet bg-surface p-3">
+        <li key={c.nom} className="grid gap-1 rounded-controle border border-filet bg-surface p-3">
           <p className="text-[12.5px] font-medium text-texte-secondaire">{c.nom} modifié</p>
           <DiffTexte avant={c.avant.replace(/\n/g, " ")} apres={c.apres.replace(/\n/g, " ")} />
         </li>
@@ -97,7 +97,7 @@ export function Comparaison({ operations, titre, sousTitre }: Props) {
         const op = g.operation;
         if (op.statut === "ajoute") {
           return (
-            <li key={i} className="grid gap-1 rounded-[10px] bg-succes-doux p-3 text-[#1d4d35]">
+            <li key={i} className="grid gap-1 rounded-controle bg-succes-doux p-3 text-[#1d4d35]">
               <Etiquette type={op.apres.type} statut="ajouté" />
               <p>{texteBrut(op.apres.html)}</p>
             </li>
@@ -105,14 +105,14 @@ export function Comparaison({ operations, titre, sousTitre }: Props) {
         }
         if (op.statut === "supprime") {
           return (
-            <li key={i} className="grid gap-1 rounded-[10px] bg-erreur-doux p-3 text-[#7a2a1d]">
+            <li key={i} className="grid gap-1 rounded-controle bg-erreur-doux p-3 text-[#7a2a1d]">
               <Etiquette type={op.avant.type} statut="supprimé" />
               <p className="line-through">{texteBrut(op.avant.html)}</p>
             </li>
           );
         }
         return (
-          <li key={i} className="grid gap-1 rounded-[10px] border border-filet bg-surface p-3">
+          <li key={i} className="grid gap-1 rounded-controle border border-filet bg-surface p-3">
             <Etiquette type={op.apres.type} statut="modifié" />
             <DiffTexte avant={texteBrut(op.avant.html)} apres={texteBrut(op.apres.html)} />
           </li>

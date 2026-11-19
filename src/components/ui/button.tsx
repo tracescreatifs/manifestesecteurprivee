@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes } from "react";
 export type VarianteBouton = "principal" | "secondaire" | "discret" | "danger";
 
 const BASE =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border px-4 text-[15px] font-medium whitespace-nowrap " +
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-controle border px-4 text-[15px] font-medium whitespace-nowrap " +
   "transition-[background-color,border-color,transform] duration-150 ease-projet active:scale-[0.98] " +
   "disabled:cursor-not-allowed disabled:opacity-45 disabled:active:scale-100 [&_svg]:size-[18px] [&_svg]:shrink-0";
 

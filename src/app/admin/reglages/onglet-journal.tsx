@@ -38,7 +38,7 @@ export async function OngletJournal({ page }: { page: number }) {
   const pages = Math.max(1, Math.ceil(total / PAR_PAGE));
 
   return (
-    <section className="grid gap-3 rounded-[14px] border border-filet bg-surface p-6">
+    <section className="grid gap-3 rounded-carte bg-surface shadow-douce p-6">
       <h3 className="font-titre text-xl font-normal">Journal</h3>
       {lignes && lignes.length > 0 ? (
         <ol className="grid text-[14px]">

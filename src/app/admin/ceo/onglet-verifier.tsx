@@ -125,7 +125,7 @@ export function OngletVerifier({
       </p>
 
       {valide ? (
-        <div className="flex flex-wrap items-center gap-3 rounded-[10px] bg-succes-doux px-4 py-3 text-[14.5px] text-[#214d39]">
+        <div className="flex flex-wrap items-center gap-3 rounded-controle bg-succes-doux px-4 py-3 text-[14.5px] text-[#214d39]">
           <Check aria-hidden="true" className="size-[18px] shrink-0" strokeWidth={1.75} />
           <span className="min-w-0 flex-1">
             La signature de {valide.prenom || "ce CEO"} est validée. Vous pouvez le prévenir sur WhatsApp (facultatif).
@@ -180,7 +180,7 @@ export function OngletVerifier({
       </div>
 
       {liste.length === 0 ? (
-        <p className="rounded-xl border border-filet bg-surface px-4 py-7 text-center text-texte-secondaire">
+        <p className="rounded-carte bg-surface shadow-douce px-4 py-7 text-center text-texte-secondaire">
           {vue === "a_traiter" ? "Rien à vérifier pour l'instant." : "Aucun cas traité pour l'instant."}
         </p>
       ) : (
@@ -238,7 +238,7 @@ export function OngletVerifier({
               {confirmation.cas.saisie.entreprise} », {confirmation.cas.saisie.maillon}. La signature sera marquée comme vérifiée.
             </p>
             {confirmation.cas.autresCeoEntreprise > 0 ? (
-              <p className="rounded-[10px] bg-argile-doux px-4 py-3 text-[14px] text-[#6d3818]">
+              <p className="rounded-controle bg-argile-doux px-4 py-3 text-[14px] text-[#6d3818]">
                 {confirmation.cas.autresCeoEntreprise === 1
                   ? "Un autre CEO est rattaché à cette entreprise : le changement s'applique aussi à lui."
                   : `${confirmation.cas.autresCeoEntreprise} autres CEO sont rattachés à cette entreprise : le changement s'applique aussi à eux.`}
@@ -262,7 +262,7 @@ export function OngletVerifier({
                 value={motif}
                 maxLength={500}
                 onChange={(e) => setMotif(e.target.value)}
-                className="min-h-[80px] w-full resize-y rounded-[10px] border border-filet-fort bg-surface p-3 text-[15px] outline-none focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)]"
+                className="min-h-[80px] w-full resize-y rounded-controle border border-filet-fort bg-surface p-3 text-[15px] outline-none focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)]"
               />
             </div>
           </>
@@ -327,7 +327,7 @@ function Entete({ cas }: { cas: CasVerification }) {
 function Comparaison({ cas }: { cas: CasVerification }) {
   const lignes = comparerChamps(cas.liste, cas.saisie);
   return (
-    <div className="overflow-hidden rounded-[10px] border border-filet" role="table" aria-label="Votre liste et saisie du CEO">
+    <div className="overflow-hidden rounded-controle border border-filet" role="table" aria-label="Votre liste et saisie du CEO">
       <div role="row" className="hidden grid-cols-[120px_minmax(0,1fr)_minmax(0,1fr)] gap-3 bg-sureleve px-3 py-2 text-[12.5px] font-semibold text-texte-secondaire min-[640px]:grid">
         <div role="columnheader">Champ</div>
         <div role="columnheader">Votre liste</div>
@@ -366,7 +366,7 @@ function Comparaison({ cas }: { cas: CasVerification }) {
 
 function Fiche({ s, titre }: { s: SignatureCas; titre?: string }) {
   return (
-    <div className="grid content-start gap-2 rounded-[10px] border border-filet p-3">
+    <div className="grid content-start gap-2 rounded-controle border border-filet p-3">
       {titre ? <p className="text-[12.5px] font-semibold text-texte-secondaire">{titre}</p> : null}
       <dl className="grid grid-cols-[96px_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-[14px]">
         <dt className="text-texte-secondaire">Nom</dt>
@@ -445,7 +445,7 @@ function CarteCas({
             <dd>{formaterDateHeure(s.signeLe)}</dd>
           </dl>
           {s.trace ? (
-            <div className="h-24 rounded-[10px] border border-filet bg-white p-2">
+            <div className="h-24 rounded-controle border border-filet bg-white p-2">
               <SignatureSvg trace={s.trace} className="h-full" libelle={`Signature de ${nom}`} />
             </div>
           ) : null}
@@ -454,7 +454,7 @@ function CarteCas({
 
       {cas.motif === "doublon" && s ? (
         <>
-          <p className="rounded-[10px] bg-argile-doux px-4 py-3 text-[14px] text-[#6d3818]">
+          <p className="rounded-controle bg-argile-doux px-4 py-3 text-[14px] text-[#6d3818]">
             Une seule signature par entreprise est recommandée. Gardez les deux seulement si l&apos;entreprise le souhaite.
           </p>
           <div className="grid gap-3 min-[820px]:grid-cols-2">
@@ -462,7 +462,7 @@ function CarteCas({
             {cas.autresSignatures.length ? (
               cas.autresSignatures.map((a) => <Fiche key={a.reference} s={a} titre="Déjà signée pour la même entreprise" />)
             ) : (
-              <p className="rounded-[10px] border border-filet p-3 text-[14px] text-texte-secondaire">
+              <p className="rounded-controle border border-filet p-3 text-[14px] text-texte-secondaire">
                 L&apos;autre signature de cette entreprise a été retirée depuis.
               </p>
             )}

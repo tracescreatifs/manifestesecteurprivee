@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { fontVariables } from "@/lib/fonts";
+import { SCRIPT_MENU } from "@/lib/menu-admin";
 
 import "./globals.css";
 
@@ -37,7 +38,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="fr" className={fontVariables}>
+    /* data-menu et data-apparition sont posés par le script avant l'hydratation (menu de l'admin, R2) */
+    <html lang="fr" className={fontVariables} suppressHydrationWarning>
+      <head>
+        {/* Menu de l'admin réduit ou déployé, appliqué avant le premier affichage : aucun saut au chargement */}
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_MENU }} />
+      </head>
       <body>{children}</body>
     </html>
   );

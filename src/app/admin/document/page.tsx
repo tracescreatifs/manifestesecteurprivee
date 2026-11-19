@@ -18,7 +18,7 @@ export default async function PageDocument() {
   return (
     <>
       <div className="mb-4">
-        <h2 className="font-titre text-[22px] font-normal tracking-[-0.01em]">Document A4</h2>
+        <h2 className="font-titre text-[30px] leading-tight font-light tracking-[-0.01em]">Document A4</h2>
         <p className="mt-1 max-w-[70ch] text-texte-secondaire">
           Exactement ce qui sera imprimé : le texte, puis l&apos;annexe des signataires à partir de la page qui suit la dernière
           page de texte. Toutes les signatures sont visibles ici.

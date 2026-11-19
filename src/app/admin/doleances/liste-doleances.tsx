@@ -7,6 +7,7 @@ import { useMemo, useState, useTransition } from "react";
 import { Button, classesBouton } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Panneau } from "@/components/ui/panneau";
+import { PANNEAU_LISTE, RANGEE } from "@/components/ui/rangee";
 import { Toast, useToast } from "@/components/ui/toast";
 import { formaterDateHeure } from "@/lib/dates";
 import type { DoleanceAdmin, ThemeAdmin } from "@/lib/doleances/admin";
@@ -21,7 +22,7 @@ import { marquerDoleance, rattacherDoleance } from "./actions";
 
 const AUTRE = "__autre";
 const SELECT =
-  "min-h-11 min-w-0 rounded-[10px] border border-filet-fort bg-surface px-3 text-[14px] focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none";
+  "min-h-11 min-w-0 rounded-controle border border-filet-fort bg-surface px-3 text-[14px] focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none";
 const extrait = (t: string, n = 180) => (t.length > n ? `${t.slice(0, n).trim()}…` : t);
 
 function Segments<T extends string>({
@@ -60,10 +61,13 @@ export function ListeDoleances({
   doleances,
   themes,
   lectureInitiale = "toutes",
+  ficheInitiale = null,
 }: {
   doleances: DoleanceAdmin[];
   themes: ThemeAdmin[];
   lectureInitiale?: "toutes" | "non_lues" | "lues";
+  /* Fiche ouverte à l'arrivée (?fiche=, depuis la recherche, R2) */
+  ficheInitiale?: string | null;
 }) {
   const { message, afficher } = useToast();
   const [enCours, demarrer] = useTransition();
@@ -71,7 +75,7 @@ export function ListeDoleances({
   const [lecture, setLecture] = useState<"toutes" | "non_lues" | "lues">(lectureInitiale);
   const [auteur, setAuteur] = useState<"tous" | "signataires" | "non_signataires">("tous");
   const [ordre, setOrdre] = useState<"recentes" | "anciennes">("recentes");
-  const [ouverte, setOuverte] = useState<string | null>(null);
+  const [ouverte, setOuverte] = useState<string | null>(ficheInitiale);
   const [cible, setCible] = useState("");
 
   const visibles = useMemo(() => {
@@ -106,7 +110,7 @@ export function ListeDoleances({
   return (
     /* Colonnes en minmax(0, 1fr) : une liste déroulante ne force jamais sa largeur sur un petit écran */
     <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-3 rounded-xl border border-filet bg-surface p-4">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-3 rounded-carte bg-surface p-4 shadow-douce">
         <div className="flex flex-wrap gap-2">
           <select aria-label="Filtrer par thème" value={theme} onChange={(e) => setTheme(e.target.value)} className={`${SELECT} w-full flex-1 basis-56`}>
             <option value="">Tous les thèmes</option>
@@ -156,7 +160,7 @@ export function ListeDoleances({
       </p>
 
       {visibles.length ? (
-        <ul className="grid grid-cols-[minmax(0,1fr)] gap-2.5">
+        <ul className={`${PANNEAU_LISTE} grid-cols-[minmax(0,1fr)]`}>
           {visibles.map((x) => (
             <li key={x.id}>
               <button
@@ -165,7 +169,7 @@ export function ListeDoleances({
                   setCible("");
                   setOuverte(x.id);
                 }}
-                className="grid w-full gap-2 rounded-xl border border-filet bg-surface p-4 text-left hover:border-filet-fort focus-visible:border-eau"
+                className={`${RANGEE} grid w-full gap-2 p-4 text-left`}
                 aria-label={`${x.lueLe ? "" : "Non lue. "}${libelleTheme(x.theme, x.themePropose)}, par ${x.auteur.nom}, ${x.auteur.entreprise}. Ouvrir la doléance`}
               >
                 <span className="flex flex-wrap items-center gap-1.5">
@@ -191,7 +195,7 @@ export function ListeDoleances({
           ))}
         </ul>
       ) : (
-        <p className="rounded-xl border border-filet bg-surface px-4 py-7 text-center text-texte-secondaire">
+        <p className="rounded-carte bg-surface px-4 py-7 text-center text-texte-secondaire shadow-douce">
           {doleances.length ? "Aucune doléance avec ces filtres." : "Aucune doléance pour l'instant. Elles arriveront après l'envoi des liens."}
         </p>
       )}
@@ -252,7 +256,7 @@ export function ListeDoleances({
                 {d.solution ?? "Aucune"}
               </p>
             </div>
-            <div className="grid gap-2 rounded-[10px] bg-sureleve p-3">
+            <div className="grid gap-2 rounded-controle bg-sureleve p-3">
               <p className="flex items-start gap-2 text-[14px] [&_svg]:mt-0.5 [&_svg]:size-4 [&_svg]:shrink-0">
                 <UserRound aria-hidden="true" strokeWidth={1.75} />
                 <span>

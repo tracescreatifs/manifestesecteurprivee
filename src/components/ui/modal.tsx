@@ -79,7 +79,7 @@ export function Modal({ ouvert, titre, onFermer, children, pied, large = false }
             aria-modal="true"
             aria-labelledby={idTitre}
             tabIndex={-1}
-            className={`flex max-h-[85vh] w-full ${large ? "max-w-[820px]" : "max-w-[560px]"} flex-col overflow-hidden rounded-2xl bg-surface shadow-[0_24px_60px_rgba(20,33,43,0.25)] focus:outline-none`}
+            className={`flex max-h-[85vh] w-full ${large ? "max-w-[820px]" : "max-w-[560px]"} flex-col overflow-hidden rounded-carte bg-surface shadow-douce focus:outline-none`}
             style={{ maxHeight: "min(85vh, 85dvh)" }}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -95,7 +95,7 @@ export function Modal({ ouvert, titre, onFermer, children, pied, large = false }
                 data-fermer
                 onClick={onFermer}
                 aria-label="Fermer"
-                className="grid size-11 shrink-0 place-items-center rounded-[10px] text-texte-secondaire hover:bg-[rgba(20,33,43,0.06)] hover:text-encre"
+                className="grid size-11 shrink-0 place-items-center rounded-controle text-texte-secondaire hover:bg-[rgba(20,33,43,0.06)] hover:text-encre"
               >
                 <X aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
               </button>

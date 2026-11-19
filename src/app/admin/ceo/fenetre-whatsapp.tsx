@@ -74,7 +74,7 @@ export function FenetreWhatsApp({ ceo, relance, messageInitial, onFermer, onOuve
           id="wa-message"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          className="min-h-52 w-full rounded-[10px] border border-filet-fort bg-surface p-3 text-[14.5px] focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none"
+          className="min-h-52 w-full rounded-controle border border-filet-fort bg-surface p-3 text-[14.5px] focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none"
         />
       </div>
       <div className="grid gap-2">

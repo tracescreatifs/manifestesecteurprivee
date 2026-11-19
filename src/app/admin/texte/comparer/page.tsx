@@ -46,7 +46,7 @@ export default async function PageComparer({
       <select
         name={nom}
         defaultValue={valeur}
-        className="min-h-11 rounded-[10px] border border-filet-fort bg-surface px-3 text-base text-encre"
+        className="min-h-11 rounded-controle border border-filet-fort bg-surface px-3 text-base text-encre"
       >
         {versions.map((v) => (
           <option key={v.numero} value={v.numero}>
@@ -67,7 +67,7 @@ export default async function PageComparer({
           <ArrowLeft aria-hidden="true" className="size-4" strokeWidth={1.75} />
           Retour au texte
         </Link>
-        <h2 className="font-titre text-[22px] font-normal tracking-[-0.01em]">Comparer deux versions</h2>
+        <h2 className="font-titre text-[30px] leading-tight font-light tracking-[-0.01em]">Comparer deux versions</h2>
       </div>
 
       <form method="get" className="mb-4 flex flex-wrap items-center gap-3">

@@ -93,7 +93,7 @@ export function LienOuvert({ adresse, dateLimite, actif, onFermer, onMessage }: 
         Chaque inscription arrive dans « À vérifier » et n&apos;entre dans l&apos;annexe qu&apos;après votre validation.
       </p>
       <div className="grid items-center gap-4 min-[480px]:grid-cols-[150px_minmax(0,1fr)]">
-        <div className="grid size-[150px] place-items-center rounded-[10px] border border-filet bg-white p-2">
+        <div className="grid size-[150px] place-items-center rounded-controle border border-filet bg-white p-2">
           {qr ? (
             // eslint-disable-next-line @next/next/no-img-element -- image générée dans le navigateur (data URL)
             <img src={qr} alt="QR code du lien ouvert" width={132} height={132} />

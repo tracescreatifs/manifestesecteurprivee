@@ -16,7 +16,7 @@ import { dateDeReouverture, PDF_TAILLE_MAX } from "@/lib/document/regles";
 */
 
 const ENTREE =
-  "min-h-11 w-full rounded-[10px] border border-filet-fort bg-surface px-3 text-[15px] focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none";
+  "min-h-11 w-full rounded-controle border border-filet-fort bg-surface px-3 text-[15px] focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none";
 
 function Erreur({ texte }: { texte?: string }) {
   return texte ? (
@@ -235,7 +235,7 @@ export function BoutonPublier({ aideId }: { aideId?: string }) {
           </li>
           <li className="grid gap-2">
             <strong className="font-semibold">2. Déposez le PDF</strong>
-            <label className="relative inline-flex min-h-11 w-fit cursor-pointer items-center gap-2 rounded-[10px] border border-filet-fort bg-surface px-4 text-[15px] font-medium focus-within:border-eau focus-within:shadow-[0_0_0_3px_var(--color-eau-doux)] [&_svg]:size-[18px]">
+            <label className="relative inline-flex min-h-11 w-fit cursor-pointer items-center gap-2 rounded-controle border border-filet-fort bg-surface px-4 text-[15px] font-medium focus-within:border-eau focus-within:shadow-[0_0_0_3px_var(--color-eau-doux)] [&_svg]:size-[18px]">
               <FileUp aria-hidden="true" strokeWidth={1.75} />
               {depot ? "Changer de fichier" : "Choisir le PDF"}
               <input

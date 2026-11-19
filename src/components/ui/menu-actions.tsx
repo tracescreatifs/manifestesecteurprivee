@@ -101,7 +101,7 @@ export function MenuActions({ libelle, elements, declencheur, classeDeclencheur,
         }}
         className={
           classeDeclencheur ??
-          "grid size-11 place-items-center rounded-[10px] text-texte-secondaire hover:bg-[rgba(20,33,43,0.06)] hover:text-encre"
+          "grid size-11 place-items-center rounded-controle text-texte-secondaire hover:bg-[rgba(20,33,43,0.06)] hover:text-encre"
         }
       >
         {declencheur ?? <MoreHorizontal aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />}
@@ -116,7 +116,7 @@ export function MenuActions({ libelle, elements, declencheur, classeDeclencheur,
               style={style}
               onKeyDown={surTouche}
               onClick={(e) => e.stopPropagation()}
-              className="z-[70] grid w-[250px] gap-0.5 rounded-[10px] border border-filet bg-surface p-1.5 shadow-[0_10px_30px_rgba(20,33,43,0.15)]"
+              className="z-[70] grid w-[250px] gap-0.5 rounded-controle border border-filet bg-surface p-1.5 shadow-[0_10px_30px_rgba(20,33,43,0.15)]"
             >
               {entete}
               {elements.map((el, k) =>

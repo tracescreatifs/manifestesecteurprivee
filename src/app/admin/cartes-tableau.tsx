@@ -227,9 +227,13 @@ export function CarteTaux({ d }: { d: TableauDeBord }) {
         </svg>
         <p className="absolute inset-x-0 bottom-0 text-center font-titre text-[34px] leading-none font-light tabular-nums">{pourCent(taux)}</p>
       </div>
-      <p className="text-center text-[13.5px] text-texte-secondaire">
-        {p.signe} {pluriel(p.signe, "signé")} sur {atteints} {pluriel(atteints, "lien")} {pluriel(atteints, "envoyé")}
-      </p>
+      {/* Libellé explicite (R2) : le taux porte sur les liens envoyés ; le réservoir garde « sur N invités » */}
+      <div className="grid justify-items-center gap-0.5 text-center">
+        <p className="text-[14.5px] font-medium">des liens envoyés</p>
+        <p className="text-[13.5px] text-texte-secondaire">
+          {p.signe} {pluriel(p.signe, "signé")} sur {atteints} {pluriel(atteints, "lien")} {pluriel(atteints, "envoyé")}
+        </p>
+      </div>
     </Carte>
   );
 }

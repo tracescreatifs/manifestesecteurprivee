@@ -73,7 +73,7 @@ export function ZoneDepot({ titre }: { titre: string }) {
       </span>
       <label
         className={
-          "relative inline-flex min-h-11 cursor-pointer items-center gap-2 overflow-hidden rounded-[10px] border border-eau bg-eau px-4 text-[15px] font-medium text-white hover:bg-[#163f4b] " +
+          "relative inline-flex min-h-11 cursor-pointer items-center gap-2 overflow-hidden rounded-controle border border-eau bg-eau px-4 text-[15px] font-medium text-white hover:bg-[#163f4b] " +
           "focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-eau " +
           (envoi ? "pointer-events-none opacity-60" : "")
         }

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { estAVerifier } from "@/lib/admin/compteurs";
+
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { estTrace } from "@/lib/ceo/serveur";
@@ -195,7 +197,7 @@ export async function lireVerification(
   };
 
   const aTraiter = toutes
-    .filter((i) => i.verification === "a_verifier" && sigs.some((s) => s.invitation_id === i.id && !s.retiree_le))
+    .filter((i) => estAVerifier(i.verification, sigs.some((s) => s.invitation_id === i.id && !s.retiree_le)))
     .map(cas)
     .sort((a, b) => (a.signature?.signeLe ?? "").localeCompare(b.signature?.signeLe ?? ""));
   const traites = toutes
@@ -205,14 +207,17 @@ export async function lireVerification(
   return { aTraiter, traites };
 }
 
-/* Nombre de cas à vérifier (navigation et onglet) : une vérification « à vérifier » a toujours une signature active */
+/*
+  Nombre de cas à vérifier (menu, tableau de bord) : même définition que l'onglet « À vérifier » (estAVerifier),
+  donc le même chiffre partout (R2)
+*/
 export async function compterAVerifier(supabase: Client, manifesteId: string): Promise<number> {
-  const { count } = await supabase
-    .from("invitations")
-    .select("id", { count: "exact", head: true })
-    .eq("manifeste_id", manifesteId)
-    .eq("verification", "a_verifier");
-  return count ?? 0;
+  const [{ data: invitations }, { data: signatures }] = await Promise.all([
+    supabase.from("invitations").select("id, verification").eq("manifeste_id", manifesteId).eq("verification", "a_verifier"),
+    supabase.from("signatures").select("invitation_id").eq("manifeste_id", manifesteId).is("retiree_le", null),
+  ]);
+  const actives = new Set((signatures ?? []).map((s) => s.invitation_id));
+  return (invitations ?? []).filter((i) => estAVerifier(i.verification, actives.has(i.id))).length;
 }
 
 export async function lireCommentaires(supabase: Client, manifesteId: string): Promise<CommentaireAdmin[]> {

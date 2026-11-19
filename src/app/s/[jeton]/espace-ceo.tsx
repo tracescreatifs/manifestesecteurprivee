@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { DocumentA4 } from "@/components/document/document-a4";
+import { DrapeauOndulant } from "@/components/drapeau";
 import { Marque } from "@/components/marque";
 import { Button, classesBouton } from "@/components/ui/button";
 import { formaterDateLimite, formaterDateLimiteComplete, lienPartageWhatsApp, MANIFESTE_GRAS } from "@/lib/ceo/message";
@@ -291,7 +292,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
   /* ----- Morceaux de l'écran ----- */
 
   const bascule = (
-    <div role="group" aria-label="Affichage" className="inline-grid w-fit grid-cols-2 overflow-hidden rounded-[10px] border border-filet-fort bg-surface">
+    <div role="group" aria-label="Affichage" className="inline-grid w-fit grid-cols-2 overflow-hidden rounded-controle border border-filet-fort bg-surface">
       {(
         [
           ["lecture", "Lecture", BookOpen],
@@ -384,7 +385,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
 
   const carteSignature =
     signature && jeton ? (
-      <div className="grid gap-3 rounded-2xl border border-filet bg-surface p-5">
+      <div className="grid gap-3 rounded-carte bg-surface shadow-douce p-5">
         <h2 className="flex items-center gap-2 font-titre text-[19px] font-normal [&_svg]:size-[18px] [&_svg]:text-texte-secondaire">
           <PenTool aria-hidden="true" strokeWidth={1.75} />
           Votre signature
@@ -431,7 +432,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
 
   const carteInvitation =
     signature && ouvert && lienInvitation ? (
-      <div className="grid gap-3 rounded-2xl border border-filet bg-surface p-5">
+      <div className="grid gap-3 rounded-carte bg-surface shadow-douce p-5">
         <h2 className="flex items-center gap-2 font-titre text-[19px] font-normal [&_svg]:size-[18px] [&_svg]:text-texte-secondaire">
           <UserPlus aria-hidden="true" strokeWidth={1.75} />
           Invitez un confrère
@@ -441,7 +442,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
     ) : null;
 
   const listeCommentaires = commentaires.length ? (
-    <div className="grid gap-3 rounded-2xl border border-filet bg-surface p-5">
+    <div className="grid gap-3 rounded-carte bg-surface shadow-douce p-5">
       <h2 className="flex items-center gap-2 font-titre text-[19px] font-normal [&_svg]:size-[18px] [&_svg]:text-texte-secondaire">
         <MessageSquare aria-hidden="true" strokeWidth={1.75} />
         Vos commentaires
@@ -485,6 +486,12 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
       />
     ) : null;
 
+  /*
+    Grand drapeau du Sénégal (R2), dans le bloc d'accueil du premier écran : au-dessus du titre sur ordinateur (colonne
+    à droite du document) ; sur téléphone, à droite du titre, que le texte contourne : le document n'est pas repoussé.
+  */
+  const drapeauAccueil = <DrapeauOndulant className="float-right mb-2 ml-4 min-[760px]:float-none min-[760px]:mb-4 min-[760px]:ml-0" />;
+
   /* ----- En-tête : fixe sur ordinateur, en tête de page sur téléphone (sans la date, déjà dans la barre de signature) ----- */
   const entete = (
     <>
@@ -513,7 +520,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
   if (refus && jeton) {
     colonne = (
       <>
-        <div className="grid gap-3 rounded-2xl border border-filet bg-surface p-5">
+        <div className="grid gap-3 rounded-carte bg-surface shadow-douce p-5">
           <span className="grid size-12 place-items-center rounded-full bg-[#EDE8DE] text-texte-secondaire [&_svg]:size-6">
             <CircleSlash aria-hidden="true" strokeWidth={1.75} />
           </span>
@@ -524,7 +531,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
             </p>
           ) : null}
         </div>
-        <div className="grid gap-3 rounded-2xl border border-filet bg-surface p-5">
+        <div className="grid gap-3 rounded-carte bg-surface shadow-douce p-5">
           <h2 className="flex items-center gap-2 font-titre text-[19px] font-normal [&_svg]:size-[18px] [&_svg]:text-texte-secondaire">
             <PenTool aria-hidden="true" strokeWidth={1.75} />
             Votre signature
@@ -547,7 +554,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
     colonne = (
       <>
         {signature ? (
-          <div className="flex items-start gap-2.5 rounded-[10px] bg-succes-doux px-4 py-3 text-[14px] text-[#214d39] [&_svg]:mt-0.5 [&_svg]:size-[18px] [&_svg]:shrink-0">
+          <div className="flex items-start gap-2.5 rounded-controle bg-succes-doux px-4 py-3 text-[14px] text-[#214d39] [&_svg]:mt-0.5 [&_svg]:size-[18px] [&_svg]:shrink-0">
             <CheckCircle2 aria-hidden="true" strokeWidth={1.75} />
             <div>
               Vous avez signé le {formaterDateHeure(signature.signeLe)}.
@@ -556,24 +563,26 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
           </div>
         ) : null}
         {prenom ? (
-          <>
+          <div className="flow-root">
+            {drapeauAccueil}
             <h1 className="font-titre text-[28px] leading-[1.15] font-normal min-[760px]:text-[32px]">Bonjour {prenom},</h1>
-            <p className="text-[16px] leading-[1.55] text-texte-secondaire">
+            <p className="mt-4 text-[16px] leading-[1.55] text-texte-secondaire">
               {signature
                 ? "Merci pour votre signature. Vous pouvez relire le texte, retrouver votre accusé et compléter votre fiche."
                 : "Voici le Manifeste qui sera présenté à Abu Dhabi. Lisez-le, puis signez-le. Vous pouvez aussi laisser un commentaire à l'équipe de rédaction."}
             </p>
-          </>
+          </div>
         ) : (
-          <>
+          <div className="flow-root">
+            {drapeauAccueil}
             <h1 className="font-titre text-[28px] leading-[1.15] font-normal">
               Le Manifeste du secteur privé sénégalais de l&apos;eau et de l&apos;assainissement
             </h1>
-            <p className="text-[16px] leading-[1.55] text-texte-secondaire">
+            <p className="mt-4 text-[16px] leading-[1.55] text-texte-secondaire">
               Vous dirigez une entreprise sénégalaise de l&apos;eau ou de l&apos;assainissement ? Lisez ce Manifeste, présenté à
               Abu Dhabi, et signez-le au nom de votre entreprise.
             </p>
-          </>
+          </div>
         )}
         <p className="flex items-center gap-2 text-[13px] text-texte-secondaire [&_svg]:size-4 [&_svg]:shrink-0">
           <Send aria-hidden="true" strokeWidth={1.75} />
@@ -640,13 +649,16 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
         ) : (
           /* Document publié (cahier des charges 7.6) : document final avec l'annexe complète, téléchargement et partage */
           <>
-            <h1 className="font-titre text-[28px] leading-[1.15] font-normal">
-              {signature && prenom ? `Merci, ${prenom}` : prenom ? `Bonjour ${prenom},` : "Bonjour,"}
-            </h1>
-            <p className="text-[16px] leading-[1.55] text-texte-secondaire">
-              Le Manifeste a été présenté à Abu Dhabi. Voici le document final, avec l&apos;annexe des entreprises signataires
-              {signature ? ", dont la vôtre" : ""}.
-            </p>
+            <div className="flow-root">
+              {drapeauAccueil}
+              <h1 className="font-titre text-[28px] leading-[1.15] font-normal">
+                {signature && prenom ? `Merci, ${prenom}` : prenom ? `Bonjour ${prenom},` : "Bonjour,"}
+              </h1>
+              <p className="mt-4 text-[16px] leading-[1.55] text-texte-secondaire">
+                Le Manifeste a été présenté à Abu Dhabi. Voici le document final, avec l&apos;annexe des entreprises signataires
+                {signature ? ", dont la vôtre" : ""}.
+              </p>
+            </div>
             <span className="inline-flex w-fit items-center gap-1.5 rounded-md bg-succes-doux px-2.5 py-1 text-[13px] font-medium text-succes [&_svg]:size-4">
               <BadgeCheck aria-hidden="true" strokeWidth={1.75} />
               Présenté à Abu Dhabi, décembre 2026
@@ -770,7 +782,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
           placeholder="Écrivez votre remarque"
           aria-invalid={Boolean(erreurCommentaire)}
           aria-describedby="commentaire-aide"
-          className="min-h-[100px] w-full resize-y rounded-[10px] border border-filet-fort bg-surface p-3 text-[16px] outline-none focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)]"
+          className="min-h-[100px] w-full resize-y rounded-controle border border-filet-fort bg-surface p-3 text-[16px] outline-none focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)]"
         />
         <div id="commentaire-aide" className="flex justify-between gap-3 text-[13px] text-texte-secondaire">
           <span>Lu uniquement par l&apos;équipe de rédaction, pas par les autres signataires.</span>

@@ -34,7 +34,7 @@ function apercuDate(saisie: string): string | null {
   return Number.isNaN(date.getTime()) ? null : formaterDateLimite(date.toISOString());
 }
 
-const PANNEAU = "grid gap-3 rounded-[14px] border border-filet bg-surface p-6";
+const PANNEAU = "grid gap-3 rounded-carte bg-surface shadow-douce p-6";
 
 /* Onglet Manifeste : signature (date limite, validation automatique, numéro de la Task Force), consentement, rédaction */
 export function OngletManifeste(props: Props) {
@@ -234,7 +234,7 @@ export function OngletManifeste(props: Props) {
         </p>
         {props.consentementVerrouille ? (
           <>
-            <p className="rounded-[10px] border border-filet bg-sureleve px-4 py-3 text-[14.5px]">{props.texteConsentement}</p>
+            <p className="rounded-controle border border-filet bg-sureleve px-4 py-3 text-[14.5px]">{props.texteConsentement}</p>
             <p className="flex items-start gap-2 text-[13px] text-texte-secondaire [&_svg]:mt-0.5 [&_svg]:size-4 [&_svg]:shrink-0">
               <Lock aria-hidden="true" strokeWidth={1.75} />
               Des CEO ont déjà signé avec ce texte : il ne peut plus changer, pour que tous les signataires aient accepté le même.
@@ -248,7 +248,7 @@ export function OngletManifeste(props: Props) {
                 name="consentement"
                 defaultValue={props.texteConsentement}
                 maxLength={600}
-                className="min-h-[100px] w-full resize-y rounded-[10px] border border-filet-fort bg-surface p-3 text-[15px] outline-none focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)]"
+                className="min-h-[100px] w-full resize-y rounded-controle border border-filet-fort bg-surface p-3 text-[15px] outline-none focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)]"
               />
             </Field>
             <div>

@@ -28,16 +28,16 @@ function phraseOuverture(statut: StatutManifeste, cloture: string): string {
   Rubrique Doléances (prompt 09a) : doléances privées déposées par les CEO depuis leur lien,
   lues par les admins seuls. La publication anonyme, les soutiens et le classement viendront au prompt 09b.
 */
-export default async function PageDoleances({ searchParams }: { searchParams: Promise<{ onglet?: string; lecture?: string }> }) {
+export default async function PageDoleances({ searchParams }: { searchParams: Promise<{ onglet?: string; lecture?: string; fiche?: string }> }) {
   await exigerSessionAdmin();
-  const { onglet, lecture } = await searchParams;
+  const { onglet, lecture, fiche } = await searchParams;
   const actif = onglet === "themes" ? "themes" : "liste";
   const supabase = await creerClientServeur();
   const manifeste = await lireManifeste(supabase);
 
   const entete = (description: string | null) => (
     <div>
-      <h2 className="font-titre text-[22px] font-normal tracking-[-0.01em]">Doléances</h2>
+      <h2 className="font-titre text-[30px] leading-tight font-light tracking-[-0.01em]">Doléances</h2>
       <p className="mt-1 max-w-[70ch] text-texte-secondaire">
         Difficultés que les CEO rencontrent dans leur entreprise ou dans le secteur, déposées depuis leur lien, qu&apos;ils
         aient signé ou non. Lues par les admins seulement, jamais par les autres CEO.
@@ -59,7 +59,7 @@ export default async function PageDoleances({ searchParams }: { searchParams: Pr
     return (
       <>
         <div className="mb-4">{entete(null)}</div>
-        <p role="alert" className="max-w-[70ch] rounded-[10px] bg-erreur-doux px-4 py-3 text-[14.5px] text-[#7a2a1d]">
+        <p role="alert" className="max-w-[70ch] rounded-controle bg-erreur-doux px-4 py-3 text-[14.5px] text-[#7a2a1d]">
           La rubrique attend sa migration. Dans le SQL Editor de Supabase, exécutez supabase/migrations/0009_doleances.sql,
           puis supabase/seed/0003_themes_doleances.sql, et rechargez cette page.
         </p>
@@ -97,6 +97,8 @@ export default async function PageDoleances({ searchParams }: { searchParams: Pr
         <ThemesDoleances themes={donnees.themes} />
       ) : (
         <ListeDoleances
+          key={`${lecture ?? ""}|${fiche ?? ""}`}
+          ficheInitiale={typeof fiche === "string" ? fiche : null}
           doleances={donnees.doleances}
           themes={donnees.themes}
           lectureInitiale={lecture === "non_lues" || lecture === "lues" ? lecture : "toutes"}

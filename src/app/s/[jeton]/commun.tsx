@@ -52,7 +52,7 @@ export function BoutonFermer({ onClick }: { onClick: () => void }) {
       type="button"
       onClick={onClick}
       aria-label="Fermer"
-      className="grid size-11 shrink-0 place-items-center rounded-[10px] text-texte-secondaire hover:bg-[rgba(20,33,43,0.06)] hover:text-encre [&_svg]:size-[18px]"
+      className="grid size-11 shrink-0 place-items-center rounded-controle text-texte-secondaire hover:bg-[rgba(20,33,43,0.06)] hover:text-encre [&_svg]:size-[18px]"
     >
       <X aria-hidden="true" strokeWidth={1.75} />
     </button>
@@ -96,7 +96,7 @@ export function Feuille({
       onClick={(e) => e.target === e.currentTarget && fermer.current()}
       style={{ maxHeight: "min(85vh, 85dvh)" }}
       className={
-        "fixed inset-0 m-auto h-fit max-h-[85vh] w-[calc(100%-32px)] max-w-[520px] overflow-hidden rounded-[18px] bg-surface p-0 text-encre " +
+        "fixed inset-0 m-auto h-fit max-h-[85vh] w-[calc(100%-32px)] max-w-[520px] overflow-hidden rounded-carte bg-surface p-0 text-encre shadow-douce " +
         "backdrop:bg-[rgba(20,33,43,0.4)]"
       }
     >

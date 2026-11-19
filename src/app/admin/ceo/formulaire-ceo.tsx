@@ -126,7 +126,7 @@ export function FormulaireCeo({ ouvert, onFermer, ceo, lignes, maillons, onEnreg
               id="c-maillon"
               name="maillon"
               defaultValue={initial.maillon}
-              className="min-h-11 w-full rounded-[10px] border border-filet-fort bg-surface px-3 text-base focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none"
+              className="min-h-11 w-full rounded-controle border border-filet-fort bg-surface px-3 text-base focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none"
             >
               <option value="">À préciser</option>
               {maillons.map((m) => (
@@ -150,7 +150,7 @@ export function FormulaireCeo({ ouvert, onFermer, ceo, lignes, maillons, onEnreg
           </p>
         ) : null}
         {doublon ? (
-          <div role="alert" className="grid gap-2 rounded-[10px] bg-argile-doux px-4 py-3 text-[14px] text-[#6d3818]">
+          <div role="alert" className="grid gap-2 rounded-controle bg-argile-doux px-4 py-3 text-[14px] text-[#6d3818]">
             <p>
               Déjà dans la liste : {doublon}. Une seule signature par entreprise est recommandée. Confirmez pour enregistrer
               quand même.

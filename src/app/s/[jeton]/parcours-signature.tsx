@@ -89,9 +89,9 @@ const AUTOCOMPLETE: Partial<Record<Champ, string>> = {
 };
 
 const CHAMP_CLASSES =
-  "min-h-11 w-full rounded-[10px] border bg-surface px-3 py-3 text-[16px] text-encre outline-none focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)]";
+  "min-h-11 w-full rounded-controle border bg-surface px-3 py-3 text-[16px] text-encre outline-none focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)]";
 
-const CARTE = "grid gap-3 rounded-2xl border border-filet bg-surface p-5 text-left";
+const CARTE = "grid gap-3 rounded-carte bg-surface shadow-douce p-5 text-left";
 
 /* Clé anti-doublon : tirée une fois, renvoyée telle quelle à chaque nouvel essai */
 function nouvelleCle(): string {
@@ -564,7 +564,7 @@ export function ParcoursSignature(props: Props) {
           </p>
         ) : null}
         {signerSurTelephonePossible(jeton) ? (
-          <div className="hidden items-start gap-2.5 rounded-[10px] bg-[#EDE8DE] px-4 py-3 text-[14px] min-[760px]:flex [&>svg]:mt-0.5 [&>svg]:size-[18px] [&>svg]:shrink-0">
+          <div className="hidden items-start gap-2.5 rounded-controle bg-[#EDE8DE] px-4 py-3 text-[14px] min-[760px]:flex [&>svg]:mt-0.5 [&>svg]:size-[18px] [&>svg]:shrink-0">
             <Smartphone aria-hidden="true" strokeWidth={1.75} />
             <div className="grid gap-2">
               <p>
@@ -682,7 +682,7 @@ export function ParcoursSignature(props: Props) {
                 type="button"
                 onClick={retour}
                 aria-label="Étape précédente"
-                className="grid size-11 place-items-center rounded-[10px] text-texte-secondaire hover:bg-[rgba(20,33,43,0.06)] [&_svg]:size-[18px]"
+                className="grid size-11 place-items-center rounded-controle text-texte-secondaire hover:bg-[rgba(20,33,43,0.06)] [&_svg]:size-[18px]"
               >
                 <ArrowLeft aria-hidden="true" strokeWidth={1.75} />
               </button>
@@ -784,7 +784,7 @@ export function InviterConfrere({ lien, onCopie }: { lien: string; onCopie: (mes
 
 function Notice({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-start gap-2.5 rounded-[10px] bg-argile-doux px-4 py-3 text-left text-[14px] text-[#6d3818] [&_svg]:mt-0.5 [&_svg]:size-[18px] [&_svg]:shrink-0">
+    <div className="flex items-start gap-2.5 rounded-controle bg-argile-doux px-4 py-3 text-left text-[14px] text-[#6d3818] [&_svg]:mt-0.5 [&_svg]:size-[18px] [&_svg]:shrink-0">
       {children}
     </div>
   );

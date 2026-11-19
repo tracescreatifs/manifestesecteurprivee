@@ -264,7 +264,7 @@ export function DocumentA4({
           )}
         </span>
       </p>
-      <div role="group" aria-label="Zoom" className="inline-flex items-stretch overflow-hidden rounded-[10px] border border-filet-fort">
+      <div role="group" aria-label="Zoom" className="inline-flex items-stretch overflow-hidden rounded-controle border border-filet-fort">
         <button
           type="button"
           aria-pressed={zoom === null}

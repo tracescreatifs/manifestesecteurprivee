@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { AFaireMaintenant } from "@/components/admin/a-faire";
 import { ActualisationAuto } from "@/components/admin/actualisation-auto";
-import { ligneEtat } from "@/lib/admin/calculs";
+import { ligneEtat, signaturesCloses } from "@/lib/admin/calculs";
 import { lireCadreAdmin, lireTableauDeBord } from "@/lib/admin/tableau-de-bord";
 import { exigerSessionAdmin } from "@/lib/session-admin";
 import { creerClientServeur } from "@/lib/supabase/server";
@@ -43,17 +43,16 @@ export default async function TableauDeBordAdmin() {
 
   return (
     <div className="grid gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
-        <div>
-          <h1 className="font-titre text-[34px] leading-tight font-light tracking-[-0.01em] min-[820px]:text-[40px]">Vue d&apos;ensemble</h1>
-          <p className="mt-1 text-texte-secondaire">{ligneEtat(d)}</p>
+      <div className="grid gap-4">
+        <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+          <div>
+            <h1 className="font-titre text-[34px] leading-tight font-light tracking-[-0.01em] min-[820px]:text-[40px]">Vue d&apos;ensemble</h1>
+            <p className="mt-1 text-texte-secondaire">{ligneEtat(d)}</p>
+          </div>
+          <ActualisationAuto lueLe={d.lueLe} />
         </div>
-        <ActualisationAuto lueLe={d.lueLe} />
-      </div>
-
-      {/* Sur téléphone, « À faire maintenant » ouvre le tableau de bord (sur ordinateur, il est dans le panneau) */}
-      <div className="min-[820px]:hidden">
-        <AFaireMaintenant donnees={cadre} forme="cartes" id="a-faire-accueil" />
+        {/* « À faire maintenant » : une ligne, sous la ligne d'état, sur ordinateur comme sur téléphone (R2) */}
+        <AFaireMaintenant donnees={cadre} relanceOuverte={d.statut === "gele" && !signaturesCloses(d.statut, d.dateLimite, maintenant)} />
       </div>
 
       <div className="@container">

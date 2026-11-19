@@ -75,12 +75,12 @@ export function BarreEtapes({ statut, versionCourante, admin, dateLimite, datePa
       }
     >
       <div className="flex items-center justify-between gap-x-3 gap-y-2 min-[820px]:flex-wrap">
-        <ol aria-label="Étapes du Manifeste" className="flex min-w-0 flex-wrap items-center gap-1.5 min-[820px]:flex-nowrap">
+        <ol aria-label="Étapes du Manifeste" className="flex min-w-0 flex-nowrap items-center gap-1 min-[400px]:gap-1.5">
           {ETAPES.map((libelle, i) => {
             const etat = etatEtape(statut, i);
             return (
-              <li key={libelle} className="flex items-center gap-1.5">
-                {i > 0 ? <span aria-hidden="true" className="h-px w-3 bg-filet-fort min-[1080px]:w-7" /> : null}
+              <li key={libelle} className="flex shrink-0 items-center gap-1 min-[400px]:gap-1.5">
+                {i > 0 ? <span aria-hidden="true" className="h-px w-2 bg-filet-fort min-[400px]:w-3 min-[1080px]:w-7" /> : null}
                 <span
                   aria-current={etat === "courant" ? "step" : undefined}
                   className={

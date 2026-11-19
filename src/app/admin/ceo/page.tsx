@@ -20,10 +20,10 @@ export const metadata: Metadata = { title: "CEO" };
 export default async function PageCeo({
   searchParams,
 }: {
-  searchParams: Promise<{ onglet?: string; cas?: string; fiche?: string; filtre?: string }>;
+  searchParams: Promise<{ onglet?: string; cas?: string; fiche?: string; filtre?: string; file?: string }>;
 }) {
   await exigerSessionAdmin();
-  const { onglet, cas, fiche, filtre } = await searchParams;
+  const { onglet, cas, fiche, filtre, file } = await searchParams;
   const actif = onglet === "verifier" || onglet === "commentaires" ? onglet : "liste";
   const supabase = await creerClientServeur();
   const manifeste = await lireManifeste(supabase);
@@ -92,6 +92,7 @@ export default async function PageCeo({
 
   return (
     <TableauCeo
+      key={`${fiche ?? ""}|${filtre ?? ""}|${file ?? ""}`}
       lignes={lignes}
       recentes={recentes}
       maillons={maillons.map((m) => m.libelle)}
@@ -102,6 +103,7 @@ export default async function PageCeo({
       dateLimiteIso={manifeste.date_limite}
       lienOuvertActif={manifeste.lien_ouvert_actif}
       ficheInitiale={actif === "liste" && typeof fiche === "string" ? fiche : null}
+      fileInitiale={actif === "liste" && file === "relance"}
       filtreInitial={filtre === "a_envoyer" || filtre === "envoye" || filtre === "ouvert" || filtre === "signe" ? filtre : undefined}
       onglets={onglets}
       contenu={contenu}

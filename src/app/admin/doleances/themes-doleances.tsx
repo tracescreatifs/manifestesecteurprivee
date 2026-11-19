@@ -17,9 +17,9 @@ import { activerTheme, creerTheme, ordonnerThemes, renommerTheme } from "./actio
 */
 
 const CHAMP =
-  "min-h-11 min-w-0 rounded-[10px] border border-filet-fort bg-surface px-3 text-[15px] focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none";
+  "min-h-11 min-w-0 rounded-controle border border-filet-fort bg-surface px-3 text-[15px] focus:border-eau focus:shadow-[0_0_0_3px_var(--color-eau-doux)] focus:outline-none";
 const ICONE =
-  "grid size-11 shrink-0 place-items-center rounded-[10px] text-texte-secondaire hover:bg-[rgba(20,33,43,0.06)] hover:text-encre disabled:opacity-35 disabled:hover:bg-transparent [&_svg]:size-[18px]";
+  "grid size-11 shrink-0 place-items-center rounded-controle text-texte-secondaire hover:bg-[rgba(20,33,43,0.06)] hover:text-encre disabled:opacity-35 disabled:hover:bg-transparent [&_svg]:size-[18px]";
 
 export function ThemesDoleances({ themes }: { themes: ThemeAdmin[] }) {
   const { message, afficher } = useToast();
@@ -47,7 +47,7 @@ export function ThemesDoleances({ themes }: { themes: ThemeAdmin[] }) {
 
   return (
     <div className="grid max-w-[840px] gap-4">
-      <section className="grid gap-3 rounded-[14px] border border-filet bg-surface p-5 min-[820px]:p-6">
+      <section className="grid gap-3 rounded-carte bg-surface shadow-douce p-5 min-[820px]:p-6">
         <h3 className="font-titre text-xl font-normal">Thèmes proposés aux CEO</h3>
         <p className="text-[13.5px] text-texte-secondaire">
           Dans cet ordre, puis « Autre ». Un thème désactivé n&apos;est plus proposé, mais reste sur les doléances déjà
@@ -142,7 +142,7 @@ export function ThemesDoleances({ themes }: { themes: ThemeAdmin[] }) {
         ) : null}
       </section>
 
-      <form onSubmit={creer} className="grid gap-2 rounded-[14px] border border-filet bg-surface p-5 min-[820px]:p-6">
+      <form onSubmit={creer} className="grid gap-2 rounded-carte bg-surface shadow-douce p-5 min-[820px]:p-6">
         <label htmlFor="nouveau-theme" className="text-[13px] font-medium text-texte-secondaire">
           Nouveau thème
         </label>
