@@ -55,6 +55,8 @@ type Props = {
   lienOuvertActif: boolean;
   /* Fiche ouverte à l'arrivée (?fiche=, depuis la rubrique Doléances) */
   ficheInitiale: string | null;
+  /* Signatures dans l'annexe : validées et non retirées (en ligne et sur place) */
+  annexe: number;
   /* Filtre de statut à l'ouverture (?filtre=, depuis « À faire maintenant », R1) */
   filtreInitial?: StatutEnvoi;
   /* File « Relancer un par un » ouverte à l'arrivée (?file=relance, depuis le tableau de bord, R2) */
@@ -79,7 +81,7 @@ function initiales(l: LigneCeo) {
 
 function Avatar({ ligne }: { ligne: LigneCeo }) {
   return (
-    <span className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-full bg-[#E6E0D3] text-[13px] font-semibold text-texte-secondaire">
+    <span className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-full bg-[#E6E0D3] text-[13px] font-semibold text-[#44505A]">
       {ligne.photoUrl ? (
         // eslint-disable-next-line @next/next/no-img-element -- lien signé temporaire du stockage privé
         <img src={ligne.photoUrl} alt="" className="size-full object-cover" />
@@ -112,6 +114,7 @@ export function TableauCeo({
   dateLimiteIso,
   lienOuvertActif,
   ficheInitiale,
+  annexe,
   filtreInitial,
   fileInitiale = false,
   onglets,
@@ -299,7 +302,8 @@ export function TableauCeo({
               <p className="font-titre text-[40px] leading-none tabular-nums">
                 {compte.signe}{" "}
                 <span className="font-interface text-[15px] text-texte-secondaire">
-                  signature{compte.signe > 1 ? "s" : ""} sur {total}
+                  {/* Même libellé que la légende et le tableau de bord : « Signés » (audit 06b) */}
+                  signé{compte.signe > 1 ? "s" : ""} sur {total}
                 </span>
               </p>
               {gele ? (
@@ -335,7 +339,8 @@ export function TableauCeo({
             >
               <div className="flex items-baseline justify-between border-b-2 border-doc-or pb-2 font-doc-serif text-[15px] text-doc-vert">
                 <span>Annexe · Les signataires</span>
-                <span className="font-doc-sans text-[12px] text-doc-gris tabular-nums">{compte.signe}</span>
+                {/* Nombre de signatures dans l'annexe (validées, non retirées), comme le tableau de bord (audit 06b) */}
+                <span className="font-doc-sans text-[12px] text-doc-gris tabular-nums">{annexe}</span>
               </div>
               {recentes.map((s, i) => (
                 <div key={i} className="grid grid-cols-[minmax(0,1fr)_120px] items-center gap-2 border-b border-doc-filet py-2 last:border-b-0">

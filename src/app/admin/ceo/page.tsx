@@ -36,12 +36,18 @@ export default async function PageCeo({
     );
   }
 
-  const [{ lignes, recentes }, maillons, verification, commentaires, version] = await Promise.all([
+  const [{ lignes, recentes }, maillons, verification, commentaires, version, { count: annexe }] = await Promise.all([
     lireListeCeo(supabase, manifeste.id),
     lireMaillons(supabase),
     lireVerification(supabase, manifeste.id),
     lireCommentaires(supabase, manifeste.id),
     lireVersionCourante(supabase, manifeste.id),
+    supabase
+      .from("signatures")
+      .select("id", { count: "exact", head: true })
+      .eq("manifeste_id", manifeste.id)
+      .eq("validee", true)
+      .is("retiree_le", null),
   ]);
 
   let siteUrl: string | null = null;
@@ -102,6 +108,7 @@ export default async function PageCeo({
       dateLimite={formaterDateLimite(manifeste.date_limite)}
       dateLimiteIso={manifeste.date_limite}
       lienOuvertActif={manifeste.lien_ouvert_actif}
+      annexe={annexe ?? 0}
       ficheInitiale={actif === "liste" && typeof fiche === "string" ? fiche : null}
       fileInitiale={actif === "liste" && file === "relance"}
       filtreInitial={filtre === "a_envoyer" || filtre === "envoye" || filtre === "ouvert" || filtre === "signe" ? filtre : undefined}

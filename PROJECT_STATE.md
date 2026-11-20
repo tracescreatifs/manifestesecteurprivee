@@ -1,6 +1,6 @@
 # État du projet
 
-Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt R2, 19 novembre 2026.
+Mis à jour à la fin de chaque prompt. Dernière mise à jour : prompt 06b (audit final), 19 novembre 2026.
 
 ---
 
@@ -29,7 +29,7 @@ Selon la partie 17 du cahier des charges, avec l'ordre des lots modifié par D26
 | 08.1 | Numérotation des pages sans le total (D118) | `main` | 22 novembre 2026 | En cours de validation |
 | R1 | Refonte de l'admin, partie 1 (D119 à D122) : socle visuel partagé, cadre de l'admin (panneau flottant, « À faire maintenant », barre d'étapes flottante, barre basse du téléphone avec « Plus »), page « Tableau de bord », « Exporter en PDF » dans la rubrique Document A4 | `main` | 22 novembre 2026 | En cours de validation |
 | R2 | Refonte de l'admin, partie 2 (D123 à D129) : menu d'une colonne, réductible, avec recherche (Ctrl ou Cmd + K) et apparition douce ; « À faire maintenant » en une ligne sur le tableau de bord ; drapeau du Sénégal (marque, connexion, accueil CEO, /rejoindre) ; pages de connexion ; style des rubriques (cartes, rangées, fenêtres, champs) ; compteurs « À vérifier » et « À relancer » partagés ; barre d'étapes à 360 px | `main` | 22 novembre 2026 | En cours de validation |
-| Audit | Audit complet avant le gel, sur toute la plateforme (refonte comprise) | `main` | 20 novembre 2026 | À faire |
+| 06b | Audit final avant l'envoi des liens (D130 à D133) : revues de sécurité indépendantes (base et stockage, routes et actions), migration 0011, script de nettoyage revu et testé, en-têtes de sécurité, parcours complets rejoués, balayage, contrastes, performance | `main` | 20 novembre 2026 | En cours de validation |
 | Tests et nettoyage | Tests sur l'URL Vercel, puis nettoyage des données de test (script 9000, exécuté par Ziza seulement) | `main` | 21 et 22 novembre 2026 | À faire |
 | Envoi | Envoi des liens aux CEO | `main` | 23 novembre 2026 | À faire |
 | Partenaires 1 | À partir du 24 novembre, sur sa branche : registre réservé aux admins (fiches des partenaires avec logo, engagements, documents joints, thèmes de doléances), avec son audit (lot b ci-dessous) | `feat/...` | Après le 24 novembre 2026 | À faire |
@@ -47,6 +47,21 @@ Aucun code de ces lots n'est écrit tant que leur prompt n'est pas donné. Nouve
 | c | 09b, doléances partie publique (déjà prévu) | Après la clôture des signatures : validation par un admin, publication anonyme, visibilité entre CEO (sans nom ni entreprise, jamais une doléance « Ne jamais la publier, même sans nom »), soutiens (table `doleance_soutiens`, l'auteur compte pour un, D22), classement par soutiens, export PDF (A4), fusion de thèmes. Le modèle de 0009 est prêt : statut (`recue`, `publiee`, `masquee`), thèmes ordonnés et désactivables | `feat/...` | À faire |
 | d | Adhésion par le lien ouvert après la clôture des signatures | /rejoindre passe en mode adhésion : fiche sans signature, validation par un admin, pour embarquer les entreprises qui n'étaient pas au Manifeste | `feat/...` | À faire |
 | e | Option à décider pendant la refonte (lot a) | Côté CEO, sur l'écran de remerciement après la signature : une fine ligne d'eau qui monte d'un cran pendant que sa ligne s'inscrit dans l'annexe (même sens que le réservoir de l'admin) | `feat/...` | À décider |
+
+### Liste de Ziza avant l'envoi des liens (dans cet ordre exact)
+
+Prérequis : exécuter d'abord `supabase/migrations/0011_audit_final.sql` (SQL Editor de Supabase, un seul copier-coller), puis confirmer son exécution au prompt suivant.
+
+1. Exécuter le script de nettoyage `supabase/seed/9000_nettoyage_donnees_test.sql` : d'abord tel quel (aperçu, rien n'est supprimé), vérifier la liste des entreprises de test (et les trois noms « à vérifier » en commentaire), puis remplacer `false` par `true` à l'étape 1 et l'exécuter de nouveau. Garder le résultat affiché : il liste les fichiers à supprimer.
+2. Supprimer à la main, dans Supabase, Storage, les fichiers listés : bucket `photos`, bucket `accuses` (et la ligne « Accusés encore dans Storage sans signature »), bucket `signatures` (sur place), bucket `exports` (essais de publication). Ne pas toucher au bucket `imports`. Puis exécuter une dernière fois le script avec `confirmer = true` : la ligne « Prochaine référence » doit indiquer MSP-2026-0001.
+3. Remettre le texte en rédaction : rubrique Texte, « Revenir en rédaction » (possible seulement si le texte est gelé et qu'aucun lien n'est envoyé ; si les signatures ont été closes pendant les essais, d'abord « Rouvrir » avec une date à venir).
+4. Importer le texte validé par Khadija (fichier Word), vérifier l'aperçu A4, puis le geler. Le numéro de version continue la série des essais (les versions ne s'effacent jamais).
+5. Importer la vraie liste des CEO et relire les signalements de l'aperçu (doublons, numéros, maillons).
+6. Vérifier dans Réglages, onglet Manifeste : date limite au 9 décembre 2026 à 00:00 (8 décembre à minuit, heure de Dakar), clôture des doléances au 31 décembre 2026 à 23:59, numéro WhatsApp de la Task Force.
+7. Domaine : l'ajouter dans Vercel, mettre à jour `NEXT_PUBLIC_SITE_URL`, puis dans Supabase (Authentication, URL Configuration) la Site URL et les Redirect URLs ; tester en navigation privée et vérifier l'aperçu WhatsApp d'un lien (titre générique, aucune donnée personnelle).
+8. Remettre « Email OTP Expiration » à 3600 secondes une fois tous les admins invités.
+9. Faire un parcours complet en navigation privée, sur téléphone et sur ordinateur (lien CEO, lecture, signature, accusé, doléance), puis retirer cette signature d'essai depuis l'espace CEO.
+10. À partir du 23 novembre : télécharger l'export des signatures chaque soir (tableau de bord ou rubrique CEO), et travailler sur des branches (`feat/...`, `fix/...`).
 
 ### Après Abu Dhabi (feuille de route)
 
@@ -136,6 +151,7 @@ Aucun code de ces lots n'est écrit tant que leur prompt n'est pas donné. Nouve
 
 - Prompt R1, refonte de l'admin partie 1 (D119 à D122) : jetons partagés (rayons, ombres, fonds de l'admin, chiffre clé) ; cadre de l'admin : panneau flottant (navigation avec « Tableau de bord », « Journal », bloc du compte), « À faire maintenant » (À vérifier, À relancer, Doléances, Export du soir : valeurs réelles, chaque raccourci mène où agir, avec les filtres `?filtre=ouvert` de la rubrique CEO et `?lecture=non_lues` des doléances), barre d'étapes flottante, barre basse flottante du téléphone (Accueil, Texte, CEO, Doléances, Plus). Page « Tableau de bord » (`/admin`) : vue d'ensemble et ligne d'état, réservoir d'eau animé (immobile si mouvement réduit), parcours des liens, clôture, taux de signature en arc, doléances par thème, dernières actions, actualisation toutes les 30 secondes ; état propre avant le gel. Document A4 : « Exporter en PDF », « Texte seul », « Annexe seule » en tête de rubrique, même libellé dans la fenêtre de publication et la page d'export. Aucune migration, aucune dépendance. Tests vitest : 118.
 - Prompt R2, refonte de l'admin partie 2 (D123 à D129) : panneau d'une colonne (260 px) avec marque, recherche, navigation et pastilles, « Réduire le menu », Journal et compte ; menu réductible en barre d'icônes (92 px) avec info-bulles, choix mémorisé dans le navigateur et appliqué avant l'affichage ; apparition douce une fois par session ; recherche des CEO et des doléances côté serveur (Ctrl ou Cmd + K, clavier complet, fiche ouverte par `?fiche=`) ; « À faire maintenant » en une ligne de pastilles sur le tableau de bord ; drapeau du Sénégal en SVG (petit qui flotte dans la marque, grand qui ondule sur les pages de connexion, l'accueil CEO et /rejoindre, jamais sur le document) ; pages de connexion refaites ; rubriques en cartes, listes CEO et doléances en rangées dans un panneau, fenêtres rayon 24, champs et boutons rayon 14 (admin et CEO) ; « À vérifier » et « À relancer » avec une seule définition partagée ; arc « des liens envoyés » ; barre d'étapes sur une ligne à 360 px. Aucune migration, aucune dépendance. Tests vitest : 124.
+- Prompt 06b, audit final avant l'envoi des liens (D130 à D133) : deux revues de sécurité indépendantes (base, RLS et stockage ; routes et Server Actions), sans faille critique ; migration `0011_audit_final.sql` (signatures non modifiables directement et insertion recontrôlée, cycle de vie du Manifeste protégé, consentements, stockage du document final, limite des doléances), testée deux fois de suite sur PostgreSQL 16 avec les gestes légitimes de l'application et les contournements ; en-têtes anti-cadre et Referrer-Policy ; script de nettoyage revu (accusés, exports, numérotation sûre, noms à vérifier) et testé deux fois sur un jeu complet ; compteurs de la rubrique CEO alignés sur le tableau de bord ; initiales des avatars au contraste AA. Parcours rejoués (texte, liste et WhatsApp, signature CEO complète, accusé PDF, lien ouvert, parrainage, coupure, QR, vérification, commentaires, doléances, Document A4, clôture, réouverture, sur place, publication en local, R1, R2), balayage de 14 pages à 7 largeurs dans les 4 états, clavier, contrastes mesurés, performance en 3G. Tests vitest : 124.
 
 ---
 
@@ -160,6 +176,7 @@ Claude Code ne marque jamais une migration comme exécutée : Ziza le confirme, 
 | seed 0003 | `supabase/seed/0003_themes_doleances.sql` | Les 6 thèmes de départ, seulement si aucun thème n'existe (à exécuter après 0009) | Oui (confirmée au prompt 08) |
 | 0010 | `supabase/migrations/0010_document_final.sql` | Document final : réglages de l'annexe sur le Manifeste, bucket privé `signatures`, signatures figées (sauf un signataire sur place corrigé quand le Manifeste est clos ; plus rien après la publication), fonctions clore, rouvrir, publier, régler l'annexe (session d'admin) et signataires sur place (clé secrète) | Oui (confirmée au prompt R1) |
 
+| 0011 | `supabase/migrations/0011_audit_final.sql` | Audit final 06b : signatures non modifiables directement par un admin et insertion recontrôlée (statut, date limite, publication), cycle de vie du Manifeste protégé, consentements en écriture serveur seulement, buckets exports et signatures en lecture seule pour les admins (exports : PDF de 4 Mo au plus), limite des doléances comptée au journal | Non |
 ---
 
 ## Variables d'environnement attendues
@@ -200,6 +217,7 @@ Selon la partie 19 du cahier des charges.
 
 - « Mot de passe oublié » par email : le fournisseur email par défaut de Supabase n'envoie qu'aux membres du projet Supabase. Pour les autres admins, utiliser « Générer un lien de réinitialisation » (D16) tant qu'aucun SMTP n'est configuré sur le domaine définitif.
 
-- Un admin connecté peut écrire directement dans les tables par l'API de Supabase (RLS « admin peut tout »), sans passer par les fonctions journalisées. À restreindre dans un lot dédié, après le 23 novembre.
+- Un admin connecté peut encore écrire directement dans certaines tables par l'API de Supabase (RLS « admin peut tout ») : invitations, personnes, entreprises, commentaires, versions du texte, réglages. La migration 0011 a fermé les cas critiques (signatures, cycle de vie du Manifeste, consentements, stockage du document final). Le reste est à restreindre dans un lot dédié, après le 23 novembre (audit 06b).
 - Les jetons apparaissent dans les journaux d'accès de Vercel (adresse de la page) : accès réservé au compte Vercel.
 - La limite d'inscriptions par heure du lien ouvert repose sur l'adresse IP : un changement d'adresse la contourne (protection anti-spam, pas une barrière).
+- Audit 06b, constats faibles signalés sans correction : la limite de 30 commentaires par heure est comptée sans verrou (des envois simultanés depuis un même lien valide peuvent la dépasser de quelques unités) ; un inscrit du lien ouvert non encore validé voit l'annexe (noms et entreprises des signataires validés, sans les tracés, conforme à D69 et D75 ; à décider par Ziza) ; `est_admin()` ne vérifie ni la durée de 30 jours ni le mot de passe défini (vérifiés par le serveur Next, pas en base) ; la déconnexion est un lien simple ; une version du texte peut encore être insérée directement par un admin après le gel ; retirer un CEO de la liste efface ses commentaires et doléances (D110) ; rejouer seule une ancienne migration remettrait d'anciennes définitions (toujours rejouer toute la séquence).

@@ -9,14 +9,15 @@
 --      Le résultat affiché est l'aperçu de tout ce qui serait supprimé.
 --   3. Si l'aperçu est juste, remplacez false par true à l'étape 1, puis exécutez de nouveau.
 --      La suppression se fait en une seule transaction : tout ou rien.
---   4. Les fichiers listés (photos, accusés, signatures sur place) se suppriment ensuite à la main,
+--   4. Les fichiers listés (photos, accusés, signatures sur place, exports) se suppriment ensuite à la main,
 --      dans Supabase, Storage (le SQL ne peut pas supprimer proprement les fichiers).
+--      Le bucket imports garde les fichiers Word des versions du texte : ne pas y toucher (les versions restent).
 --
 -- À exécuter après les migrations 0007 et 0009 (ou avant : le script fonctionne dans tous les cas ;
 -- sans la table des doléances, la ligne « Doléances » affiche 0).
 -- Le journal n'est jamais modifié. Seules les entreprises de la liste sont supprimées.
--- Si plus aucune signature n'existe après la suppression, les références repartent
--- de MSP-2026-0001.
+-- Si plus aucune signature n'existe après la suppression et qu'aucun accusé ne reste dans Storage, les références
+-- repartent de MSP-2026-0001 (sinon : supprimer les accusés listés, puis exécuter de nouveau avec confirmer = true).
 -- =====================================================================
 
 
@@ -25,6 +26,9 @@
 --    des accents, des points ni des formes juridiques), et confirmation.
 -- ---------------------------------------------------------------------
 drop table if exists pg_temp.nettoyage_parametres;
+-- À vérifier par Ziza (audit 06b), NON incluses : noms d'entreprises des données de démonstration des prototypes
+-- ('Forages du Ndiambour', 'Kane Forages', 'Niayes Hydro'). Si l'une d'elles a été saisie pour un essai et ne
+-- figure pas dans la vraie liste, ajoutez-la au tableau ci-dessous avant de confirmer.
 create temp table nettoyage_parametres as
 select
   array['Test Forages', 'water', 'Test QR', 'Test Parrainage']::text[] as entreprises_test,
@@ -90,6 +94,29 @@ begin
 end;
 $$;
 
+-- Fichiers du bucket exports (PDF du document final déposés lors d'un essai de publication) : avant l'envoi
+-- des liens, tout fichier de ce bucket est un essai. Lus seulement si le schéma storage existe.
+drop table if exists pg_temp.nettoyage_exports;
+create temp table nettoyage_exports (nom text);
+do $$
+begin
+  if to_regclass('storage.objects') is not null then
+    execute 'insert into nettoyage_exports (nom) select name from storage.objects where bucket_id = ''exports''';
+  end if;
+end;
+$$;
+
+-- Accusés encore rangés dans le bucket accuses (lus seulement si le schéma storage existe)
+drop table if exists pg_temp.nettoyage_accuses_restants;
+create temp table nettoyage_accuses_restants (nom text);
+do $$
+begin
+  if to_regclass('storage.objects') is not null then
+    execute 'insert into nettoyage_accuses_restants (nom) select name from storage.objects where bucket_id = ''accuses''';
+  end if;
+end;
+$$;
+
 drop table if exists pg_temp.nettoyage_consentements;
 create temp table nettoyage_consentements as
 select k.id from public.consentements k where k.personne_id in (select id from nettoyage_personnes);
@@ -126,8 +153,10 @@ begin
   delete from public.personnes where id in (select id from nettoyage_personnes);
   delete from public.entreprises where id in (select id from nettoyage_entreprises);
 
-  -- Plus aucune signature : la prochaine référence sera MSP-2026-0001
-  if not exists (select 1 from public.signatures) then
+  -- Plus aucune signature : la prochaine référence sera MSP-2026-0001, mais seulement quand plus aucun accusé
+  -- n'est rangé dans Storage (audit 06b). Sinon, le premier vrai signataire recevrait l'accusé de test qui porte
+  -- la même référence. Supprimez d'abord les accusés listés, puis exécutez de nouveau ce script (confirmer = true).
+  if not exists (select 1 from public.signatures) and not exists (select 1 from nettoyage_accuses_restants) then
     perform setval('public.signature_reference_seq', 1, false);
   end if;
 end;
@@ -174,6 +203,13 @@ from (
   select 8.5, 'Fichiers à supprimer à la main : bucket signatures (sur place)', count(image_path), string_agg(image_path, ', ' order by image_path)
   from nettoyage_signatures
   union all
+  select 8.6, 'Accusés encore dans Storage sans signature (à supprimer à la main)', count(*), string_agg(nom, ', ' order by nom)
+  from nettoyage_accuses_restants
+  where nom not in (select s.reference || '.pdf' from public.signatures s where s.id not in (select id from nettoyage_signatures))
+  union all
+  select 8.7, 'Fichiers à supprimer à la main : bucket exports (essais de publication)', count(*), string_agg(nom, ', ' order by nom)
+  from nettoyage_exports
+  union all
   select 9, 'Signatures restantes (hors test)', count(*), string_agg(reference, ', ' order by reference)
   from public.signatures s
   where s.id not in (select id from nettoyage_signatures)
@@ -184,6 +220,11 @@ from (
       when (select confirmer from nettoyage_parametres) then
         (select 'MSP-2026-' || case when n < 10000 then lpad(n::text, 4, '0') else n::text end
          from (select case when is_called then last_value + 1 else last_value end as n from public.signature_reference_seq) x)
+        || case
+             when not exists (select 1 from public.signatures) and exists (select 1 from nettoyage_accuses_restants)
+               then ' (repartira de MSP-2026-0001 après la suppression des accusés dans Storage et une nouvelle exécution)'
+             else ''
+           end
       else 'Calculée après la suppression'
     end
 ) bilan
