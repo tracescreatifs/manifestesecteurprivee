@@ -55,6 +55,8 @@ type Props = {
   version: number;
   texteConsentement: string;
   annexe: LigneAnnexeA4[];
+  /* Annexe réduite (D134) : nombre des autres signataires ; null : annexe complète */
+  autresSignataires?: number | null;
   siteUrl: string | null;
   codeParrainage: string | null;
   /* Nouvel inscrit (lien ouvert ou parrainage) : « Gardez votre lien personnel » après la signature */
@@ -342,7 +344,7 @@ export function ParcoursSignature(props: Props) {
     corps = (
       <>
         <div className="grid justify-items-center gap-3 text-center">
-          <MomentAnnexe autres={props.annexe} moi={moi} enAttente={!s.validee} />
+          <MomentAnnexe autres={props.annexe} moi={moi} enAttente={!s.validee} autresSignataires={props.autresSignataires ?? null} />
           <h2 ref={titre} tabIndex={-1} className="font-titre text-[28px] font-normal outline-none">
             Merci, {s.prenom}
           </h2>

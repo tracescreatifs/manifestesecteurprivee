@@ -487,6 +487,14 @@
   .ann-table .sg {
     padding: 0.4cqw 0.8cqw;
   }
+  /* Annexe réduite (D134) : « et N autres signataires », sur toute la largeur du tableau */
+  .ann-table .ann-mention {
+    grid-column: 1 / -1;
+    justify-content: center;
+    font-style: italic;
+    color: var(--color-doc-gris);
+  }
+
   .ann-table .ghost {
     border-color: transparent !important;
   }

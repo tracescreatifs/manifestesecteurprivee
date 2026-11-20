@@ -75,3 +75,26 @@ export function masquerAnnexe<T extends LigneAnnexeA4 & { moi: boolean }>(lignes
   if (publie) return lignes;
   return lignes.map((l) => (l.moi ? l : { ...l, trace: null, image: null, masquee: true }));
 }
+
+/*
+  Annexe réduite (prompt 06c, D134) : un inscrit par le lien ouvert ou par parrainage, tant qu'aucune de ses signatures
+  n'a été validée par un admin, ne voit que sa propre ligne et le nombre des autres signataires, jamais leurs noms,
+  fonctions, entreprises ni maillons. Le lien ouvert circule librement : une personne non vérifiée n'obtient pas la liste.
+  Les CEO de la liste ne changent pas ; après la publication, tout le monde voit le document final complet.
+*/
+export function annexeReduite(e: { origine: string; aSignatureValidee: boolean; publie: boolean }): boolean {
+  if (e.publie) return false;
+  return e.origine !== "liste" && !e.aSignatureValidee;
+}
+
+/* Lignes envoyées au navigateur pour une annexe réduite : la sienne seulement, et le nombre des autres */
+export function reduireAnnexe<T extends { moi: boolean }>(lignes: T[]): { lignes: T[]; autres: number } {
+  return { lignes: lignes.filter((l) => l.moi), autres: lignes.filter((l) => !l.moi).length };
+}
+
+/* « et 12 autres signataires », « et 1 autre signataire », « 12 signataires » (sans ligne à soi) ; rien s'il n'y a personne */
+export function mentionAutresSignataires(autres: number, avecMaLigne: boolean): string | null {
+  if (autres <= 0) return null;
+  const s = autres > 1 ? "s" : "";
+  return avecMaLigne ? `et ${autres} autre${s} signataire${s}` : `${autres} signataire${s}`;
+}

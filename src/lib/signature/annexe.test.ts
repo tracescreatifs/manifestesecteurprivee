@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { paginerAnnexe, REGLAGES_ANNEXE, trierAnnexe, type LigneAnnexeA4 } from "./annexe";
+import {
+  annexeReduite,
+  mentionAutresSignataires,
+  paginerAnnexe,
+  reduireAnnexe,
+  REGLAGES_ANNEXE,
+  trierAnnexe,
+  type LigneAnnexeA4,
+} from "./annexe";
 
 const ligne = (entreprise: string, nom: string, signeLe = "2026-11-23T10:00:00Z", maillon = "Études"): LigneAnnexeA4 => ({
   cle: `${entreprise}-${nom}`,
@@ -36,5 +44,39 @@ describe("annexe des signataires", () => {
     const avecVides = paginerAnnexe(vingtEtUne, { ordre: "entreprise", parPage: 8, lignesVides: 5 });
     expect(avecVides.map((p) => p.length)).toEqual([8, 8, 8, 2]);
     expect(avecVides[3]).toEqual([null, null]);
+  });
+});
+
+describe("annexe réduite d'un inscrit non validé (06c)", () => {
+  it("inscrit du lien ouvert ou par parrainage, sans signature validée : annexe réduite", () => {
+    expect(annexeReduite({ origine: "lien_ouvert", aSignatureValidee: false, publie: false })).toBe(true);
+    expect(annexeReduite({ origine: "parrainage", aSignatureValidee: false, publie: false })).toBe(true);
+  });
+  it("inscrit validé par un admin : annexe complète", () => {
+    expect(annexeReduite({ origine: "lien_ouvert", aSignatureValidee: true, publie: false })).toBe(false);
+    expect(annexeReduite({ origine: "parrainage", aSignatureValidee: true, publie: false })).toBe(false);
+  });
+  it("CEO de la liste : inchangé, même en attente de vérification", () => {
+    expect(annexeReduite({ origine: "liste", aSignatureValidee: false, publie: false })).toBe(false);
+  });
+  it("après la publication : document final complet pour tous", () => {
+    expect(annexeReduite({ origine: "lien_ouvert", aSignatureValidee: false, publie: true })).toBe(false);
+  });
+  it("ne garde que sa ligne et compte les autres", () => {
+    const lignes = [
+      { moi: false, nom: "Ndiaye" },
+      { moi: true, nom: "Sy" },
+      { moi: false, nom: "Diop" },
+    ];
+    const r = reduireAnnexe(lignes);
+    expect(r.lignes).toEqual([{ moi: true, nom: "Sy" }]);
+    expect(r.autres).toBe(2);
+    expect(JSON.stringify(r)).not.toMatch(/Ndiaye|Diop/);
+  });
+  it("mention du nombre des autres signataires", () => {
+    expect(mentionAutresSignataires(12, true)).toBe("et 12 autres signataires");
+    expect(mentionAutresSignataires(1, true)).toBe("et 1 autre signataire");
+    expect(mentionAutresSignataires(12, false)).toBe("12 signataires");
+    expect(mentionAutresSignataires(0, true)).toBeNull();
   });
 });

@@ -30,7 +30,7 @@ import { Marque } from "@/components/marque";
 import { Button, classesBouton } from "@/components/ui/button";
 import { formaterDateLimite, formaterDateLimiteComplete, lienPartageWhatsApp, MANIFESTE_GRAS } from "@/lib/ceo/message";
 import { formaterDateHeure } from "@/lib/dates";
-import type { LigneAnnexeA4 } from "@/lib/signature/annexe";
+import { mentionAutresSignataires, type LigneAnnexeA4 } from "@/lib/signature/annexe";
 import { garderEnAttente, INTERVALLE_RENVOI, lireEnAttente, oublierEnAttente, type EnvoiEnAttente } from "@/lib/signature/attente";
 import { debutParcours } from "@/lib/signature/parcours";
 import { schemaSaisie } from "@/lib/signature/saisie";
@@ -379,7 +379,19 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
       blocs={blocs}
       brouillon={false}
       libelle={`Version ${version.numero}`}
-      annexe={rejoindre ? undefined : { lignes: lignesAnnexe, ...espace.reglagesAnnexe }}
+      annexe={
+        rejoindre
+          ? undefined
+          : espace.autresSignataires === null
+            ? { lignes: lignesAnnexe, ...espace.reglagesAnnexe }
+            : /* Annexe réduite (D134) : sa ligne seulement, puis « et N autres signataires », sans lignes vides */
+              {
+                lignes: lignesAnnexe,
+                ...espace.reglagesAnnexe,
+                lignesVides: 0,
+                mention: mentionAutresSignataires(espace.autresSignataires, lignesAnnexe.length > 0),
+              }
+      }
     />
   ) : null;
 
@@ -858,6 +870,7 @@ export function EspaceCeoClient({ jeton, espace, siteUrl, reprendreSignature, re
           version={version.numero}
           texteConsentement={espace.texteConsentement}
           annexe={autresLignes}
+          autresSignataires={espace.autresSignataires}
           siteUrl={siteUrl}
           codeParrainage={espace.codeParrainage}
           nouvelInscrit={espace.origine !== "liste"}

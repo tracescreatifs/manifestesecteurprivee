@@ -38,7 +38,7 @@ type Props = {
   /* Texte affiché avant le nombre de pages, par exemple « Version 3 » */
   libelle?: string;
   /* Annexe des signataires : ordre, lignes par page et lignes vides réglables (par défaut : entreprise, 10, 0) */
-  annexe?: { lignes: LigneAnnexeA4[] } & Partial<ReglagesAnnexe>;
+  annexe?: { lignes: LigneAnnexeA4[]; mention?: string | null } & Partial<ReglagesAnnexe>;
   partie?: PartieDocument;
   impression?: boolean;
   /* Nombre de pages du texte et de l'annexe, dès que la mise en page est faite */
@@ -51,11 +51,15 @@ function PageAnnexe({
   lignes,
   premierNumero,
   parPage,
+  mention,
 }: {
   lignes: (LigneAnnexeA4 | null)[];
   premierNumero: number;
   parPage: number;
+  /* Annexe réduite (D134), dernière page : « et N autres signataires », sur une ligne libre du tableau */
+  mention?: string | null;
 }) {
+  const avecMention = Boolean(mention) && lignes.length < parPage;
   return (
     <>
       <div className="ann-title">Annexe · Les signataires</div>
@@ -93,7 +97,16 @@ function PageAnnexe({
             </div>
           </Fragment>
         ))}
-        {Array.from({ length: (parPage - lignes.length) * 5 }, (_, k) => (
+        {avecMention ? (
+          <>
+            <div className="ann-mention">{mention}</div>
+            {/* Quatre cellules masquées : le motif des colonnes (5n + 1, bordure gauche) reste juste pour les lignes suivantes */}
+            {[1, 2, 3, 4].map((k) => (
+              <div key={`m${k}`} aria-hidden="true" style={{ display: "none" }} />
+            ))}
+          </>
+        ) : null}
+        {Array.from({ length: (parPage - lignes.length - (avecMention ? 1 : 0)) * 5 }, (_, k) => (
           <div key={`g${k}`} className="ghost" aria-hidden="true" />
         ))}
       </div>
@@ -343,7 +356,12 @@ export function DocumentA4({
               <div className="a4-wrap" key={`annexe-${p}`}>
                 <div className="a4-page" role="region" aria-label={`Page ${pagesTexte + p + 1}, annexe des signataires`}>
                   <div className="a4-body">
-                    <PageAnnexe lignes={lignes} premierNumero={p * reglages.parPage + 1} parPage={reglages.parPage} />
+                    <PageAnnexe
+                      lignes={lignes}
+                      premierNumero={p * reglages.parPage + 1}
+                      parPage={reglages.parPage}
+                      mention={p === pagesAnnexe.length - 1 ? annexe?.mention : null}
+                    />
                   </div>
                   <div className="a4-foot">
                     <span>{pied}</span>

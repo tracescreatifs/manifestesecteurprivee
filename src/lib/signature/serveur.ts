@@ -2,7 +2,7 @@ import "server-only";
 
 import { estTrace } from "@/lib/ceo/serveur";
 import { liensImages } from "@/lib/document/serveur";
-import { masquerAnnexe, reglagesDuManifeste, type ReglagesAnnexe } from "@/lib/signature/annexe";
+import { annexeReduite, masquerAnnexe, reduireAnnexe, reglagesDuManifeste, type ReglagesAnnexe } from "@/lib/signature/annexe";
 import type { ChoixFiche } from "@/lib/signature/fiche";
 import { formaterTelephone, normaliserNomEntreprise } from "@/lib/ceo/normaliser";
 import { lireSiteUrl } from "@/lib/env";
@@ -88,6 +88,8 @@ export type EspaceCeo = {
   whatsappTaskForce: string | null;
   signature: SignatureCeo | null;
   annexe: LigneAnnexe[];
+  /* Annexe réduite (D134) : nombre des autres signataires, dont rien d'autre n'est envoyé ; null : annexe complète */
+  autresSignataires: number | null;
   commentaires: CommentaireCeo[];
   /* Fiche facultative (après la signature) : photo (lien signé d'une heure) et consentements courants */
   photoUrl: string | null;
@@ -280,7 +282,17 @@ export async function lireEspace(jeton: string): Promise<EspaceCeo | null> {
       moi: s.invitation_id === inv.id,
     }));
   /* Images des autres signatures retirées avant la publication (D75) : elles ne quittent pas le serveur */
-  const annexe = masquerAnnexe(lignes, etat === "publie");
+  const masquee = masquerAnnexe(lignes, etat === "publie");
+  /*
+    Inscrit du lien ouvert ou par parrainage pas encore validé par un admin (D134) : seulement sa ligne et le nombre
+    des autres. Les noms, fonctions, entreprises et maillons des autres signataires ne quittent pas le serveur.
+  */
+  const reduite = annexeReduite({
+    origine: inv.origine,
+    aSignatureValidee: lues.some((s) => s.invitation_id === inv.id && s.validee),
+    publie: etat === "publie",
+  });
+  const { lignes: annexe, autres: autresSignataires } = reduite ? reduireAnnexe(masquee) : { lignes: masquee, autres: null };
 
   /* Refus par un admin : la signature concernée (retirée), pour la carte et l'accusé déjà émis */
   const refus =
@@ -351,6 +363,7 @@ export async function lireEspace(jeton: string): Promise<EspaceCeo | null> {
         }
       : null,
     annexe,
+    autresSignataires,
     photoUrl: photo.data?.signedUrl ?? null,
     choix,
     codeParrainage: inv.code_parrainage,
@@ -543,6 +556,8 @@ export type PageRejoindre = {
   /* Nom du parrain si le code est valide, pour préremplir « Qui vous a invité ? » */
   parrain: string | null;
   codeParrain: string;
+  /* Nombre des signataires de l'annexe (signatures validées), sans aucun nom (D134) */
+  signataires: number;
 };
 
 export async function lirePageRejoindre(codeParrain: string | null): Promise<PageRejoindre | null> {
@@ -556,7 +571,7 @@ export async function lirePageRejoindre(codeParrain: string | null): Promise<Pag
   if (error) throw new ServiceIndisponible();
   if (!manifeste) return null;
   const code = (codeParrain ?? "").trim().toUpperCase();
-  const [{ data: version }, { data: maillons }, { data: parrain }] = await Promise.all([
+  const [{ data: version }, { data: maillons }, { data: parrain }, { count: signataires }] = await Promise.all([
     supabase
       .from("manifeste_versions")
       .select("numero, titre, sous_titre, blocs")
@@ -573,6 +588,12 @@ export async function lirePageRejoindre(codeParrain: string | null): Promise<Pag
           .eq("manifeste_id", manifeste.id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
+    supabase
+      .from("signatures")
+      .select("id", { count: "exact", head: true })
+      .eq("manifeste_id", manifeste.id)
+      .eq("validee", true)
+      .is("retiree_le", null),
   ]);
   const personne = (parrain as unknown as { personne: { prenom: string; nom: string } | null } | null)?.personne;
   const etat = etatCampagne(manifeste.statut, manifeste.date_limite, new Date());
@@ -596,6 +617,7 @@ export async function lirePageRejoindre(codeParrain: string | null): Promise<Pag
     whatsappTaskForce: manifeste.whatsapp_task_force,
     parrain: personne ? `${personne.prenom} ${personne.nom}`.trim() || null : null,
     codeParrain: personne ? code : "",
+    signataires: signataires ?? 0,
   };
 }
 

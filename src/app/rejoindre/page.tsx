@@ -74,6 +74,8 @@ export default async function PageRejoindre({ searchParams }: { searchParams: Pr
         whatsappTaskForce: page.whatsappTaskForce,
         signature: null,
         annexe: [],
+        /* Avant validation par un admin : aucun nom, seulement le nombre des signataires (D134) */
+        autresSignataires: page.signataires,
         commentaires: [],
         photoUrl: null,
         choix: { recontact: false, annuaire: false, photo_communication: false },

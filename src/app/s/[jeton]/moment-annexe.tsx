@@ -3,7 +3,7 @@
 import { useLayoutEffect, useRef } from "react";
 
 import { SignatureSvg, traceSure } from "@/components/document/signature";
-import { trierAnnexe, type LigneAnnexeA4 } from "@/lib/signature/annexe";
+import { mentionAutresSignataires, trierAnnexe, type LigneAnnexeA4 } from "@/lib/signature/annexe";
 import type { TraceSignature } from "@/types/database";
 
 /*
@@ -44,11 +44,15 @@ export function MomentAnnexe({
   autres,
   moi,
   enAttente,
+  autresSignataires = null,
 }: {
   autres: LigneAnnexeA4[];
   moi: LigneAnnexeA4;
   enAttente: boolean;
+  /* Annexe réduite (D134) : aucune ligne voisine, seulement « et N autres signataires » sous sa ligne */
+  autresSignataires?: number | null;
 }) {
+  const mention = autresSignataires === null ? null : mentionAutresSignataires(autresSignataires, true);
   const liste = trierAnnexe([...autres, moi], "entreprise");
   const i = liste.indexOf(moi);
   const lignes = [liste[i - 1], moi, liste[i + 1]].filter((l): l is LigneAnnexeA4 => Boolean(l));
@@ -96,6 +100,7 @@ export function MomentAnnexe({
           </div>
         );
       })}
+      {mention ? <p className="py-2 text-center font-doc-serif text-[12px] text-doc-gris italic">{mention}</p> : null}
     </div>
   );
 }
